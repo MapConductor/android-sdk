@@ -15,12 +15,12 @@ ktlint {
 
 android {
     namespace = "com.mapconductor.simplemapapp"
-    compileSdk = 37
+    compileSdk = project.property("compileSdk").toString().toInt()
 
     defaultConfig {
         applicationId = "com.mapconductor.simplemapapp"
-        minSdk = 26
-        targetSdk = 37
+        minSdk = project.property("minSdk").toString().toInt()
+        targetSdk = project.property("targetSdk").toString().toInt()
         versionCode = 1
         versionName = "1.0"
 
@@ -104,6 +104,14 @@ secrets {
     defaultPropertiesFileName = "local.defaults.properties"
 }
 
+// The Longdo Map SDK (com.longdo.map:sdk3) bundles its own copy of gson inside the AAR,
+// which collides at dex time with the external gson that Mapbox / MapLibre pull in.
+// Drop the external gson so the app dexes a single (SDK-bundled) copy. The bundled gson is
+// modern enough (record + sql adapters) to satisfy Mapbox/MapLibre GeoJSON usage.
+configurations.configureEach {
+    exclude(group = "com.google.code.gson", module = "gson")
+}
+
 dependencies {
 
     implementation(libs.androidx.core.ktx)
@@ -154,4 +162,7 @@ dependencies {
     implementation(project(":android-heatmap"))
 
     implementation(project(":android-geojson-layer"))
+
+    // Longdo Map API3 SDK
+    implementation(project(":android-for-longdo"))
 }

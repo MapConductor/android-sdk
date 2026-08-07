@@ -18,14 +18,14 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.graphics.drawable.toDrawable
+import com.mapconductor.compose.info.InfoBubble
+import com.mapconductor.compose.marker.Marker
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.info.InfoBubble
 import com.mapconductor.core.map.MapViewStateInterface
 import com.mapconductor.core.marker.DefaultMarkerIcon
 import com.mapconductor.core.marker.DrawableDefaultIcon
 import com.mapconductor.core.marker.ImageIcon
-import com.mapconductor.core.marker.Marker
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.example.MapViewContainer
@@ -238,7 +238,7 @@ fun MarkerBasicMapComponent(
                     ImageIcon(
                         drawable = icon,
                         debug = true,
-                        anchor = Offset(0.5f, 1.0f),
+                        anchor = PointF(0.5f, 1.0f),
                     )
                     """.trimIndent(),
             )

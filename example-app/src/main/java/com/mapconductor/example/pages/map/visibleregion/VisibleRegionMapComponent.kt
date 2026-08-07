@@ -38,19 +38,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.mapconductor.compose.marker.Marker
+import com.mapconductor.core.OnMapLoadedHandler
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.map.MapCameraPositionInterface
 import com.mapconductor.core.map.MapViewStateInterface
-import com.mapconductor.core.map.OnMapLoadedHandler
 import com.mapconductor.core.marker.ColorDefaultIcon
-import com.mapconductor.core.marker.Marker
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.spherical.WGS84Geodesic.computeDistanceBetween
 import com.mapconductor.example.MapViewContainer
@@ -184,7 +183,6 @@ fun VisibleRegionInfoPanel(
     visibleRegionInfo: VisibleRegionInfo?,
 ) {
     val context = LocalContext.current
-    val clipboardManager = LocalClipboard.current
     var isExpanded by rememberSaveable { mutableStateOf(false) }
 
     val copyData =

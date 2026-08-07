@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import com.mapconductor.core.features.GeoPoint
@@ -23,7 +24,7 @@ interface PolygonMapPageViewModelInterface {
 
     val polygonVertexMarkers: List<MarkerState>
     var fillOpacity: Float
-    var strokeWidth: Float
+    var strokeWidth: Dp
     val polygonState: PolygonState
 
     fun onMapViewChanged(state: MapViewStateInterface<*>)
@@ -61,7 +62,7 @@ class PolygonMapPageViewModel :
         )
 
     override var fillOpacity by mutableStateOf(0.3f)
-    override var strokeWidth by mutableStateOf(3.0f)
+    override var strokeWidth by mutableStateOf(3.0.dp)
 
     override val polygonVertexMarkers: List<MarkerState> =
         polygonVertices.mapIndexed { index, point ->
@@ -86,7 +87,7 @@ class PolygonMapPageViewModel :
                 points = polygonVertices,
                 id = "example_polygon",
                 strokeColor = Color.Red,
-                strokeWidth = strokeWidth.dp,
+                strokeWidth = strokeWidth,
                 fillColor = Color.Blue.copy(alpha = fillOpacity),
                 geodesic = false,
             )

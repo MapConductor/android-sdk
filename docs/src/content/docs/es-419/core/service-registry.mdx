@@ -12,9 +12,14 @@ Permite que módulos de funcionalidades (como clustering/estrategias de marcador
 
 ## Cómo funciona (Android)
 
-- Cada `MapView` puede proporcionar un registro con alcance del mapa.
+- El registro pertenece al estado del mapa: `MapViewState.serviceRegistry`.
 - `MapViewBase` lo expone mediante el CompositionLocal `LocalMapServiceRegistry`.
 - Los módulos de funcionalidades resuelven capabilities desde el registro en tiempo de ejecución.
+
+El estado es el propietario en todas las plataformas — `MapViewState.serviceRegistry` en los SDK de
+Android, iOS y React — porque es el único objeto cuyo ciclo de vida coincide con el de la instancia
+del mapa y que pueden nombrar tanto el proveedor como los hosts fuera de Compose (React Native,
+Cordova).
 
 ## MarkerRenderingSupport
 
@@ -28,20 +33,33 @@ Los módulos de proveedor incluidos ya registran `MarkerRenderingSupportKey`, po
 
 ## Integración con un proveedor propio (Android)
 
-Registra `MarkerRenderingSupport` en un `MutableMapServiceRegistry` y pásalo a `MapViewBase`.
+Registra `MarkerRenderingSupport` en `state.serviceRegistry`. `MapViewBase` lo toma del estado: no
+hay parámetro de registro que pasar, y no debes crear uno con
+`remember { MutableMapServiceRegistry() }`.
 
 ```kotlin
-val serviceRegistry =
-  remember {
-    MutableMapServiceRegistry().apply {
-      put(MarkerRenderingSupportKey, myMarkerRenderingSupport)
-    }
-  }
+// Regístralo al crear el controlador, antes de componer el contenido del mapa:
+// MarkerClusterGroup retorna de inmediato si falta la capability, y el registro no es
+// estado de Compose, así que llenarlo después no provoca una recomposición.
+state.serviceRegistry.put(MarkerRenderingSupportKey, myMarkerRenderingSupport)
 
 MapViewBase(
   state = state,
   /* ... */
-  serviceRegistry = serviceRegistry,
 )
 ```
+
+Como el estado sobrevive al composable, retira la capability cuando la vista desaparece.
+`MapViewBase` ya lo hace para `MarkerRenderingSupportKey`:
+
+```kotlin
+DisposableEffect(state) {
+  onDispose { state.serviceRegistry.remove(MarkerRenderingSupportKey) }
+}
+```
+
+Usa `remove()` y no `clear()`, para que sobrevivan las demás capabilities registradas en el mismo mapa.
+
+Los hosts fuera de Compose (React Native, Cordova) no tienen objeto de estado, así que las funciones
+`create*ViewController(serviceRegistry = …)` siguen recibiendo un registro directamente.
 

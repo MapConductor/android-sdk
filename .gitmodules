@@ -28,3 +28,15 @@
 [submodule "android-geojson-layer"]
 	path = android-geojson-layer
 	url = git@github.com:MapConductor/android-geojson-layer.git
+[submodule "android-sdk-compose"]
+	path = android-sdk-compose
+	url = git@github.com:MapConductor/android-sdk-compose.git
+[submodule "android-for-tomtom"]
+	path = android-for-tomtom
+	url = git@github.com:MapConductor/android-for-tomtom.git
+[submodule "android-for-maptiler"]
+	path = android-for-maptiler
+	url = git@github.com:MapConductor/android-for-maptiler.git
+[submodule "android-for-longdo"]
+	path = android-for-longdo
+	url = git@github.com:MapConductor/android-for-longdo.git

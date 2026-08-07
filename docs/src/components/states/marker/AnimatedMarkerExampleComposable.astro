@@ -34,7 +34,7 @@ fun AnimatedMarkerExample() {
         val path = (0 .. 10)
             .map { it * 0.1 }
             .map {
-                Spherical.sphericalInterpolate(
+                Spherical.interpolate(
                     from = startPosition,
                     to = endPosition,
                     fraction = it,

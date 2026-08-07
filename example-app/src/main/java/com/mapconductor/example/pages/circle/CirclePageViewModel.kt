@@ -1,6 +1,5 @@
 package com.mapconductor.example.pages.circle
 
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -10,26 +9,28 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.arcgismaps.mapping.view.Camera
-import com.arcgismaps.mapping.view.Offset
 import com.mapconductor.core.circle.CircleEvent
 import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewStateInterface
 import com.mapconductor.core.marker.DefaultMarkerIcon
 import com.mapconductor.core.marker.MarkerState
+import com.mapconductor.core.polyline.PolylineState
+import com.mapconductor.core.spherical.Planar
 import com.mapconductor.core.spherical.Spherical
 import com.mapconductor.core.spherical.WGS84Geodesic.computeDistanceBetween
-import com.mapconductor.core.spherical.calculatePositionAtDistance
 import com.mapconductor.example.toast.ToastMessage
 import kotlin.math.roundToInt
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.launch
 
 interface CirclePageViewModelInterface {
@@ -38,6 +39,7 @@ interface CirclePageViewModelInterface {
     val messages: StateFlow<List<ToastMessage>>
 
     val labelPosition: StateFlow<IntOffset?>
+    val polylineState: StateFlow<PolylineState?>
 
     val circleCenter: GeoPoint
     val radiusMeters: Double
@@ -60,16 +62,21 @@ interface CirclePageViewModelInterface {
     fun removeToast(toastMessage: ToastMessage)
 }
 
+@OptIn(FlowPreview::class)
 class CirclePageViewModel(
     private val mainScope: CoroutineScope = CoroutineScope(Dispatchers.Main),
-) :
-    ViewModel(),
+) : ViewModel(),
     CirclePageViewModelInterface {
+    private val markerDragFlow = MutableSharedFlow<GeoPointInterface>()
+
     private val _messages: MutableStateFlow<List<ToastMessage>> = MutableStateFlow(emptyList())
     override val messages: StateFlow<List<ToastMessage>> = _messages.asStateFlow()
 
     private val _labelPosition: MutableStateFlow<IntOffset?> = MutableStateFlow(null)
     override val labelPosition: StateFlow<IntOffset?> = _labelPosition.asStateFlow()
+
+    private val _polylineState: MutableStateFlow<PolylineState?> = MutableStateFlow(null)
+    override val polylineState: StateFlow<PolylineState?> = _polylineState.asStateFlow()
 
     private val colors: List<Color> =
         listOf(
@@ -91,7 +98,7 @@ class CirclePageViewModel(
                     latitude = 21.382314,
                     longitude = -157.933097,
                 ),
-            zoom = 12.0,
+            zoom = 3.0,
             bearing = 0.0,
             tilt = 0.0,
             paddings = null,
@@ -112,43 +119,73 @@ class CirclePageViewModel(
             draggable = false,
         )
 
-    override val edgeMarker: MarkerState = MarkerState(
-        id = "edge_marker",
-        position =
-            calculatePositionAtDistance(
-                center = circleCenter,
-                distanceMeters = 1000.0,
-                bearingDegrees = 90.0, // East
-            ),
-        icon =
-            DefaultMarkerIcon(
-                fillColor = Color.Green,
-                strokeColor = Color.White,
-                label = "E",
-            ),
-        draggable = true,
-        onDragStart = this::onMarkerMove,
-        onDrag = this::onMarkerMove,
-        onDragEnd = this::onMarkerMove,
-    )
+    override val edgeMarker: MarkerState =
+        MarkerState(
+            id = "edge_marker",
+            position =
+                Spherical.computeOffset(
+                    origin = circleCenter,
+                    distance = 5000000.0,
+                    heading = 90.0, // East
+                ),
+            icon =
+                DefaultMarkerIcon(
+                    fillColor = Color.Green,
+                    strokeColor = Color.White,
+                    label = "E",
+                ),
+            draggable = true,
+            onDragStart = this::onMarkerMove,
+            onDrag = this::onMarkerMove,
+            onDragEnd = this::onMarkerMove,
+        )
 
     override val radiusMeters by derivedStateOf {
         computeDistanceBetween(circleCenter, edgeMarker.position)
     }
 
-    private fun calculateLabelPosition() {
+    init {
+        updatePolylineState()
+        viewModelScope.launch {
+            markerDragFlow
+                .sample(50)
+                .collect {
+                    edgeMarker.position = it
+                    updateLabelPosition()
+                    updatePolylineState()
+                }
+        }
+    }
+
+    private fun updatePolylineState() {
+        viewModelScope.launch {
+            _polylineState.emit(
+                PolylineState(
+                    points = listOf(centerMarker.position, edgeMarker.position),
+                    id = "circle-radius-line",
+                    geodesic = true,
+                    strokeColor = Color.White,
+                    strokeWidth = 3.dp,
+                ),
+            )
+        }
+    }
+
+    private fun updateLabelPosition() {
         mainScope.launch {
             mapViewState.value?.getMapViewHolder()?.let { holder ->
-                val midPoint = Spherical.linearInterpolate(
-                    from = centerMarker.position,
-                    to = edgeMarker.position,
-                    fraction = 0.5,
-                )
-                holder.toScreenOffset(midPoint)?.let {
-                    _labelPosition.value = IntOffset(
-                        x = it.x.roundToInt(),
-                        y = it.y.roundToInt(),
+                val midPoint =
+                    Planar.interpolate(
+                        from = centerMarker.position,
+                        to = edgeMarker.position,
+                        fraction = 0.5,
                     )
+                holder.toScreenOffset(midPoint)?.let {
+                    _labelPosition.value =
+                        IntOffset(
+                            x = it.x.roundToInt(),
+                            y = it.y.roundToInt(),
+                        )
                 }
             }
         }
@@ -159,6 +196,7 @@ class CirclePageViewModel(
             CircleState(
                 id = "circle",
                 center = circleCenter,
+                geodesic = true,
                 radiusMeters = radiusMeters,
                 strokeColor = Color.Blue.copy(alpha = 0.5f),
                 strokeWidth = strokeWidth.dp,
@@ -177,7 +215,7 @@ class CirclePageViewModel(
     }
 
     override fun onMapCameraMove(cameraPosition: MapCameraPosition) {
-        this.calculateLabelPosition()
+        this.updateLabelPosition()
     }
 
     override fun onCircleClick(event: CircleEvent) {
@@ -186,8 +224,9 @@ class CirclePageViewModel(
     }
 
     override fun onMarkerMove(dragged: MarkerState) {
-        edgeMarker.position = dragged.position
-        this.calculateLabelPosition()
+        viewModelScope.launch {
+            markerDragFlow.emit(dragged.position)
+        }
     }
 
     override fun showToast(text: String) {

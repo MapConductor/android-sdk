@@ -26,8 +26,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import com.mapconductor.compose.info.InfoBubble
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.info.InfoBubble
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewStateInterface
 import com.mapconductor.example.MapViewContainer
@@ -37,9 +37,7 @@ import com.mapconductor.example.ui.MessageCard
 import com.mapconductor.geojson.GeoJSONFeature
 import com.mapconductor.geojson.GeoJSONLayer
 import com.mapconductor.geojson.GeoJSONLayerState
-import com.mapconductor.geojson.GeoJSONParser
 import com.mapconductor.utils.LoadingDialog
-import java.util.zip.ZipInputStream
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -90,8 +88,12 @@ private fun GeoJSONLayerMapComponent(mapViewState: MapViewStateInterface<*>?) {
     val layerState =
         remember {
             GeoJSONLayerState(
+                // Fallback style properties
                 strokeColor = android.graphics.Color.argb(127, 250, 36, 29),
-                strokeWidth = 6f,
+                strokeWidth = 3f,
+                pointRadius = 6f,
+                onLoadStart = { isDataLoading = true },
+                onLoadComplete = { _ -> isDataLoading = false },
                 onClick = { feature, position ->
                     selectedFeature = feature
                     tappedPosition = GeoPoint.from(position)
@@ -100,16 +102,19 @@ private fun GeoJSONLayerMapComponent(mapViewState: MapViewStateInterface<*>?) {
         }
 
     LaunchedEffect(Unit) {
-        isDataLoading = true
         try {
-            features =
+            layerState.onLoadStart?.invoke()
+            // Try to create ExampleGeoJSONLayerLoader for the N02-22_RailroadSection.style.json
+            val data =
                 withContext(Dispatchers.IO) {
-                    context.assets.open(GEOJSON_ASSET).use { input ->
-                        ZipInputStream(input).use(::parseFirstGeoJSONEntry)
-                    }
+                    ExampleGeoJSONLayerLoader(context.assets).load(GEOJSON_ASSET)
                 }
+            layerState.styleProvider = data.styleProvider
+            features = data.features
+            layerState.onLoadComplete?.invoke(null)
+        } catch (e: Throwable) {
+            layerState.onLoadComplete?.invoke(e)
         } finally {
-            isDataLoading = false
         }
     }
 
@@ -117,7 +122,7 @@ private fun GeoJSONLayerMapComponent(mapViewState: MapViewStateInterface<*>?) {
         MapViewContainer(
             state = state,
             onMapClick = { clicked ->
-                if (!layerState.processClick(clicked)) {
+                if (!layerState.processClick(clicked, pixelTolerance = 10.0, zoom = state.cameraPosition.zoom)) {
                     tappedPosition = null
                     selectedFeature = null
                 }
@@ -140,16 +145,6 @@ private fun GeoJSONLayerMapComponent(mapViewState: MapViewStateInterface<*>?) {
             title = "Loading GeoJSON",
             message = "Parsing $GEOJSON_ASSET...",
         )
-    }
-}
-
-private fun parseFirstGeoJSONEntry(zipInputStream: ZipInputStream): List<GeoJSONFeature> {
-    while (true) {
-        val entry = zipInputStream.nextEntry ?: return emptyList()
-        if (!entry.isDirectory && entry.name.endsWith(".geojson", ignoreCase = true)) {
-            return GeoJSONParser.parseStream(zipInputStream)
-        }
-        zipInputStream.closeEntry()
     }
 }
 

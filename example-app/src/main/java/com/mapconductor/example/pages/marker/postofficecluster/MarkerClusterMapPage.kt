@@ -1,15 +1,21 @@
 package com.mapconductor.example.pages.marker.postofficecluster
 
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.Canvas
-import android.graphics.Paint
-import android.graphics.Rect
-import android.graphics.drawable.BitmapDrawable
 import androidx.collection.LruCache
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -18,28 +24,26 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.dp
+import androidx.core.graphics.drawable.toDrawable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.mapconductor.arcgis.ArcGISActualMarker
-import com.mapconductor.arcgis.map.ArcGISMapViewStateInterface
 import com.mapconductor.core.marker.ColorDefaultIcon
 import com.mapconductor.core.marker.ImageIcon
 import com.mapconductor.core.marker.MarkerIconInterface
 import com.mapconductor.example.ui.DefaultMapViewItems
 import com.mapconductor.example.ui.DemoMapPageScaffold
-import com.mapconductor.googlemaps.GoogleMapActualMarker
-import com.mapconductor.googlemaps.GoogleMapViewStateInterface
-import com.mapconductor.here.HereActualMarker
-import com.mapconductor.here.HereViewStateInterface
-import com.mapconductor.mapbox.MapboxActualMarker
-import com.mapconductor.mapbox.MapboxViewStateInterface
-import com.mapconductor.maplibre.MapLibreActualMarker
-import com.mapconductor.maplibre.MapLibreViewStateInterface
+import com.mapconductor.example.ui.MessageCard
 import com.mapconductor.marker.clustering.MarkerClusterGroupState
 import com.mapconductor.postoffice.PostOfficeDataLoader
 import com.mapconductor.utils.LoadingDialog
-import androidx.core.graphics.drawable.toDrawable
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.Rect
 
 @Composable
 fun MarkerClusterMapPage(
@@ -48,65 +52,24 @@ fun MarkerClusterMapPage(
 ) {
     val context = LocalContext.current
     val dataLoader = remember { PostOfficeDataLoader(context) }
-    val clusterIconProvider: (Int) -> MarkerIconInterface = remember(context) {
-        val bitmap = runCatching {
-            context.assets.open("cluster_red.png").use { BitmapFactory.decodeStream(it) }
-        }.getOrNull()
-        val cache = ClusterIconLruCache(maxSize = 128)
-        val provider: (Int) -> MarkerIconInterface = { count ->
-            bitmap?.let { image ->
-                cache.getOrCreate(clusterCountLabel(count)) { label ->
-                    ImageIcon(
-                        image = drawClusterIcon(background = image, label = label).toDrawable(context.resources),
-                        anchor = Offset(0.5f, 0.5f),
-                    )
-                }
-            } ?: ColorDefaultIcon(label = clusterCountLabel(count))
-        }
-        provider
-    }
-    val googleClusterState =
-        remember {
-            MarkerClusterGroupState<GoogleMapActualMarker>(
-                clusterIconProvider = clusterIconProvider,
-                enableZoomAnimation = true,
-                enablePanAnimation = true,
-            )
-        }
-    val mapboxClusterState =
-        remember {
-            MarkerClusterGroupState<MapboxActualMarker>(
-                clusterIconProvider = clusterIconProvider,
-                enableZoomAnimation = true,
-                enablePanAnimation = true,
-            )
-        }
-    val hereClusterState =
-        remember {
-            MarkerClusterGroupState<HereActualMarker>(
-                clusterIconProvider = clusterIconProvider,
-                enableZoomAnimation = true,
-                enablePanAnimation = true,
-                debugHullPolygons = false,
-            )
-        }
-    val arcgisClusterState =
-        remember {
-            MarkerClusterGroupState<ArcGISActualMarker>(
-                clusterIconProvider = clusterIconProvider,
-                enableZoomAnimation = true,
-                enablePanAnimation = true,
-                debugHullPolygons = true,
-            )
-        }
-    val maplibreClusterState =
-        remember {
-            MarkerClusterGroupState<MapLibreActualMarker>(
-                clusterIconProvider = clusterIconProvider,
-                enableZoomAnimation = true,
-                enablePanAnimation = true,
-                debugHullPolygons = false,
-            )
+    val clusterIconProvider: (Int) -> MarkerIconInterface =
+        remember(context) {
+            val bitmap =
+                runCatching {
+                    context.assets.open("cluster_red.png").use { BitmapFactory.decodeStream(it) }
+                }.getOrNull()
+            val cache = ClusterIconLruCache(maxSize = 128)
+            val provider: (Int) -> MarkerIconInterface = { count ->
+                bitmap?.let { image ->
+                    cache.getOrCreate(clusterCountLabel(count)) { label ->
+                        ImageIcon(
+                            image = drawClusterIcon(background = image, label = label).toDrawable(context.resources),
+                            anchor = Offset(0.5f, 0.5f),
+                        )
+                    }
+                } ?: ColorDefaultIcon(label = clusterCountLabel(count))
+            }
+            provider
         }
 
     val viewModel: MarkerClusterMapPageViewModelInterface =
@@ -126,6 +89,30 @@ fun MarkerClusterMapPage(
                 },
         )
 
+    // Read in composition (not only inside remember/SideEffect) so this scope stays
+    // subscribed to the toggle and the SideEffect below re-runs on every change.
+    val debugHullPolygons = viewModel.debugHullPolygons
+    val clusterState =
+        remember(clusterIconProvider) {
+            MarkerClusterGroupState(
+                clusterIconProvider = clusterIconProvider,
+                enableZoomAnimation = true,
+                enablePanAnimation = true,
+                debugHullPolygons = debugHullPolygons,
+//                spiderfyMinZoom = 18.0,
+                minClusterSize = 3,
+                clusterRadiusPx = 80.0,
+//                prepareExpand = { appearing ->
+//                    Log.d("cluster", "prepareExpand: ${appearing.size} markers appearing")
+//                },
+                // クラスターをクリックしたら重心へズームインする（React と同じ）。
+                onClusterClick = viewModel::onClusterClicked,
+            )
+        }
+    SideEffect {
+        clusterState.debugHullPolygons = debugHullPolygons
+    }
+
     // Show loading dialog while map or data is loading; start data load once
     Box(
         modifier = Modifier.fillMaxSize(),
@@ -141,59 +128,59 @@ fun MarkerClusterMapPage(
             menuItems = DefaultMapViewItems(viewModel.initCameraPosition),
             onToggleSidebar = onToggleSidebar,
             onMapViewStateChanged = viewModel::onMapViewChanged,
-        ) {
+        ) { paddingValues ->
             mapViewState?.let { mapViewState ->
-                when (mapViewState) {
-                    is GoogleMapViewStateInterface ->
-                        MarkerClusterMapComponent<GoogleMapActualMarker>(
-                            mapViewState = mapViewState,
-                            selectedMarker = selectedMarker,
-                            markers = markers,
-                            onMapLoaded = viewModel::onMapLoaded,
-                            onMapClick = viewModel::onMapClick,
-                            onInfoWndClick = viewModel::onInfoClick,
-                            clusterGroupState = googleClusterState,
-                        )
-                    is MapboxViewStateInterface ->
-                        MarkerClusterMapComponent<MapboxActualMarker>(
-                            mapViewState = mapViewState,
-                            selectedMarker = selectedMarker,
-                            markers = markers,
-                            onMapLoaded = viewModel::onMapLoaded,
-                            onMapClick = viewModel::onMapClick,
-                            onInfoWndClick = viewModel::onInfoClick,
-                            clusterGroupState = mapboxClusterState,
-                        )
-                    is HereViewStateInterface ->
-                        MarkerClusterMapComponent<HereActualMarker>(
-                            mapViewState = mapViewState,
-                            selectedMarker = selectedMarker,
-                            markers = markers,
-                            onMapLoaded = viewModel::onMapLoaded,
-                            onMapClick = viewModel::onMapClick,
-                            onInfoWndClick = viewModel::onInfoClick,
-                            clusterGroupState = hereClusterState,
-                        )
-                    is ArcGISMapViewStateInterface ->
-                        MarkerClusterMapComponent<ArcGISActualMarker>(
-                            mapViewState = mapViewState,
-                            selectedMarker = selectedMarker,
-                            markers = markers,
-                            onMapLoaded = viewModel::onMapLoaded,
-                            onMapClick = viewModel::onMapClick,
-                            onInfoWndClick = viewModel::onInfoClick,
-                            clusterGroupState = arcgisClusterState,
-                        )
-                    is MapLibreViewStateInterface ->
-                        MarkerClusterMapComponent<MapLibreActualMarker>(
-                            mapViewState = mapViewState,
-                            selectedMarker = selectedMarker,
-                            markers = markers,
-                            onMapLoaded = viewModel::onMapLoaded,
-                            onMapClick = viewModel::onMapClick,
-                            onInfoWndClick = viewModel::onInfoClick,
-                            clusterGroupState = maplibreClusterState,
-                        )
+                MarkerClusterMapComponent(
+                    mapViewState = mapViewState,
+                    selectedMarker = selectedMarker,
+                    markers = markers,
+                    onMapLoaded = viewModel::onMapLoaded,
+                    onMapClick = viewModel::onMapClick,
+                    onInfoWndClick = viewModel::onInfoClick,
+                    clusterGroupState = clusterState,
+                )
+            }
+
+            MessageCard(
+                modifier =
+                    Modifier
+                        .align(Alignment.BottomStart)
+                        .padding(
+                            bottom = paddingValues.calculateBottomPadding() + 16.dp,
+                            start = paddingValues.calculateStartPadding(LayoutDirection.Ltr) + 16.dp,
+                            end = paddingValues.calculateEndPadding(LayoutDirection.Ltr) + 16.dp,
+                        ),
+                title = "Controls",
+                maxHeight = 200.dp,
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Switch(
+                        checked = viewModel.debugHullPolygons,
+                        onCheckedChange = { checked ->
+                            viewModel.debugHullPolygons = checked
+                        },
+                        thumbContent =
+                            if (viewModel.debugHullPolygons) {
+                                {
+                                    Icon(
+                                        imageVector = Icons.Filled.Check,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(SwitchDefaults.IconSize),
+                                    )
+                                }
+                            } else {
+                                null
+                            },
+                    )
+                    Text(
+                        text = "debug",
+                        modifier =
+                            Modifier
+                                .align(Alignment.CenterVertically)
+                                .padding(16.dp),
+                    )
                 }
             }
         }

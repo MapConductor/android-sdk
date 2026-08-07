@@ -21,7 +21,7 @@ import com.mapconductor.example.pages.infobubble.MultipleBubblesPage
 import com.mapconductor.example.pages.infobubble.RichContentBubblePage
 import com.mapconductor.example.pages.infobubble.SimpleTextBubblePage
 import com.mapconductor.example.pages.infobubble.StyledInfoBubblePage
-import com.mapconductor.example.pages.map.arcgis2d.ArcGISMapView2DPage
+import com.mapconductor.example.pages.kml.KMLMapPage
 import com.mapconductor.example.pages.map.basic.StoreMapPage
 import com.mapconductor.example.pages.map.camerasync.CameraSyncPage
 import com.mapconductor.example.pages.map.design.MapDesignMapPage
@@ -29,6 +29,7 @@ import com.mapconductor.example.pages.map.fitbounds.FitBoundsMapPage
 import com.mapconductor.example.pages.map.flyto.FlyToMapIcons
 import com.mapconductor.example.pages.map.flyto.FlyToMapPage
 import com.mapconductor.example.pages.map.tilt.TiltMapPage
+import com.mapconductor.example.pages.map.uisettings.UISettingsMapPage
 import com.mapconductor.example.pages.map.visibleregion.VisibleRegionPage
 import com.mapconductor.example.pages.marker.animation.AnimationMapPage
 import com.mapconductor.example.pages.marker.icons.MarkerBasicPage
@@ -40,10 +41,12 @@ import com.mapconductor.example.pages.polygon.geodesic.PolygonGeodesicPage
 import com.mapconductor.example.pages.polygon.hole.HolePolygonMapPage
 import com.mapconductor.example.pages.polyline.PolylineClickMapPage
 import com.mapconductor.example.pages.polyline.PolylineMapPage
+import com.mapconductor.example.pages.rasterlayer.RasterHeaderProbePage
 import com.mapconductor.example.pages.rasterlayer.RasterLayerMapPage
 import com.mapconductor.example.pages.startup.StartUpPage
 import com.mapconductor.example.ui.sidebar.Sidebar
 import com.mapconductor.example.ui.sidebar.SidebarItem
+import com.mapconductor.example.ui.sidebar.SidebarSection
 import com.mapconductor.example.ui.theme.AppTheme
 
 @Composable
@@ -80,119 +83,87 @@ fun DemoAppScreen(initPage: String = "map") {
             )
         }
 
-    val sidebarItems =
+    val sidebarSections =
         listOf(
-            SidebarItem(
-                id = "map-basic",
+            SidebarSection(
                 title = "Map",
+                items =
+                    listOf(
+                        SidebarItem(id = "map-basic", title = "Map"),
+                        SidebarItem(id = "tilt-map", title = "Tilt Map"),
+                        SidebarItem(id = "ui-settings", title = "UI Settings"),
+                        SidebarItem(id = "map-flyTo", title = "Move Camera"),
+                        SidebarItem(id = "map-fitBounds", title = "Fit Bounds"),
+                        SidebarItem(id = "map-design", title = "Map Design"),
+                        SidebarItem(id = "map-visibleregion", title = "Visible Region"),
+                        SidebarItem(id = "map-camerasync", title = "Camera Sync"),
+                    ),
             ),
-            SidebarItem(
-                id = "tilt-map",
-                title = "Tilt Map",
+            SidebarSection(
+                title = "Info Bubble",
+                items =
+                    listOf(
+                        SidebarItem(id = "simple-info-bubble", title = "Simple Text Bubble"),
+                        SidebarItem(id = "styled-info-bubble", title = "Custom Styled Bubble"),
+                        SidebarItem(id = "rich-content-info-bubble", title = "Rich Content Bubble"),
+                        SidebarItem(id = "multiple-info-bubbles", title = "Multiple Bubbles"),
+                    ),
             ),
-            SidebarItem(
-                id = "arcgis-map-2d",
-                title = "ArcGIS Map 2D",
-            ),
-            SidebarItem(
-                id = "simple-info-bubble",
-                title = "Simple Text Bubble",
-            ),
-            SidebarItem(
-                id = "styled-info-bubble",
-                title = "Custom Styled Bubble",
-            ),
-            SidebarItem(
-                id = "rich-content-info-bubble",
-                title = "Rich Content Bubble",
-            ),
-            SidebarItem(
-                id = "multiple-info-bubbles",
-                title = "Multiple Bubbles",
-            ),
-            SidebarItem(
-                id = "map-flyTo",
-                title = "Move camera",
-            ),
-            SidebarItem(
-                id = "map-fitBounds",
-                title = "Fit Bounds",
-            ),
-            SidebarItem(
-                id = "map-design",
-                title = "Map design",
-            ),
-            SidebarItem(
-                id = "map-visibleregion",
-                title = "VisibleRegion",
-            ),
-            SidebarItem(
-                id = "map-camerasync",
-                title = "Camera Sync",
-            ),
-            SidebarItem(
-                id = "marker-basic",
+            SidebarSection(
                 title = "Marker",
+                items =
+                    listOf(
+                        SidebarItem(id = "marker-basic", title = "Marker"),
+                        SidebarItem(id = "marker-animation", title = "Marker Animation"),
+                        SidebarItem(id = "marker-postoffice", title = "Bunch of Markers"),
+                        SidebarItem(id = "marker-postoffice-cluster", title = "Marker Clustering"),
+                    ),
             ),
-            SidebarItem(
-                id = "marker-animation",
-                title = "Marker animation ",
+            SidebarSection(
+                title = "Circle",
+                items = listOf(SidebarItem(id = "circle", title = "Circle")),
             ),
-            SidebarItem(
-                id = "marker-postoffice",
-                title = "Bunch of Markers",
+            SidebarSection(
+                title = "Ground Image",
+                items = listOf(SidebarItem(id = "groundImage", title = "Ground Image")),
             ),
-            SidebarItem(
-                id = "marker-postoffice-cluster",
-                title = "Marker Clustering",
+            SidebarSection(
+                title = "Polyline",
+                items =
+                    listOf(
+                        SidebarItem(id = "polyline", title = "Polyline"),
+                        SidebarItem(id = "polyline-click", title = "Polyline Click"),
+                    ),
             ),
-            SidebarItem(
-                id = "circle",
-                title = "Circle ",
+            SidebarSection(
+                title = "Polygon",
+                items =
+                    listOf(
+                        SidebarItem(id = "polygon", title = "Polygon"),
+                        SidebarItem(id = "polygon-click", title = "Polygon Click"),
+                        SidebarItem(id = "polygon-geodesic", title = "Geodesic Polygons"),
+                        SidebarItem(id = "polygon-hole", title = "Hole Polygon"),
+                    ),
             ),
-            SidebarItem(
-                id = "groundImage",
-                title = "GroundImage",
-            ),
-            SidebarItem(
-                id = "polyline",
-                title = "Polyline ",
-            ),
-            SidebarItem(
-                id = "polyline-click",
-                title = "Polyline Click",
-            ),
-            SidebarItem(
-                id = "polygon",
-                title = "Polygon ",
-            ),
-            SidebarItem(
-                id = "polygon-click",
-                title = "Polygon Click",
-            ),
-            SidebarItem(
-                id = "polygon-geodesic",
-                title = "Geodesic polygons",
-            ),
-            SidebarItem(
-                id = "polygon-hole",
-                title = "Hole polygon",
-            ),
-            SidebarItem(
-                id = "raster-layer",
+            SidebarSection(
                 title = "Raster Layer",
+                items = listOf(SidebarItem(id = "raster-layer", title = "Raster Layer")),
             ),
-            SidebarItem(
-                id = "heatmap-overlay",
-                title = "Heatmap overlay",
+            SidebarSection(
+                title = "Heatmap Layer",
+                items = listOf(SidebarItem(id = "heatmap-overlay", title = "Heatmap Overlay")),
             ),
-            SidebarItem(
-                id = "geojson-basic",
-                title = "Basic GeoJSON",
+            SidebarSection(
+                title = "GeoJSON",
+                items =
+                    listOf(
+                        SidebarItem(id = "geojson-basic", title = "Basic GeoJSON"),
+                        SidebarItem(id = "geojson-layer", title = "GeoJSON Layer"),
+                    ),
             ),
-            SidebarItem(
-                id = "geojson-layer",
-                title = "GeoJSON Layer",
+            SidebarSection(
+                title = "KML",
+                items = listOf(SidebarItem(id = "kml-layer", title = "KML Layer")),
             ),
         )
 
@@ -223,6 +194,11 @@ fun DemoAppScreen(initPage: String = "map") {
                     }
                     "multiple-info-bubbles" -> {
                         MultipleBubblesPage(
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
+                    }
+                    "ui-settings" -> {
+                        UISettingsMapPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
@@ -328,6 +304,12 @@ fun DemoAppScreen(initPage: String = "map") {
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
+                    // 計測専用。サイドバーには出さない（RasterHeaderInstrumentedTest が使う）。
+                    "raster-header" -> {
+                        RasterHeaderProbePage(
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
+                    }
                     "heatmap-overlay" -> {
                         HeatmapLayerPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
@@ -343,13 +325,13 @@ fun DemoAppScreen(initPage: String = "map") {
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
-                    "tilt-map" -> {
-                        TiltMapPage(
+                    "kml-layer" -> {
+                        KMLMapPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
-                    "arcgis-map-2d" -> {
-                        ArcGISMapView2DPage(
+                    "tilt-map" -> {
+                        TiltMapPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
@@ -358,7 +340,7 @@ fun DemoAppScreen(initPage: String = "map") {
 
             // Overlay sidebar
             Sidebar(
-                items = sidebarItems,
+                sections = sidebarSections,
                 selectedItemId = currentPage,
                 onItemClick = { item ->
                     navigationViewModel.navigateTo(item.id)

@@ -24,16 +24,22 @@ git-claude-commit() {
     return $FALSE
   fi
 
-  echo "Generating English commit message using Claude..."
+  echo "Generating English commit message using Codex..."
 
   local prompt="Analyze the following git diff and generate a clear, concise git commit message in English following Conventional Commits format (e.g., feat: add login feature). Output ONLY the final commit message text. Absolutely NO explanations, NO greetings, and NO markdown code blocks."
   local msg
-  msg=$(git diff --cached | claude -p "$prompt")
+  msg=$(git diff --cached | codex exec "$prompt")
 
   if [ -n "$msg" ]; then
     echo -e "\ncommit message:\n$msg\n"
     git commit -m "$msg"
-    git push
+    local branch
+    branch=$(git branch --show-current)
+    if [ -z "$branch" ]; then
+      echo "Error: Failed to detect current branch."
+      return $FALSE
+    fi
+    # git push -u origin "$branch"
   else
     echo "Error: Failed to generate commit message."
     return $FALSE
@@ -118,9 +124,13 @@ ask-to-commit() {
 }
 
 ask-to-commit "${ROOT_DIR}/android-sdk-core"
+ask-to-commit "${ROOT_DIR}/android-sdk-compose"
 ask-to-commit "${ROOT_DIR}/android-for-googlemaps"
 ask-to-commit "${ROOT_DIR}/android-for-arcgis"
 ask-to-commit "${ROOT_DIR}/android-for-here"
+ask-to-commit "${ROOT_DIR}/android-for-tomtom"
+ask-to-commit "${ROOT_DIR}/android-for-maptiler"
+ask-to-commit "${ROOT_DIR}/android-for-longdo"
 ask-to-commit "${ROOT_DIR}/android-for-maplibre"
 ask-to-commit "${ROOT_DIR}/android-for-mapbox"
 ask-to-commit "${ROOT_DIR}/android-heatmap"

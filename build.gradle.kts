@@ -72,6 +72,7 @@ tasks.register("allLintChecks") {
 val publishableModules = listOf(
     "mapconductor-bom",
     "android-sdk-core",
+    "android-sdk-compose",
     "android-icons",
     "android-marker-clustering",
     "android-heatmap",
@@ -80,7 +81,8 @@ val publishableModules = listOf(
     "android-for-googlemaps",
     "android-for-here",
     "android-for-mapbox",
-    "android-for-maplibre"
+    "android-for-maplibre",
+    "android-for-tomtom"
 )
 
 tasks.register("publishAllLocal") {

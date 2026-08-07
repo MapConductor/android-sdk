@@ -20,12 +20,44 @@ secrets {
     defaultPropertiesFileName = "local.defaults.properties"
 }
 
+// The Longdo Map SDK (com.longdo.map:sdk3) bundles its own copy of gson inside the AAR, which
+// collides at dex time with the external gson pulled by Mapbox / MapLibre. Longdo is only wired
+// into the `debug` and `local` build types, so drop the external gson for those variants only
+// (release keeps the external gson because it does not include Longdo). The bundled gson is modern
+// enough (record + sql adapters) to satisfy Mapbox / MapLibre GeoJSON usage.
+configurations.configureEach {
+    val n = name.lowercase()
+    if (n.startsWith("debug") || n.startsWith("local")) {
+        exclude(group = "com.google.code.gson", module = "gson")
+    }
+}
+
+// secrets.properties（無ければ local.defaults.properties）を manifest placeholder として読む。
+// 値は使うだけで、ログにも BuildConfig にも出さない。
+val secretPlaceholders: Map<String, Any> =
+    Properties()
+        .apply {
+            listOf("local.defaults.properties", "secrets.properties").forEach { name ->
+                rootProject
+                    .file(name)
+                    .takeIf { it.exists() }
+                    ?.inputStream()
+                    ?.use { load(it) }
+            }
+        }.entries
+        .associate { it.key.toString() to (it.value as Any) }
+
 android {
     namespace = "com.mapconductor.example"
     compileSdk = project.property("compileSdk").toString().toInt()
 
     defaultConfig {
         applicationId = "com.mapconductor.example"
+
+        // secrets プラグインはアプリ variant にしか placeholder を入れないので、
+        // unitTest の manifest マージが「置換先が無い」で落ちる。ここで
+        // defaultConfig に入れておくと test variant にも継承される。
+        manifestPlaceholders += secretPlaceholders
         minSdk = project.property("minSdk").toString().toInt()
         targetSdk = project.property("targetSdk").toString().toInt()
         ndk {
@@ -38,11 +70,9 @@ android {
         versionCode = 6
         versionName = "1.0.5"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-    }
 
-    composeOptions {
-        kotlinCompilerExtensionVersion =
-            project.property("kotlinCompilerExtensionVersion").toString()
+        // TomTom Orbis SDK 2.x のプロダクトフレーバー次元を解決する（complete=オンライン地図）。
+        missingDimensionStrategy("tomtom-sdk-version", "complete")
     }
 
     buildTypes {
@@ -185,6 +215,7 @@ dependencies {
     releaseImplementation(libs.mapconductor.marker.native.strategy)
     releaseImplementation(libs.mapconductor.marker.clustering)
     releaseImplementation(libs.mapconductor.geojson)
+    releaseImplementation(libs.mapconductor.kml)
 
     debugImplementation(project(":android-sdk-core"))
     debugImplementation(project(":android-icons"))
@@ -193,9 +224,13 @@ dependencies {
     debugImplementation(project(":android-for-mapbox"))
     debugImplementation(project(":android-for-maplibre"))
     debugImplementation(project(":android-for-arcgis"))
+    debugImplementation(project(":android-for-tomtom"))
+    debugImplementation(project(":android-for-maptiler"))
+    debugImplementation(project(":android-for-longdo"))
     debugImplementation(project(":android-marker-clustering"))
     debugImplementation(project(":android-heatmap"))
     debugImplementation(project(":android-geojson-layer"))
+    debugImplementation(project(":android-kml"))
 
     // local build type: uses MavenLocal published artifacts (published by publishAllLocal)
     // Map SDKs must be declared explicitly because published AARs expose them as runtime-only scope
@@ -209,9 +244,16 @@ dependencies {
     "localImplementation"("com.mapconductor:for-mapbox:${localVersion("android-for-mapbox")}")
     "localImplementation"("com.mapconductor:for-arcgis:${localVersion("android-for-arcgis")}")
     "localImplementation"("com.mapconductor:for-maplibre:${localVersion("android-for-maplibre")}")
+    "localImplementation"(libs.tomtom.map.display)
+    "localImplementation"("com.mapconductor:for-tomtom:${localVersion("android-for-tomtom")}")
+    "localImplementation"(libs.maptiler.sdk)
+    "localImplementation"("com.mapconductor:for-maptiler:${localVersion("android-for-maptiler")}")
+    "localImplementation"(libs.longdo.sdk)
+    "localImplementation"("com.mapconductor:for-longdo:${localVersion("android-for-longdo")}")
     "localImplementation"("com.mapconductor:marker-clustering:${localVersion("android-marker-clustering")}")
     "localImplementation"("com.mapconductor:heatmap:${localVersion("android-heatmap")}")
     "localImplementation"("com.mapconductor:geojson:${localVersion("android-geojson-layer")}")
+    "localImplementation"("com.mapconductor:kml:${localVersion("android-kml")}")
 
     implementation(libs.androidx.vectordrawable)
     testImplementation(libs.junit)
@@ -222,6 +264,7 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
+    debugImplementation(platform(libs.androidx.compose.bom))
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 }

@@ -1,8 +1,8 @@
 package com.mapconductor.example.pages.map.design
 
 import androidx.lifecycle.ViewModel
-import com.mapconductor.arcgis.map.ArcGISDesign
-import com.mapconductor.arcgis.map.ArcGISMapViewStateInterface
+import com.mapconductor.arcgis.ArcGISDesign
+import com.mapconductor.arcgis.ArcGISMapViewStateInterface
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapDesignTypeInterface
@@ -11,10 +11,16 @@ import com.mapconductor.googlemaps.GoogleMapDesign
 import com.mapconductor.googlemaps.GoogleMapViewStateInterface
 import com.mapconductor.here.HereMapDesign
 import com.mapconductor.here.HereViewStateInterface
+import com.mapconductor.longdo.LongdoDesign
+import com.mapconductor.longdo.LongdoViewStateInterface
 import com.mapconductor.mapbox.MapboxMapDesign
 import com.mapconductor.mapbox.MapboxViewStateInterface
 import com.mapconductor.maplibre.MapLibreDesign
 import com.mapconductor.maplibre.MapLibreViewStateInterface
+import com.mapconductor.maptiler.MapTilerDesign
+import com.mapconductor.maptiler.MapTilerViewStateInterface
+import com.mapconductor.tomtom.TomTomMapDesign
+import com.mapconductor.tomtom.TomTomMapViewStateInterface
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -73,6 +79,15 @@ class MapDesignPageViewModel :
             is MapLibreViewStateInterface -> {
                 _mapDesignOptions.value = mapLibreDesigns
             }
+            is TomTomMapViewStateInterface -> {
+                _mapDesignOptions.value = tomTomMapDesigns
+            }
+            is MapTilerViewStateInterface -> {
+                _mapDesignOptions.value = mapTilerDesigns
+            }
+            is LongdoViewStateInterface -> {
+                _mapDesignOptions.value = longdoMapDesigns
+            }
         }
     }
 
@@ -119,74 +134,74 @@ class MapDesignPageViewModel :
 
     private val arcGISMapDesigns =
         listOf(
-            MapDesignOption(label = "Streets", design = ArcGISDesign.Companion.Streets),
-            MapDesignOption(label = "Imagery", design = ArcGISDesign.Companion.Imagery),
-            MapDesignOption(label = "ImageryStandard", design = ArcGISDesign.Companion.ImageryStandard),
-            MapDesignOption(label = "ImageryLabels", design = ArcGISDesign.Companion.ImageryLabels),
-            MapDesignOption(label = "LightGray", design = ArcGISDesign.Companion.LightGray),
-            MapDesignOption(label = "LightGrayBase", design = ArcGISDesign.Companion.LightGrayBase),
-            MapDesignOption(label = "LightGrayLabels", design = ArcGISDesign.Companion.LightGrayLabels),
-            MapDesignOption(label = "DarkGray", design = ArcGISDesign.Companion.DarkGray),
-            MapDesignOption(label = "DarkGrayBase", design = ArcGISDesign.Companion.DarkGrayBase),
-            MapDesignOption(label = "DarkGrayLabels", design = ArcGISDesign.Companion.DarkGrayLabels),
-            MapDesignOption(label = "Navigation", design = ArcGISDesign.Companion.Navigation),
-            MapDesignOption(label = "NavigationNight", design = ArcGISDesign.Companion.NavigationNight),
-            MapDesignOption(label = "StreetsNight", design = ArcGISDesign.Companion.StreetsNight),
-            MapDesignOption(label = "StreetsRelief", design = ArcGISDesign.Companion.StreetsRelief),
-            MapDesignOption(label = "Topographic", design = ArcGISDesign.Companion.Topographic),
-            MapDesignOption(label = "Oceans", design = ArcGISDesign.Companion.Oceans),
-            MapDesignOption(label = "OceansBase", design = ArcGISDesign.Companion.OceansBase),
-            MapDesignOption(label = "OceansLabels", design = ArcGISDesign.Companion.OceansLabels),
-            MapDesignOption(label = "Terrain", design = ArcGISDesign.Companion.Terrain),
-            MapDesignOption(label = "TerrainBase", design = ArcGISDesign.Companion.TerrainBase),
-            MapDesignOption(label = "TerrainDetail", design = ArcGISDesign.Companion.TerrainDetail),
-            MapDesignOption(label = "Community", design = ArcGISDesign.Companion.Community),
-            MapDesignOption(label = "ChartedTerritory", design = ArcGISDesign.Companion.ChartedTerritory),
-            MapDesignOption(label = "ColoredPencil", design = ArcGISDesign.Companion.ColoredPencil),
-            MapDesignOption(label = "Nova", design = ArcGISDesign.Companion.Nova),
-            MapDesignOption(label = "ModernAntique", design = ArcGISDesign.Companion.ModernAntique),
-            MapDesignOption(label = "Midcentury", design = ArcGISDesign.Companion.Midcentury),
-            MapDesignOption(label = "Newspaper", design = ArcGISDesign.Companion.Newspaper),
-            MapDesignOption(label = "HillshadeLight", design = ArcGISDesign.Companion.HillshadeLight),
-            MapDesignOption(label = "HillshadeDark", design = ArcGISDesign.Companion.HillshadeDark),
-            MapDesignOption(label = "StreetsReliefBase", design = ArcGISDesign.Companion.StreetsReliefBase),
-            MapDesignOption(label = "TopographicBase", design = ArcGISDesign.Companion.TopographicBase),
-            MapDesignOption(label = "ChartedTerritoryBase", design = ArcGISDesign.Companion.ChartedTerritoryBase),
-            MapDesignOption(label = "ModernAntiqueBase", design = ArcGISDesign.Companion.ModernAntiqueBase),
-            MapDesignOption(label = "HumanGeography", design = ArcGISDesign.Companion.HumanGeography),
-            MapDesignOption(label = "HumanGeographyBase", design = ArcGISDesign.Companion.HumanGeographyBase),
-            MapDesignOption(label = "HumanGeographyDetail", design = ArcGISDesign.Companion.HumanGeographyDetail),
-            MapDesignOption(label = "HumanGeographyLabels", design = ArcGISDesign.Companion.HumanGeographyLabels),
-            MapDesignOption(label = "HumanGeographyDark", design = ArcGISDesign.Companion.HumanGeographyDark),
-            MapDesignOption(label = "HumanGeographyDarkBase", design = ArcGISDesign.Companion.HumanGeographyDarkBase),
+            MapDesignOption(label = "Streets", design = ArcGISDesign.Streets),
+            MapDesignOption(label = "Imagery", design = ArcGISDesign.Imagery),
+            MapDesignOption(label = "ImageryStandard", design = ArcGISDesign.ImageryStandard),
+            MapDesignOption(label = "ImageryLabels", design = ArcGISDesign.ImageryLabels),
+            MapDesignOption(label = "LightGray", design = ArcGISDesign.LightGray),
+            MapDesignOption(label = "LightGrayBase", design = ArcGISDesign.LightGrayBase),
+            MapDesignOption(label = "LightGrayLabels", design = ArcGISDesign.LightGrayLabels),
+            MapDesignOption(label = "DarkGray", design = ArcGISDesign.DarkGray),
+            MapDesignOption(label = "DarkGrayBase", design = ArcGISDesign.DarkGrayBase),
+            MapDesignOption(label = "DarkGrayLabels", design = ArcGISDesign.DarkGrayLabels),
+            MapDesignOption(label = "Navigation", design = ArcGISDesign.Navigation),
+            MapDesignOption(label = "NavigationNight", design = ArcGISDesign.NavigationNight),
+            MapDesignOption(label = "StreetsNight", design = ArcGISDesign.StreetsNight),
+            MapDesignOption(label = "StreetsRelief", design = ArcGISDesign.StreetsRelief),
+            MapDesignOption(label = "Topographic", design = ArcGISDesign.Topographic),
+            MapDesignOption(label = "Oceans", design = ArcGISDesign.Oceans),
+            MapDesignOption(label = "OceansBase", design = ArcGISDesign.OceansBase),
+            MapDesignOption(label = "OceansLabels", design = ArcGISDesign.OceansLabels),
+            MapDesignOption(label = "Terrain", design = ArcGISDesign.Terrain),
+            MapDesignOption(label = "TerrainBase", design = ArcGISDesign.TerrainBase),
+            MapDesignOption(label = "TerrainDetail", design = ArcGISDesign.TerrainDetail),
+            MapDesignOption(label = "Community", design = ArcGISDesign.Community),
+            MapDesignOption(label = "ChartedTerritory", design = ArcGISDesign.ChartedTerritory),
+            MapDesignOption(label = "ColoredPencil", design = ArcGISDesign.ColoredPencil),
+            MapDesignOption(label = "Nova", design = ArcGISDesign.Nova),
+            MapDesignOption(label = "ModernAntique", design = ArcGISDesign.ModernAntique),
+            MapDesignOption(label = "Midcentury", design = ArcGISDesign.Midcentury),
+            MapDesignOption(label = "Newspaper", design = ArcGISDesign.Newspaper),
+            MapDesignOption(label = "HillshadeLight", design = ArcGISDesign.HillshadeLight),
+            MapDesignOption(label = "HillshadeDark", design = ArcGISDesign.HillshadeDark),
+            MapDesignOption(label = "StreetsReliefBase", design = ArcGISDesign.StreetsReliefBase),
+            MapDesignOption(label = "TopographicBase", design = ArcGISDesign.TopographicBase),
+            MapDesignOption(label = "ChartedTerritoryBase", design = ArcGISDesign.ChartedTerritoryBase),
+            MapDesignOption(label = "ModernAntiqueBase", design = ArcGISDesign.ModernAntiqueBase),
+            MapDesignOption(label = "HumanGeography", design = ArcGISDesign.HumanGeography),
+            MapDesignOption(label = "HumanGeographyBase", design = ArcGISDesign.HumanGeographyBase),
+            MapDesignOption(label = "HumanGeographyDetail", design = ArcGISDesign.HumanGeographyDetail),
+            MapDesignOption(label = "HumanGeographyLabels", design = ArcGISDesign.HumanGeographyLabels),
+            MapDesignOption(label = "HumanGeographyDark", design = ArcGISDesign.HumanGeographyDark),
+            MapDesignOption(label = "HumanGeographyDarkBase", design = ArcGISDesign.HumanGeographyDarkBase),
             MapDesignOption(
                 label = "HumanGeographyDarkDetail",
                 design =
-                    ArcGISDesign.Companion.HumanGeographyDarkDetail,
+                    ArcGISDesign.HumanGeographyDarkDetail,
             ),
             MapDesignOption(
                 label = "HumanGeographyDarkLabels",
                 design =
-                    ArcGISDesign.Companion.HumanGeographyDarkLabels,
+                    ArcGISDesign.HumanGeographyDarkLabels,
             ),
-            MapDesignOption(label = "Outdoor", design = ArcGISDesign.Companion.Outdoor),
-            MapDesignOption(label = "OsmStandard", design = ArcGISDesign.Companion.OsmStandard),
-            MapDesignOption(label = "OsmStandardRelief", design = ArcGISDesign.Companion.OsmStandardRelief),
-            MapDesignOption(label = "OsmStandardReliefBase", design = ArcGISDesign.Companion.OsmStandardReliefBase),
-            MapDesignOption(label = "OsmStreets", design = ArcGISDesign.Companion.OsmStreets),
-            MapDesignOption(label = "OsmStreetsRelief", design = ArcGISDesign.Companion.OsmStreetsRelief),
-            MapDesignOption(label = "OsmLightGray", design = ArcGISDesign.Companion.OsmLightGray),
-            MapDesignOption(label = "OsmLightGrayBase", design = ArcGISDesign.Companion.OsmLightGrayBase),
-            MapDesignOption(label = "OsmLightGrayLabels", design = ArcGISDesign.Companion.OsmLightGrayLabels),
-            MapDesignOption(label = "OsmDarkGray", design = ArcGISDesign.Companion.OsmDarkGray),
-            MapDesignOption(label = "OsmDarkGrayBase", design = ArcGISDesign.Companion.OsmDarkGrayBase),
-            MapDesignOption(label = "OsmDarkGrayLabels", design = ArcGISDesign.Companion.OsmDarkGrayLabels),
-            MapDesignOption(label = "OsmStreetsReliefBase", design = ArcGISDesign.Companion.OsmStreetsReliefBase),
-            MapDesignOption(label = "OsmBlueprint", design = ArcGISDesign.Companion.OsmBlueprint),
-            MapDesignOption(label = "OsmHybrid", design = ArcGISDesign.Companion.OsmHybrid),
-            MapDesignOption(label = "OsmHybridDetail", design = ArcGISDesign.Companion.OsmHybridDetail),
-            MapDesignOption(label = "OsmNavigation", design = ArcGISDesign.Companion.OsmNavigation),
-            MapDesignOption(label = "OsmNavigationDark", design = ArcGISDesign.Companion.OsmNavigationDark),
+            MapDesignOption(label = "Outdoor", design = ArcGISDesign.Outdoor),
+            MapDesignOption(label = "OsmStandard", design = ArcGISDesign.OsmStandard),
+            MapDesignOption(label = "OsmStandardRelief", design = ArcGISDesign.OsmStandardRelief),
+            MapDesignOption(label = "OsmStandardReliefBase", design = ArcGISDesign.OsmStandardReliefBase),
+            MapDesignOption(label = "OsmStreets", design = ArcGISDesign.OsmStreets),
+            MapDesignOption(label = "OsmStreetsRelief", design = ArcGISDesign.OsmStreetsRelief),
+            MapDesignOption(label = "OsmLightGray", design = ArcGISDesign.OsmLightGray),
+            MapDesignOption(label = "OsmLightGrayBase", design = ArcGISDesign.OsmLightGrayBase),
+            MapDesignOption(label = "OsmLightGrayLabels", design = ArcGISDesign.OsmLightGrayLabels),
+            MapDesignOption(label = "OsmDarkGray", design = ArcGISDesign.OsmDarkGray),
+            MapDesignOption(label = "OsmDarkGrayBase", design = ArcGISDesign.OsmDarkGrayBase),
+            MapDesignOption(label = "OsmDarkGrayLabels", design = ArcGISDesign.OsmDarkGrayLabels),
+            MapDesignOption(label = "OsmStreetsReliefBase", design = ArcGISDesign.OsmStreetsReliefBase),
+            MapDesignOption(label = "OsmBlueprint", design = ArcGISDesign.OsmBlueprint),
+            MapDesignOption(label = "OsmHybrid", design = ArcGISDesign.OsmHybrid),
+            MapDesignOption(label = "OsmHybridDetail", design = ArcGISDesign.OsmHybridDetail),
+            MapDesignOption(label = "OsmNavigation", design = ArcGISDesign.OsmNavigation),
+            MapDesignOption(label = "OsmNavigationDark", design = ArcGISDesign.OsmNavigationDark),
         )
 
     private val mapLibreDesigns =
@@ -205,5 +220,49 @@ class MapDesignPageViewModel :
 //                "OSM",
 //                "https://demotiles.maplibre.org/styles/osm-bright-gl-style/style.json",
 //            )),
+        )
+
+    private val tomTomMapDesigns =
+        listOf(
+            MapDesignOption(label = "Standard", design = TomTomMapDesign.Standard),
+            MapDesignOption(label = "Driving", design = TomTomMapDesign.Driving),
+            MapDesignOption(label = "Satellite", design = TomTomMapDesign.Satellite),
+        )
+
+    private val mapTilerDesigns =
+        listOf(
+            MapDesignOption(label = "Streets", design = MapTilerDesign.Streets),
+            MapDesignOption(label = "StreetsDark", design = MapTilerDesign.StreetsDark),
+            MapDesignOption(label = "StreetsLight", design = MapTilerDesign.StreetsLight),
+            MapDesignOption(label = "Basic", design = MapTilerDesign.Basic),
+            MapDesignOption(label = "Bright", design = MapTilerDesign.Bright),
+            MapDesignOption(label = "Satellite", design = MapTilerDesign.Satellite),
+            MapDesignOption(label = "Outdoor", design = MapTilerDesign.Outdoor),
+            MapDesignOption(label = "Winter", design = MapTilerDesign.Winter),
+            MapDesignOption(label = "Topo", design = MapTilerDesign.Topo),
+            MapDesignOption(label = "Toner", design = MapTilerDesign.Toner),
+            MapDesignOption(label = "Dataviz", design = MapTilerDesign.Dataviz),
+            MapDesignOption(label = "Backdrop", design = MapTilerDesign.Backdrop),
+            MapDesignOption(label = "Ocean", design = MapTilerDesign.Ocean),
+            MapDesignOption(label = "Landscape", design = MapTilerDesign.Landscape),
+            MapDesignOption(label = "Aquarelle", design = MapTilerDesign.Aquarelle),
+            MapDesignOption(label = "OpenStreetMap", design = MapTilerDesign.OpenStreetMap),
+        )
+
+    private val longdoMapDesigns =
+        listOf(
+            MapDesignOption(label = "Normal", design = LongdoDesign.Normal),
+            MapDesignOption(label = "Easy", design = LongdoDesign.Easy),
+            MapDesignOption(label = "Pastel", design = LongdoDesign.Pastel),
+            MapDesignOption(label = "PastelGray", design = LongdoDesign.PastelGray),
+            MapDesignOption(label = "Hard", design = LongdoDesign.Hard),
+            MapDesignOption(label = "Gray", design = LongdoDesign.Gray),
+            MapDesignOption(label = "Light", design = LongdoDesign.Light),
+            MapDesignOption(label = "Night", design = LongdoDesign.Night),
+            MapDesignOption(label = "Dark", design = LongdoDesign.Dark),
+            MapDesignOption(label = "Political", design = LongdoDesign.Political),
+            MapDesignOption(label = "Osm", design = LongdoDesign.Osm),
+            MapDesignOption(label = "Satellite", design = LongdoDesign.Satellite),
+            MapDesignOption(label = "Hybrid", design = LongdoDesign.Hybrid),
         )
 }

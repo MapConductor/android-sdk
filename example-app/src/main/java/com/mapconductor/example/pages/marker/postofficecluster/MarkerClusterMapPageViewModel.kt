@@ -1,5 +1,8 @@
 ﻿package com.mapconductor.example.pages.marker.postofficecluster
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mapconductor.core.features.GeoPoint
@@ -8,6 +11,7 @@ import com.mapconductor.core.map.MapViewStateInterface
 import com.mapconductor.core.marker.ImageIcon
 import com.mapconductor.core.marker.MarkerRenderingStrategyInterface
 import com.mapconductor.core.marker.MarkerState
+import com.mapconductor.marker.clustering.MarkerCluster
 import com.mapconductor.postoffice.PostOffice
 import com.mapconductor.postoffice.PostOfficeDataLoader
 import kotlinx.coroutines.Dispatchers
@@ -26,6 +30,7 @@ interface MarkerClusterMapPageViewModelInterface {
     val isDataLoading: StateFlow<Boolean>
 
     val renderingStrategy: StateFlow<MarkerRenderingStrategyInterface<Any>?>
+    var debugHullPolygons: Boolean
 
     fun onMapViewChanged(mapViewState: MapViewStateInterface<*>)
 
@@ -36,6 +41,8 @@ interface MarkerClusterMapPageViewModelInterface {
     fun onMapLoaded(mapViewState: MapViewStateInterface<*>)
 
     fun onInfoClick(postOffice: PostOffice)
+
+    fun onClusterClicked(cluster: MarkerCluster)
 }
 
 class MarkerClusterMapPageViewModel(
@@ -75,6 +82,8 @@ class MarkerClusterMapPageViewModel(
     private val _renderingStrategy: MutableStateFlow<MarkerRenderingStrategyInterface<Any>?> =
         MutableStateFlow(null)
     override val renderingStrategy: StateFlow<MarkerRenderingStrategyInterface<Any>?> = _renderingStrategy.asStateFlow()
+
+    override var debugHullPolygons by mutableStateOf(false)
 
     fun loadPostOfficeData() {
         if (_markerList.value.isNotEmpty()) return
@@ -138,6 +147,24 @@ class MarkerClusterMapPageViewModel(
                     tilt = 30.0,
                 ),
             durationMillis = 2000,
+        )
+    }
+
+    // クラスターをクリックしたら、クラスター内マーカーの重心へズームインする（React と同じロジック）。
+    override fun onClusterClicked(cluster: MarkerCluster) {
+        val byId = _markerList.value.associateBy { it.id }
+        val positions = cluster.markerIds.mapNotNull { byId[it]?.position }
+        if (positions.isEmpty()) return
+        val lat = positions.sumOf { it.latitude } / positions.size
+        val lng = positions.sumOf { it.longitude } / positions.size
+        val currentZoom = _mapViewState.value?.cameraPosition?.zoom ?: 10.0
+        _mapViewState.value?.moveCameraTo(
+            cameraPosition =
+                MapCameraPosition(
+                    position = GeoPoint.fromLatLong(lat, lng),
+                    zoom = minOf(currentZoom + 2.0, 18.0),
+                ),
+            durationMillis = 600,
         )
     }
 

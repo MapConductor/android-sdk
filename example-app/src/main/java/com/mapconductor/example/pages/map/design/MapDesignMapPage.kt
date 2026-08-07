@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuAnchorType.Companion.PrimaryNotEditable
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -21,8 +20,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import com.mapconductor.arcgis.map.ArcGISDesignTypeInterface
-import com.mapconductor.arcgis.map.ArcGISMapViewStateInterface
+import com.mapconductor.arcgis.ArcGISDesignTypeInterface
+import com.mapconductor.arcgis.ArcGISMapViewStateInterface
 import com.mapconductor.core.map.MapViewStateInterface
 import com.mapconductor.example.ui.DefaultMapViewItems
 import com.mapconductor.example.ui.DemoMapPageScaffold
@@ -31,10 +30,16 @@ import com.mapconductor.googlemaps.GoogleMapDesignType
 import com.mapconductor.googlemaps.GoogleMapViewStateInterface
 import com.mapconductor.here.HereMapDesignType
 import com.mapconductor.here.HereViewStateInterface
+import com.mapconductor.longdo.LongdoMapDesignTypeInterface
+import com.mapconductor.longdo.LongdoViewStateInterface
 import com.mapconductor.mapbox.MapboxDesignType
 import com.mapconductor.mapbox.MapboxViewStateInterface
 import com.mapconductor.maplibre.MapLibreDesign
 import com.mapconductor.maplibre.MapLibreViewStateInterface
+import com.mapconductor.maptiler.MapTilerMapDesignTypeInterface
+import com.mapconductor.maptiler.MapTilerViewStateInterface
+import com.mapconductor.tomtom.TomTomMapDesignType
+import com.mapconductor.tomtom.TomTomMapViewStateInterface
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -113,6 +118,16 @@ fun MapDesignTypeSelector(
                 @Suppress("UNCHECKED_CAST")
                 state.mapDesignType = mapDesignOption.design as MapLibreDesign
             }
+            is TomTomMapViewStateInterface -> {
+                @Suppress("UNCHECKED_CAST")
+                state.mapDesignType = mapDesignOption.design as TomTomMapDesignType
+            }
+            is MapTilerViewStateInterface -> {
+                state.mapDesignType = mapDesignOption.design as MapTilerMapDesignTypeInterface
+            }
+            is LongdoViewStateInterface -> {
+                state.mapDesignType = mapDesignOption.design as LongdoMapDesignTypeInterface
+            }
             else -> throw IllegalArgumentException("Not implemented yet")
         }
     }
@@ -123,7 +138,7 @@ fun MapDesignTypeSelector(
             onExpandedChange = { expanded = !expanded },
         ) {
             TextField(
-                modifier = Modifier.menuAnchor(PrimaryNotEditable),
+                modifier = Modifier.menuAnchor(),
                 value = selectedLabel,
                 onValueChange = {},
                 readOnly = true,

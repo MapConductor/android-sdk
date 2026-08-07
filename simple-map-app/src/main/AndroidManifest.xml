@@ -32,6 +32,10 @@
             android:name="MAPBOX_ACCESS_TOKEN"
             android:value="${MAPBOX_ACCESS_TOKEN}" />
 
+        <meta-data
+            android:name="longdo.map.key"
+            android:value="${LONGDO_API_KEY}" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"

@@ -38,15 +38,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import com.mapconductor.compose.polygon.Polygon
+import com.mapconductor.compose.polyline.Polyline
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoRectBounds
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewStateInterface
-import com.mapconductor.core.polygon.Polygon
 import com.mapconductor.core.polygon.PolygonState
-import com.mapconductor.core.polyline.Polyline
 import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.example.MapViewContainer
 import com.mapconductor.example.ui.DefaultMapViewItems
@@ -86,9 +89,15 @@ fun CameraSyncPage(onToggleSidebar: () -> Unit = {}) {
     val leftMenuItems = DefaultMapViewItems(initCameraPosition)
     val rightMenuItems = DefaultMapViewItems(initCameraPosition)
 
-    // Default to Mapbox vs ArcGIS for zoom calibration (Google Maps may be unavailable in some dev setups).
-    var leftSelectedIndex by rememberSaveable { mutableIntStateOf(0) } // Mapbox
-    var rightSelectedIndex by rememberSaveable { mutableIntStateOf(1) } // Here
+    // Default to Google Maps vs Longdo for zoom calibration.
+    // 添字直書きは DefaultMapViewItems の並びが変わるたびに壊れる（実際 arcgis2d を
+    // 挿入したときにずれた）ので、キーで引く。
+    val leftDefaultIndex =
+        remember(leftMenuItems) { leftMenuItems.indexOfFirst { it.key == "google" }.coerceAtLeast(0) }
+    val rightDefaultIndex =
+        remember(rightMenuItems) { rightMenuItems.indexOfFirst { it.key == "longdo" }.coerceAtLeast(0) }
+    var leftSelectedIndex by rememberSaveable { mutableIntStateOf(leftDefaultIndex) }
+    var rightSelectedIndex by rememberSaveable { mutableIntStateOf(rightDefaultIndex) }
 
     @Suppress("UNCHECKED_CAST")
     val leftState = leftMenuItems[leftSelectedIndex].value as MapViewStateInterface<*>
@@ -293,6 +302,7 @@ fun CameraSyncPage(onToggleSidebar: () -> Unit = {}) {
                                 )
                             },
                             mapViewState = leftState,
+                            providerKey = leftMenuItems[leftSelectedIndex].key,
                             label = "Source Camera",
                             cameraPosition = leftCameraPosition,
                             onCameraMove = { position ->
@@ -368,6 +378,7 @@ fun CameraSyncPage(onToggleSidebar: () -> Unit = {}) {
                                 )
                             },
                             mapViewState = rightState,
+                            providerKey = rightMenuItems[rightSelectedIndex].key,
                             label = "Synced Camera",
                             cameraPosition = rightCameraPosition,
                             onCameraMove = { position ->
@@ -436,6 +447,7 @@ fun CameraSyncPage(onToggleSidebar: () -> Unit = {}) {
                                 )
                             },
                             mapViewState = leftState,
+                            providerKey = leftMenuItems[leftSelectedIndex].key,
                             label = "Source Camera",
                             cameraPosition = leftCameraPosition,
                             onCameraMove = { position ->
@@ -510,6 +522,7 @@ fun CameraSyncPage(onToggleSidebar: () -> Unit = {}) {
                                 )
                             },
                             mapViewState = rightState,
+                            providerKey = rightMenuItems[rightSelectedIndex].key,
                             label = "Synced Camera",
                             cameraPosition = rightCameraPosition,
                             onCameraMove = { position ->
@@ -577,6 +590,9 @@ private fun CameraSyncMapPane(
     modifier: Modifier,
     menuContent: (@Composable () -> Unit)? = null,
     mapViewState: MapViewStateInterface<*>,
+    // このペインで選択中のプロバイダキー。ArcGIS は 2D / 3D が同じ状態型なので、
+    // これを渡さないと ArcGIS 2D を選んでも 3D（SceneView）が描かれてしまう。
+    providerKey: String,
     label: String,
     cameraPosition: MapCameraPosition,
     onCameraMoveStart: (() -> Unit)? = null,
@@ -585,11 +601,13 @@ private fun CameraSyncMapPane(
     boundsPolylines: List<PolylineState>,
     referenceRectangles: List<PolygonState>,
 ) {
+    var mapSize by remember { mutableStateOf(IntSize.Zero) }
     Box(modifier = modifier) {
         // Base: Map (full available size). Overlays are drawn on top to maximize map area.
         MapViewContainer(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize().onSizeChanged { mapSize = it },
             state = mapViewState,
+            providerKey = providerKey,
             onCameraMoveStart = { onCameraMoveStart?.invoke() },
             onCameraMove = { pos -> onCameraMove?.invoke(pos) },
             onCameraMoveEnd = onCameraMoveEnd,
@@ -619,6 +637,7 @@ private fun CameraSyncMapPane(
                     .padding(10.dp),
             label = label,
             position = cameraPosition,
+            mapSize = mapSize,
         )
     }
 }
@@ -628,8 +647,12 @@ private fun CameraInfoCard(
     modifier: Modifier,
     label: String,
     position: MapCameraPosition,
+    mapSize: IntSize,
 ) {
     val fmt = remember { Locale.US }
+    val density = LocalDensity.current
+    val widthDp = with(density) { mapSize.width.toDp().value }
+    val heightDp = with(density) { mapSize.height.toDp().value }
     Card(modifier = modifier) {
         Column(modifier = Modifier.padding(10.dp)) {
             Text(
@@ -658,6 +681,10 @@ private fun CameraInfoCard(
             )
             Text(
                 text = "Alt: ${String.format(fmt, "%.0f m", position.position.altitude)}",
+                style = MaterialTheme.typography.bodySmall,
+            )
+            Text(
+                text = "Size: ${String.format(fmt, "%.0f × %.0f dp", widthDp, heightDp)}",
                 style = MaterialTheme.typography.bodySmall,
             )
         }
