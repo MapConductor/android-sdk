@@ -39,7 +39,7 @@ git-claude-commit() {
       echo "Error: Failed to detect current branch."
       return $FALSE
     fi
-    git push -u origin "$branch"
+    # git push -u origin "$branch"
   else
     echo "Error: Failed to generate commit message."
     return $FALSE
