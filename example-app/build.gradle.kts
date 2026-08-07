@@ -32,12 +32,28 @@ configurations.configureEach {
     }
 }
 
+// secrets.properties（無ければ local.defaults.properties）を manifest placeholder として読む。
+// 値は使うだけで、ログにも BuildConfig にも出さない。
+val secretPlaceholders: Map<String, Any> =
+    Properties()
+        .apply {
+            listOf("local.defaults.properties", "secrets.properties").forEach { name ->
+                rootProject.file(name).takeIf { it.exists() }?.inputStream()?.use { load(it) }
+            }
+        }.entries
+        .associate { it.key.toString() to (it.value as Any) }
+
 android {
     namespace = "com.mapconductor.example"
     compileSdk = project.property("compileSdk").toString().toInt()
 
     defaultConfig {
         applicationId = "com.mapconductor.example"
+
+        // secrets プラグインはアプリ variant にしか placeholder を入れないので、
+        // unitTest の manifest マージが「置換先が無い」で落ちる。ここで
+        // defaultConfig に入れておくと test variant にも継承される。
+        manifestPlaceholders += secretPlaceholders
         minSdk = project.property("minSdk").toString().toInt()
         targetSdk = project.property("targetSdk").toString().toInt()
         ndk {
