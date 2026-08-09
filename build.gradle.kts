@@ -54,6 +54,9 @@ val modules: List<String> =
         .map { it.trim() }
         .filter { it.isNotEmpty() }
 
+// 公開 API サーフェスのスナップショット（apiDump / apiCheck）。
+apply(from = "gradle/api-surface.gradle.kts")
+
 tasks.register("allLintChecks") {
     group = "verification"
     description = "Run ktlintFormat and lint for all modules"

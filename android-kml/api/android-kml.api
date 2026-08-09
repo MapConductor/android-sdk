@@ -1,0 +1,463 @@
+public final class com.mapconductor.kml.DefaultKMLStyleProvider implements com.mapconductor.kml.KMLStyleProviderInterface {
+  public static final com.mapconductor.kml.DefaultKMLStyleProvider INSTANCE;
+  public com.mapconductor.kml.KMLTileRenderer$LayerStyle getStyle(com.mapconductor.kml.KMLFeature, com.mapconductor.kml.KMLTileRenderer$LayerStyle);
+}
+public final class com.mapconductor.kml.FastPngEncoder {
+  public static final com.mapconductor.kml.FastPngEncoder INSTANCE;
+  public final byte[] encode(int, int, byte[]);
+}
+public final class com.mapconductor.kml.GeometryHit {
+  public com.mapconductor.kml.GeometryHit(double, double, double);
+  public final double getWx();
+  public final double getWy();
+  public final double getDistanceSq();
+  public final double component1();
+  public final double component2();
+  public final double component3();
+  public final com.mapconductor.kml.GeometryHit copy(double, double, double);
+  public java.lang.String toString();
+  public int hashCode();
+  public boolean equals(java.lang.Object);
+}
+public final class com.mapconductor.kml.KMLDefaults {
+  public static final com.mapconductor.kml.KMLDefaults INSTANCE;
+  public static final float DEFAULT_OPACITY;
+  public static final float DEFAULT_STROKE_WIDTH;
+  public static final float DEFAULT_POINT_RADIUS;
+  public static final int DEFAULT_TILE_SIZE;
+  public static final int DEFAULT_MAX_ZOOM;
+  public final int getDEFAULT_STROKE_COLOR();
+  public final int getDEFAULT_FILL_COLOR();
+}
+public final class com.mapconductor.kml.KMLFeature {
+  public com.mapconductor.kml.KMLFeature(java.lang.String, com.mapconductor.kml.KMLGeometry, java.util.Map<java.lang.String, ? extends java.lang.Object>, java.lang.Integer, java.lang.Integer, java.lang.Float, java.lang.Float, boolean);
+  public com.mapconductor.kml.KMLFeature(java.lang.String, com.mapconductor.kml.KMLGeometry, java.util.Map, java.lang.Integer, java.lang.Integer, java.lang.Float, java.lang.Float, boolean, int, kotlin.jvm.internal.DefaultConstructorMarker);
+  public final java.lang.String getId();
+  public final com.mapconductor.kml.KMLGeometry getGeometry();
+  public final java.util.Map<java.lang.String, java.lang.Object> getProperties();
+  public final java.lang.Integer getStrokeColor();
+  public final java.lang.Integer getFillColor();
+  public final java.lang.Float getStrokeWidth();
+  public final java.lang.Float getPointRadius();
+  public final boolean getVisible();
+  public final java.lang.String component1();
+  public final com.mapconductor.kml.KMLGeometry component2();
+  public final java.util.Map<java.lang.String, java.lang.Object> component3();
+  public final java.lang.Integer component4();
+  public final java.lang.Integer component5();
+  public final java.lang.Float component6();
+  public final java.lang.Float component7();
+  public final boolean component8();
+  public final com.mapconductor.kml.KMLFeature copy(java.lang.String, com.mapconductor.kml.KMLGeometry, java.util.Map<java.lang.String, ? extends java.lang.Object>, java.lang.Integer, java.lang.Integer, java.lang.Float, java.lang.Float, boolean);
+  public java.lang.String toString();
+  public int hashCode();
+  public boolean equals(java.lang.Object);
+}
+public final class com.mapconductor.kml.KMLFeatureComposeKt {
+  public static final androidx.compose.runtime.ProvidableCompositionLocal<com.mapconductor.core.OverlayCollectorInterface<com.mapconductor.kml.KMLFeatureState>> getLocalKMLFeatureCollector();
+  public static final void KMLFeature(com.mapconductor.compose.MapViewScope, com.mapconductor.kml.KMLFeatureState, androidx.compose.runtime.Composer, int);
+  public static final void KMLFeatures(com.mapconductor.compose.MapViewScope, java.util.List<com.mapconductor.kml.KMLFeatureState>, androidx.compose.runtime.Composer, int);
+}
+public final class com.mapconductor.kml.KMLFeatureFingerPrint {
+  public com.mapconductor.kml.KMLFeatureFingerPrint(int, int, int, int, int);
+  public final int getId();
+  public final int getGeometry();
+  public final int getProperties();
+  public final int getStyle();
+  public final int getVisible();
+  public final int component1();
+  public final int component2();
+  public final int component3();
+  public final int component4();
+  public final int component5();
+  public final com.mapconductor.kml.KMLFeatureFingerPrint copy(int, int, int, int, int);
+  public java.lang.String toString();
+  public int hashCode();
+  public boolean equals(java.lang.Object);
+}
+public final class com.mapconductor.kml.KMLFeatureState implements com.mapconductor.core.ComponentState {
+  public static final com.mapconductor.kml.KMLFeatureState$Companion Companion;
+  public com.mapconductor.kml.KMLFeatureState(java.lang.String, com.mapconductor.kml.KMLGeometry, java.util.Map<java.lang.String, ? extends java.lang.Object>, java.lang.Integer, java.lang.Integer, java.lang.Float, java.lang.Float, boolean);
+  public com.mapconductor.kml.KMLFeatureState(java.lang.String, com.mapconductor.kml.KMLGeometry, java.util.Map, java.lang.Integer, java.lang.Integer, java.lang.Float, java.lang.Float, boolean, int, kotlin.jvm.internal.DefaultConstructorMarker);
+  public java.lang.String getId();
+  public final com.mapconductor.kml.KMLGeometry getGeometry();
+  public final void setGeometry(com.mapconductor.kml.KMLGeometry);
+  public final java.util.Map<java.lang.String, java.lang.Object> getProperties();
+  public final void setProperties(java.util.Map<java.lang.String, ? extends java.lang.Object>);
+  public final java.lang.Integer getStrokeColor();
+  public final void setStrokeColor(java.lang.Integer);
+  public final java.lang.Integer getFillColor();
+  public final void setFillColor(java.lang.Integer);
+  public final java.lang.Float getStrokeWidth();
+  public final void setStrokeWidth(java.lang.Float);
+  public final java.lang.Float getPointRadius();
+  public final void setPointRadius(java.lang.Float);
+  public final boolean getVisible();
+  public final void setVisible(boolean);
+  public final com.mapconductor.kml.KMLFeatureFingerPrint fingerPrint();
+  public final kotlinx.coroutines.flow.Flow<com.mapconductor.kml.KMLFeatureFingerPrint> asFlow();
+}
+public final class com.mapconductor.kml.KMLFeatureState$Companion {
+}
+public abstract class com.mapconductor.kml.KMLGeometry {
+  public com.mapconductor.kml.KMLGeometry(kotlin.jvm.internal.DefaultConstructorMarker);
+}
+public final class com.mapconductor.kml.KMLGeometry$Empty extends com.mapconductor.kml.KMLGeometry {
+  public static final com.mapconductor.kml.KMLGeometry$Empty INSTANCE;
+}
+public final class com.mapconductor.kml.KMLGeometry$GeometryCollection extends com.mapconductor.kml.KMLGeometry {
+  public final java.util.List<com.mapconductor.kml.KMLGeometry> getGeometries();
+  public final java.util.List<com.mapconductor.kml.KMLGeometry> component1();
+  public final com.mapconductor.kml.KMLGeometry$GeometryCollection copy(java.util.List<? extends com.mapconductor.kml.KMLGeometry>);
+  public java.lang.String toString();
+  public int hashCode();
+  public boolean equals(java.lang.Object);
+}
+public final class com.mapconductor.kml.KMLGeometry$LineString extends com.mapconductor.kml.KMLGeometry {
+  public final java.util.List<com.mapconductor.kml.LonLat> getCoordinates();
+  public final java.util.List<com.mapconductor.kml.LonLat> component1();
+  public final com.mapconductor.kml.KMLGeometry$LineString copy(java.util.List<com.mapconductor.kml.LonLat>);
+  public java.lang.String toString();
+  public int hashCode();
+  public boolean equals(java.lang.Object);
+}
+public final class com.mapconductor.kml.KMLGeometry$MultiLineString extends com.mapconductor.kml.KMLGeometry {
+  public final java.util.List<java.util.List<com.mapconductor.kml.LonLat>> getLines();
+  public final java.util.List<java.util.List<com.mapconductor.kml.LonLat>> component1();
+  public final com.mapconductor.kml.KMLGeometry$MultiLineString copy(java.util.List<? extends java.util.List<com.mapconductor.kml.LonLat>>);
+  public java.lang.String toString();
+  public int hashCode();
+  public boolean equals(java.lang.Object);
+}
+public final class com.mapconductor.kml.KMLGeometry$MultiPoint extends com.mapconductor.kml.KMLGeometry {
+  public final java.util.List<com.mapconductor.kml.KMLGeometry$Point> getPoints();
+  public final java.util.List<com.mapconductor.kml.KMLGeometry$Point> component1();
+  public final com.mapconductor.kml.KMLGeometry$MultiPoint copy(java.util.List<com.mapconductor.kml.KMLGeometry$Point>);
+  public java.lang.String toString();
+  public int hashCode();
+  public boolean equals(java.lang.Object);
+}
+public final class com.mapconductor.kml.KMLGeometry$MultiPolygon extends com.mapconductor.kml.KMLGeometry {
+  public final java.util.List<java.util.List<java.util.List<com.mapconductor.kml.LonLat>>> getPolygons();
+  public final java.util.List<java.util.List<java.util.List<com.mapconductor.kml.LonLat>>> component1();
+  public final com.mapconductor.kml.KMLGeometry$MultiPolygon copy(java.util.List<? extends java.util.List<? extends java.util.List<com.mapconductor.kml.LonLat>>>);
+  public java.lang.String toString();
+  public int hashCode();
+  public boolean equals(java.lang.Object);
+}
+public final class com.mapconductor.kml.KMLGeometry$Point extends com.mapconductor.kml.KMLGeometry {
+  public final double getLongitude();
+  public final double getLatitude();
+  public final double component1();
+  public final double component2();
+  public final com.mapconductor.kml.KMLGeometry$Point copy(double, double);
+  public java.lang.String toString();
+  public int hashCode();
+  public boolean equals(java.lang.Object);
+}
+public final class com.mapconductor.kml.KMLGeometry$Polygon extends com.mapconductor.kml.KMLGeometry {
+  public final java.util.List<java.util.List<com.mapconductor.kml.LonLat>> getRings();
+  public final java.util.List<java.util.List<com.mapconductor.kml.LonLat>> component1();
+  public final com.mapconductor.kml.KMLGeometry$Polygon copy(java.util.List<? extends java.util.List<com.mapconductor.kml.LonLat>>);
+  public java.lang.String toString();
+  public int hashCode();
+  public boolean equals(java.lang.Object);
+}
+public final class com.mapconductor.kml.KMLGeometryReader {
+  public static final com.mapconductor.kml.KMLGeometryReader INSTANCE;
+  public final com.mapconductor.kml.KMLGeometry readGeometry(org.xmlpull.v1.XmlPullParser, java.lang.String);
+  public final com.mapconductor.kml.KMLGeometry readPolygon(org.xmlpull.v1.XmlPullParser);
+  public final java.util.List<com.mapconductor.kml.LonLat> readBoundary(org.xmlpull.v1.XmlPullParser);
+  public final com.mapconductor.kml.KMLGeometry readMultiGeometry(org.xmlpull.v1.XmlPullParser);
+  public final java.util.List<com.mapconductor.kml.LonLat> readCoordinatesChild(org.xmlpull.v1.XmlPullParser);
+}
+public final class com.mapconductor.kml.KMLHitTester {
+  public static final com.mapconductor.kml.KMLHitTester$Companion Companion;
+  public static final double HIT_LINE_TOLERANCE;
+  public static final double HIT_LINE_TOLERANCE_SQ;
+  public static final double HIT_POINT_TOLERANCE;
+  public static final double HIT_POINT_TOLERANCE_SQ;
+  public com.mapconductor.kml.KMLHitTester();
+  public final com.mapconductor.kml.KMLTileRenderer$KMLHitTestResult hitTest(double, double, java.util.List<com.mapconductor.kml.RenderFeature>, com.mapconductor.kml.KMLSpatialIndex, java.lang.Double, java.lang.Double);
+}
+public final class com.mapconductor.kml.KMLHitTester$Companion {
+}
+public final class com.mapconductor.kml.KMLLayerKt {
+  public static final void KMLLayer(com.mapconductor.compose.MapViewScope, com.mapconductor.kml.KMLLayerState, java.util.List<com.mapconductor.kml.KMLFeature>, int, boolean, kotlin.jvm.functions.Function2<? super androidx.compose.runtime.Composer, ? super java.lang.Integer, kotlin.Unit>, androidx.compose.runtime.Composer, int, int);
+}
+public final class com.mapconductor.kml.KMLLayerState {
+  public com.mapconductor.kml.KMLLayerState(float, int, int, float, float, boolean, int, int, com.mapconductor.kml.KMLStyleProviderInterface, kotlin.jvm.functions.Function0<kotlin.Unit>, kotlin.jvm.functions.Function1<? super java.lang.Throwable, kotlin.Unit>, kotlin.jvm.functions.Function2<? super com.mapconductor.kml.KMLFeature, ? super com.mapconductor.core.features.GeoPoint, kotlin.Unit>);
+  public com.mapconductor.kml.KMLLayerState(float, int, int, float, float, boolean, int, int, com.mapconductor.kml.KMLStyleProviderInterface, kotlin.jvm.functions.Function0, kotlin.jvm.functions.Function1, kotlin.jvm.functions.Function2, int, kotlin.jvm.internal.DefaultConstructorMarker);
+  public final kotlin.jvm.functions.Function0<kotlin.Unit> getOnLoadStart();
+  public final kotlin.jvm.functions.Function1<java.lang.Throwable, kotlin.Unit> getOnLoadComplete();
+  public final kotlin.jvm.functions.Function2<com.mapconductor.kml.KMLFeature, com.mapconductor.core.features.GeoPoint, kotlin.Unit> getOnClick();
+  public final float getOpacity();
+  public final void setOpacity(float);
+  public final int getStrokeColor();
+  public final void setStrokeColor(int);
+  public final int getFillColor();
+  public final void setFillColor(int);
+  public final float getStrokeWidth();
+  public final void setStrokeWidth(float);
+  public final float getPointRadius();
+  public final void setPointRadius(float);
+  public final boolean getVisible();
+  public final void setVisible(boolean);
+  public final int getMinZoom();
+  public final void setMinZoom(int);
+  public final int getMaxZoom();
+  public final void setMaxZoom(int);
+  public final com.mapconductor.kml.KMLStyleProviderInterface getStyleProvider();
+  public final void setStyleProvider(com.mapconductor.kml.KMLStyleProviderInterface);
+  public final boolean processClick(com.mapconductor.core.features.GeoPoint, java.lang.Double, java.lang.Double);
+  public final com.mapconductor.kml.KMLLayerState copy(float, int, int, float, float, boolean, int, int, com.mapconductor.kml.KMLStyleProviderInterface, kotlin.jvm.functions.Function0<kotlin.Unit>, kotlin.jvm.functions.Function1<? super java.lang.Throwable, kotlin.Unit>, kotlin.jvm.functions.Function2<? super com.mapconductor.kml.KMLFeature, ? super com.mapconductor.core.features.GeoPoint, kotlin.Unit>);
+  public com.mapconductor.kml.KMLLayerState();
+}
+public final class com.mapconductor.kml.KMLParser {
+  public static final com.mapconductor.kml.KMLParser INSTANCE;
+  public final java.util.List<com.mapconductor.kml.KMLFeature> parse(java.lang.String);
+  public final java.util.List<com.mapconductor.kml.KMLFeature> parse(java.io.InputStream);
+}
+public final class com.mapconductor.kml.KMLRenderFeatureBuilder {
+  public static final com.mapconductor.kml.KMLRenderFeatureBuilder INSTANCE;
+  public final com.mapconductor.kml.RenderFeature build(com.mapconductor.kml.KMLFeature, com.mapconductor.kml.KMLTileRenderer$LayerStyle, com.mapconductor.kml.KMLStyleProviderInterface);
+  public final com.mapconductor.kml.RenderFeature build(com.mapconductor.kml.KMLFeatureState, com.mapconductor.kml.KMLTileRenderer$LayerStyle, com.mapconductor.kml.KMLStyleProviderInterface);
+}
+public final class com.mapconductor.kml.KMLSpatialIndex {
+  public static final com.mapconductor.kml.KMLSpatialIndex$Companion Companion;
+  public static final int GRID_SIZE;
+  public static final int BUILD_THRESHOLD;
+  public com.mapconductor.kml.KMLSpatialIndex(java.util.List<java.lang.Integer>[], int);
+  public final java.util.List<java.lang.Integer> query(double, double, double, double);
+}
+public final class com.mapconductor.kml.KMLSpatialIndex$Companion {
+  public final com.mapconductor.kml.KMLSpatialIndex build(java.util.List<com.mapconductor.kml.RenderFeature>);
+}
+public final class com.mapconductor.kml.KMLStyle {
+  public com.mapconductor.kml.KMLStyle();
+  public final java.lang.Integer getLineColor();
+  public final void setLineColor(java.lang.Integer);
+  public final java.lang.Float getLineWidth();
+  public final void setLineWidth(java.lang.Float);
+  public final java.lang.Integer getPolyColor();
+  public final void setPolyColor(java.lang.Integer);
+  public final java.lang.Integer getIconColor();
+  public final void setIconColor(java.lang.Integer);
+  public final boolean getFill();
+  public final void setFill(boolean);
+  public final boolean getOutline();
+  public final void setOutline(boolean);
+}
+public interface com.mapconductor.kml.KMLStyleProviderInterface {
+  public abstract com.mapconductor.kml.KMLTileRenderer$LayerStyle getStyle(com.mapconductor.kml.KMLFeature, com.mapconductor.kml.KMLTileRenderer$LayerStyle);
+}
+public final class com.mapconductor.kml.KMLStyleReader {
+  public static final com.mapconductor.kml.KMLStyleReader INSTANCE;
+  public final com.mapconductor.kml.KMLStyle readStyle(org.xmlpull.v1.XmlPullParser);
+  public final java.lang.String readStyleMap(org.xmlpull.v1.XmlPullParser);
+}
+public final class com.mapconductor.kml.KMLTilePainter {
+  public com.mapconductor.kml.KMLTilePainter(int);
+  public final android.graphics.Bitmap beginTile();
+  public final boolean drawFeature(android.graphics.Canvas, com.mapconductor.kml.RenderFeature, int, double, double, double, double, double, double, double);
+  public final byte[] toPng(android.graphics.Bitmap);
+}
+public final class com.mapconductor.kml.KMLTileRenderer implements com.mapconductor.core.tileserver.TileProviderInterface {
+  public static final com.mapconductor.kml.KMLTileRenderer$Companion Companion;
+  public com.mapconductor.kml.KMLTileRenderer(int, int, int);
+  public com.mapconductor.kml.KMLTileRenderer(int, int, int, int, kotlin.jvm.internal.DefaultConstructorMarker);
+  public final int getTileSize();
+  public final void updateDynamic(java.util.List<com.mapconductor.kml.KMLFeatureState>, com.mapconductor.kml.KMLTileRenderer$LayerStyle, com.mapconductor.kml.KMLStyleProviderInterface);
+  public final void updateStatic(java.util.List<com.mapconductor.kml.KMLFeature>, com.mapconductor.kml.KMLTileRenderer$LayerStyle, com.mapconductor.kml.KMLStyleProviderInterface);
+  public final void update(java.util.List<com.mapconductor.kml.KMLFeature>, java.util.List<com.mapconductor.kml.KMLFeatureState>, com.mapconductor.kml.KMLTileRenderer$LayerStyle, com.mapconductor.kml.KMLStyleProviderInterface);
+  public byte[] renderTile(com.mapconductor.core.tileserver.TileRequest);
+  public final com.mapconductor.kml.KMLTileRenderer$KMLHitTestResult hitTest(double, double, java.lang.Double, java.lang.Double);
+  public final com.mapconductor.kml.KMLFeature hitTestFeature(double, double, java.lang.Double, java.lang.Double);
+  public com.mapconductor.kml.KMLTileRenderer();
+}
+public final class com.mapconductor.kml.KMLTileRenderer$Companion {
+}
+public final class com.mapconductor.kml.KMLTileRenderer$KMLHitTestResult {
+  public final com.mapconductor.kml.KMLFeature getFeature();
+  public final com.mapconductor.core.features.GeoPoint getPosition();
+  public final com.mapconductor.kml.KMLFeature component1();
+  public final com.mapconductor.core.features.GeoPoint component2();
+  public final com.mapconductor.kml.KMLTileRenderer$KMLHitTestResult copy(com.mapconductor.kml.KMLFeature, com.mapconductor.core.features.GeoPoint);
+  public java.lang.String toString();
+  public int hashCode();
+  public boolean equals(java.lang.Object);
+}
+public final class com.mapconductor.kml.KMLTileRenderer$LayerStyle {
+  public final int getStrokeColor();
+  public final int getFillColor();
+  public final float getStrokeWidth();
+  public final float getPointRadius();
+  public final int component1();
+  public final int component2();
+  public final float component3();
+  public final float component4();
+  public final com.mapconductor.kml.KMLTileRenderer$LayerStyle copy(int, int, float, float);
+  public java.lang.String toString();
+  public int hashCode();
+  public boolean equals(java.lang.Object);
+}
+final class com.mapconductor.kml.KMLTileRenderer$RenderJob {
+  public final java.lang.String getKey();
+  public final long getEpoch();
+  public final com.mapconductor.core.tileserver.TileRequest getRequest();
+  public final com.mapconductor.kml.KMLTileRenderer$TileState getState();
+  public final java.util.concurrent.CompletableFuture<byte[]> getFuture();
+  public final java.lang.String component1();
+  public final long component2();
+  public final com.mapconductor.core.tileserver.TileRequest component3();
+  public final com.mapconductor.kml.KMLTileRenderer$TileState component4();
+  public final java.util.concurrent.CompletableFuture<byte[]> component5();
+  public final com.mapconductor.kml.KMLTileRenderer$RenderJob copy(java.lang.String, long, com.mapconductor.core.tileserver.TileRequest, com.mapconductor.kml.KMLTileRenderer$TileState, java.util.concurrent.CompletableFuture<byte[]>);
+  public java.lang.String toString();
+  public int hashCode();
+  public boolean equals(java.lang.Object);
+}
+final class com.mapconductor.kml.KMLTileRenderer$TileState {
+  public final java.util.List<com.mapconductor.kml.RenderFeature> getFeatures();
+  public final com.mapconductor.kml.KMLSpatialIndex getIndex();
+  public final java.util.List<com.mapconductor.kml.RenderFeature> component1();
+  public final com.mapconductor.kml.KMLSpatialIndex component2();
+  public final com.mapconductor.kml.KMLTileRenderer$TileState copy(java.util.List<com.mapconductor.kml.RenderFeature>, com.mapconductor.kml.KMLSpatialIndex);
+  public java.lang.String toString();
+  public int hashCode();
+  public boolean equals(java.lang.Object);
+}
+public final class com.mapconductor.kml.KMLWorld {
+  public static final com.mapconductor.kml.KMLWorld INSTANCE;
+  public static final int MAX_SIMPLIFY_ZOOM;
+  public final double lonToWorld(double);
+  public final double worldToLon(double);
+  public final double latToWorld(double);
+  public final double worldToLat(double);
+  public final float toPixel(double, double, double);
+  public final boolean segmentOutside(double, double, double, double, double, double, double, double);
+  public final com.mapconductor.kml.WorldGeometry toWorldGeometry(com.mapconductor.kml.KMLGeometry);
+  public final double[] flatPoints(java.util.List<com.mapconductor.kml.KMLGeometry$Point>);
+  public final double[] flatCoordinates(java.util.List<com.mapconductor.kml.LonLat>);
+  public final com.mapconductor.kml.WorldBounds computeBounds(com.mapconductor.kml.WorldGeometry);
+  public final com.mapconductor.kml.WorldBounds boundsOfCoords(double[]);
+  public final com.mapconductor.kml.WorldBounds boundsOfRings(java.util.List<com.mapconductor.kml.WorldRing>);
+  public final double distanceSq(double, double, double, double);
+  public final double[] simplifyRadial(double[], double);
+}
+public final class com.mapconductor.kml.KMLXmlSupport {
+  public static final com.mapconductor.kml.KMLXmlSupport INSTANCE;
+  public final void forEachChild(org.xmlpull.v1.XmlPullParser, kotlin.jvm.functions.Function1<? super java.lang.String, kotlin.Unit>);
+  public final java.lang.String readText(org.xmlpull.v1.XmlPullParser);
+  public final void skip(org.xmlpull.v1.XmlPullParser);
+  public final kotlin.text.Regex getWHITESPACE();
+  public final java.util.List<com.mapconductor.kml.LonLat> parseCoordinates(java.lang.String);
+  public final java.lang.Integer parseKmlColor(java.lang.String);
+}
+public final class com.mapconductor.kml.LonLat {
+  public com.mapconductor.kml.LonLat(double, double);
+  public final double getLongitude();
+  public final double getLatitude();
+  public final double component1();
+  public final double component2();
+  public final com.mapconductor.kml.LonLat copy(double, double);
+  public java.lang.String toString();
+  public int hashCode();
+  public boolean equals(java.lang.Object);
+}
+public final class com.mapconductor.kml.RawPlacemark {
+  public com.mapconductor.kml.RawPlacemark(com.mapconductor.kml.KMLGeometry, java.lang.String, com.mapconductor.kml.KMLStyle, java.util.Map<java.lang.String, ? extends java.lang.Object>);
+  public final com.mapconductor.kml.KMLGeometry getGeometry();
+  public final java.lang.String getStyleUrl();
+  public final com.mapconductor.kml.KMLStyle getInlineStyle();
+  public final java.util.Map<java.lang.String, java.lang.Object> getProperties();
+  public final com.mapconductor.kml.KMLFeature toFeature(java.util.Map<java.lang.String, com.mapconductor.kml.KMLStyle>, java.util.Map<java.lang.String, java.lang.String>);
+}
+public final class com.mapconductor.kml.RenderFeature {
+  public com.mapconductor.kml.RenderFeature(com.mapconductor.kml.KMLFeature, com.mapconductor.kml.WorldGeometry, com.mapconductor.kml.WorldBounds, android.graphics.Paint, android.graphics.Paint, float);
+  public final com.mapconductor.kml.KMLFeature getSource();
+  public final com.mapconductor.kml.WorldGeometry getWorldGeometry();
+  public final com.mapconductor.kml.WorldBounds getBounds();
+  public final android.graphics.Paint getFillPaint();
+  public final android.graphics.Paint getStrokePaint();
+  public final float getPointRadius();
+  public final com.mapconductor.kml.KMLFeature component1();
+  public final com.mapconductor.kml.WorldGeometry component2();
+  public final com.mapconductor.kml.WorldBounds component3();
+  public final android.graphics.Paint component4();
+  public final android.graphics.Paint component5();
+  public final float component6();
+  public final com.mapconductor.kml.RenderFeature copy(com.mapconductor.kml.KMLFeature, com.mapconductor.kml.WorldGeometry, com.mapconductor.kml.WorldBounds, android.graphics.Paint, android.graphics.Paint, float);
+  public java.lang.String toString();
+  public int hashCode();
+  public boolean equals(java.lang.Object);
+}
+public final class com.mapconductor.kml.WorldBounds {
+  public com.mapconductor.kml.WorldBounds(double, double, double, double);
+  public final double getMinX();
+  public final double getMaxX();
+  public final double getMinY();
+  public final double getMaxY();
+  public final boolean intersects(double, double, double, double);
+  public final double component1();
+  public final double component2();
+  public final double component3();
+  public final double component4();
+  public final com.mapconductor.kml.WorldBounds copy(double, double, double, double);
+  public java.lang.String toString();
+  public int hashCode();
+  public boolean equals(java.lang.Object);
+}
+public abstract class com.mapconductor.kml.WorldGeometry {
+  public com.mapconductor.kml.WorldGeometry(kotlin.jvm.internal.DefaultConstructorMarker);
+}
+public final class com.mapconductor.kml.WorldGeometry$Collection extends com.mapconductor.kml.WorldGeometry {
+  public final java.util.List<com.mapconductor.kml.WorldGeometry> getParts();
+  public final java.util.List<com.mapconductor.kml.WorldGeometry> component1();
+  public final com.mapconductor.kml.WorldGeometry$Collection copy(java.util.List<? extends com.mapconductor.kml.WorldGeometry>);
+  public java.lang.String toString();
+  public int hashCode();
+  public boolean equals(java.lang.Object);
+}
+public final class com.mapconductor.kml.WorldGeometry$Empty extends com.mapconductor.kml.WorldGeometry {
+  public static final com.mapconductor.kml.WorldGeometry$Empty INSTANCE;
+}
+public final class com.mapconductor.kml.WorldGeometry$Line extends com.mapconductor.kml.WorldGeometry {
+  public final java.util.List<com.mapconductor.kml.WorldRing> getRings();
+  public final java.util.List<com.mapconductor.kml.WorldRing> component1();
+  public final com.mapconductor.kml.WorldGeometry$Line copy(java.util.List<com.mapconductor.kml.WorldRing>);
+  public java.lang.String toString();
+  public int hashCode();
+  public boolean equals(java.lang.Object);
+}
+public final class com.mapconductor.kml.WorldGeometry$Point extends com.mapconductor.kml.WorldGeometry {
+  public final double getWx();
+  public final double getWy();
+  public final double component1();
+  public final double component2();
+  public final com.mapconductor.kml.WorldGeometry$Point copy(double, double);
+  public java.lang.String toString();
+  public int hashCode();
+  public boolean equals(java.lang.Object);
+}
+public final class com.mapconductor.kml.WorldGeometry$Points extends com.mapconductor.kml.WorldGeometry {
+  public final double[] getPoints();
+  public final double[] component1();
+  public final com.mapconductor.kml.WorldGeometry$Points copy(double[]);
+  public java.lang.String toString();
+  public int hashCode();
+  public boolean equals(java.lang.Object);
+}
+public final class com.mapconductor.kml.WorldGeometry$Polygon extends com.mapconductor.kml.WorldGeometry {
+  public final java.util.List<com.mapconductor.kml.WorldRing> getRings();
+  public final java.util.List<com.mapconductor.kml.WorldRing> component1();
+  public final com.mapconductor.kml.WorldGeometry$Polygon copy(java.util.List<com.mapconductor.kml.WorldRing>);
+  public java.lang.String toString();
+  public int hashCode();
+  public boolean equals(java.lang.Object);
+}
+public final class com.mapconductor.kml.WorldRing {
+  public com.mapconductor.kml.WorldRing(double[]);
+  public final double[] getCoords();
+  public final double[] coordsForZoom(int, int);
+}
