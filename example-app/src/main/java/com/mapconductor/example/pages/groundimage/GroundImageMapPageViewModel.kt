@@ -47,12 +47,14 @@ class GroundImageMapPageViewModel(
     GroundImageMapPageViewModelInterface {
     override val initCameraPosition =
         MapCameraPosition(
+            // Drone imagery over the University of Eswatini campus. Same content as
+            // react-sdk/examples/basic and the iOS sample.
             position =
                 GeoPoint.fromLatLong(
-                    latitude = 40.7430785,
-                    longitude = -74.175995,
+                    latitude = -26.479235,
+                    longitude = 31.306239,
                 ),
-            zoom = 12.0,
+            zoom = 15.0,
             bearing = 0.0,
             tilt = 0.0,
             paddings = null,
@@ -73,15 +75,15 @@ class GroundImageMapPageViewModel(
 
     private var southWestPosition by mutableStateOf(
         GeoPoint(
-            latitude = 40.712216,
-            longitude = -74.22655,
+            latitude = -26.484901389754125,
+            longitude = 31.2995982170105,
         ),
     )
 
     private var northEastPosition by mutableStateOf(
         GeoPoint(
-            latitude = 40.773941,
-            longitude = -74.12544,
+            latitude = -26.473569450536356,
+            longitude = 31.31288051605225,
         ),
     )
 
@@ -143,7 +145,7 @@ class GroundImageMapPageViewModel(
             )
         }
 
-    override var opacity by mutableStateOf(0.5f)
+    override var opacity by mutableStateOf(1.0f)
 
     override var image by mutableStateOf(imageResources.image)
 
@@ -165,13 +167,7 @@ class GroundImageMapPageViewModel(
             )
 
     override fun onGroundImageClick(clicked: GroundImageEvent) {
-        if (clicked.state.image == imageResources.image) {
-            image = imageResources.clickedImage
-        } else {
-            image = imageResources.image
-        }
-
-        showToast("Ground Image clicked.")
+        showToast("Ground image clicked.")
     }
 
     override fun onMarkerDrag(dragged: MarkerState) {

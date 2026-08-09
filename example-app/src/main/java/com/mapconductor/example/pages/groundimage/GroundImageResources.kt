@@ -4,5 +4,4 @@ import android.graphics.drawable.Drawable
 
 data class GroundImageResources(
     val image: Drawable,
-    val clickedImage: Drawable,
 )

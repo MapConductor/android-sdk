@@ -70,8 +70,7 @@ fun DemoAppScreen(initPage: String = "map") {
     val groundImageResources =
         remember {
             GroundImageResources(
-                image = ContextCompat.getDrawable(context, R.drawable.newark_nj_1922_0)!!,
-                clickedImage = ContextCompat.getDrawable(context, R.drawable.newark_nj_1922_1)!!,
+                image = ContextCompat.getDrawable(context, R.drawable.university_of_eswatini)!!,
             )
         }
     val postOfficeIcon =
