@@ -28,6 +28,21 @@ val excludedClassPatterns =
 // 行頭の空白に続くメンバー宣言のうち、識別子に `$` を含むもの。
 val syntheticMemberPattern = Regex("""^\s+.*[A-Za-z0-9][$][A-Za-z0-9_]+\(""")
 
+// ドライバー実装点であることを示す注釈の JVM 記述子。
+val INTERNAL_API_DESCRIPTOR = "Lcom/mapconductor/core/InternalMapConductorApi;"
+
+/** バイト列の部分一致。定数プールに注釈の記述子が入っているかを見るために使う。 */
+fun ByteArray.indexOfSubList(needle: ByteArray): Int {
+    if (needle.isEmpty() || needle.size > size) return -1
+    outer@ for (i in 0..(size - needle.size)) {
+        for (j in needle.indices) {
+            if (this[i + j] != needle[j]) continue@outer
+        }
+        return i
+    }
+    return -1
+}
+
 fun Project.apiBaselineFile(): File = layout.projectDirectory.file("api/$name.api").asFile
 
 fun Project.releaseAar(): File =
@@ -60,9 +75,23 @@ fun Project.generateApiSurface(): String {
             java.util.zip.ZipFile(classesJar).use { zip ->
                 zip.entries()
                     .toList()
-                    .map { it.name }
-                    .filter { it.endsWith(".class") }
-                    .map { it.removeSuffix(".class").replace('/', '.') }
+                    .filter { it.name.endsWith(".class") }
+                    .filterNot { entry ->
+                        // @InternalMapConductorApi が付いた型は「ドライバー実装点」であって
+                        // アプリ開発者向けの公開 API ではないので、凍結の対象外にする。
+                        // 注釈は BINARY retention なので、適用したクラスの定数プールに
+                        // 記述子が入る。単に注釈付き API を呼ぶだけのクラスには入らない。
+                        //
+                        // 既知の限界: 判定はクラス単位。メンバー単位で注釈を付けても、
+                        // そのクラス全体が対象外になる。
+                        zip.getInputStream(entry).use { input ->
+                            input.readBytes().let { bytes ->
+                                INTERNAL_API_DESCRIPTOR.toByteArray(Charsets.UTF_8).let { needle ->
+                                    bytes.indexOfSubList(needle) >= 0
+                                }
+                            }
+                        }
+                    }.map { it.name.removeSuffix(".class").replace('/', '.') }
                     .filterNot { name -> excludedClassPatterns.any { it.containsMatchIn(name) } }
                     .sorted()
             }
