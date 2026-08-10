@@ -73,6 +73,9 @@ import kotlin.math.cos
 import android.graphics.Bitmap
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 /*
  * オーバーレイのレンダラとコントローラ。**ドライバーが本当に書くのはこのファイル**である。
@@ -136,6 +139,9 @@ class OpenMobileMapsMarkerOverlayRenderer(
      * 順序に関係なく必ず正しい。
      */
     private val baseIconHeight = mutableMapOf<String, Float>()
+
+    /** 落ち着き待ちの引き伸ばし適用。詳細は [onVisualTiltChanged]。 */
+    private var stretchUpdateJob: Job? = null
 
     override fun setMarkerVisible(
         markerEntity: MarkerEntityInterface<OpenMobileMapsActualMarker>,
@@ -219,8 +225,28 @@ class OpenMobileMapsMarkerOverlayRenderer(
      */
     fun onVisualTiltChanged() {
         val stretch = verticalStretch()
-        // 目に見えない差でレイヤを作り直さない。カメラアニメーション中は毎フレーム
-        // 呼ばれるので、ここを外すと 41 個のアイコンを毎フレーム作り直すことになる。
+        if (abs(stretch - appliedStretch) < STRETCH_EPSILON) return
+
+        // ★ すぐには適用しない。**傾きが落ち着いてから 1 回だけ**適用する。
+        //
+        // 傾きスライダを動かしている間、ここは毎フレーム呼ばれる。そのたびに
+        // 全アイコンの大きさを書き換えて invalidate すると、SDK はアイコンレイヤの
+        // インスタンスバッファを組み直し、**組み直しの谷間のフレームでマーカーが
+        // 消えたり位置が飛んだりする**（実機で「スライダー移動中だけマーカーが
+        // チラつき、スライダーに合わせてズレる」という形で報告された）。
+        //
+        // 動かしている最中は補正が半端でも目立たない（cos の差ぶんだけ僅かに
+        // 潰れて見えるだけ）。止まった瞬間に正しい高さへ揃える。
+        stretchUpdateJob?.cancel()
+        stretchUpdateJob =
+            coroutine.launch {
+                delay(STRETCH_SETTLE_MS)
+                applyStretch()
+            }
+    }
+
+    private fun applyStretch() {
+        val stretch = verticalStretch()
         if (abs(stretch - appliedStretch) < STRETCH_EPSILON) return
         appliedStretch = stretch
         markerManager.allEntities().forEach { entity ->
@@ -634,6 +660,9 @@ private val RENDER_ORIGIN = Vec3D(0.0, 0.0, 0.0)
 
 /** これ未満の引き伸ばしの差ではアイコンを作り直さない。 */
 private const val STRETCH_EPSILON = 0.002f
+
+/** 傾きがこの時間止まったら引き伸ばしを適用する。スライダ操作の指の粒度より十分短く。 */
+private const val STRETCH_SETTLE_MS = 120L
 
 // ── 線の見た目 ────────────────────────────────────────────────────────────
 
