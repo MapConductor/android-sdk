@@ -178,7 +178,7 @@ class OpenMobileMapsMapViewController(
         val camera = holder.map.getCamera()
         val rawCenter = holder.toWgs84(camera.getCenterPosition())?.toGeoPoint() ?: GeoPoint.fromLatLong(0.0, 0.0)
         val rawZoom = ZOOM_CONVERTER.toUnifiedZoom(camera.getZoom())
-        val bearing = camera.getRotation().toDouble()
+        val bearing = bearingFromNativeRotation(camera.getRotation())
         val (center, zoom) =
             OpenMobileMapsTiltEmulation.restoreLogicalCamera(rawCenter, rawZoom, bearing, logicalTilt)
 
@@ -215,7 +215,7 @@ class OpenMobileMapsMapViewController(
         val (center, zoom) = OpenMobileMapsTiltEmulation.shiftedCamera(position)
         val camera = holder.map.getCamera()
         camera.moveToCenterPositionZoom(center.toOmmCoord(), ZOOM_CONVERTER.toNativeZoom(zoom), animated)
-        camera.setRotation(position.bearing.toFloat(), animated)
+        camera.setRotation(nativeRotationFromBearing(position.bearing), animated)
     }
 
     override fun fitBounds(
@@ -352,6 +352,22 @@ class OpenMobileMapsMapViewController(
     fun declareCapabilities(registry: MutableMapServiceRegistry) = OpenMobileMapsCapabilities.declare(registry)
 
     companion object {
+        /**
+         * 方位の符号。**SDK は MapConductor と逆回りである。**
+         *
+         * MapConductor の bearing は Google 準拠で「カメラが向いている方位を北から時計回りに測る」。
+         * SDK の `setRotation` は地図を反時計回りに回す量なので、符号を反転する。
+         * 反転を忘れると bearing 270 の地図が 90 として描かれ、**ちょうど 180 度ずれる**
+         * （tilt ページを MapLibre と並べて気づいた。単独で見ると「回っている」ので正しく見える）。
+         */
+        internal fun nativeRotationFromBearing(bearing: Double): Float = (-bearing).toFloat()
+
+        /** SDK の回転角 → MapConductor の bearing（0 以上 360 未満）。 */
+        internal fun bearingFromNativeRotation(rotation: Float): Double {
+            val bearing = -rotation.toDouble() % 360.0
+            return if (bearing < 0) bearing + 360.0 else bearing
+        }
+
         /**
          * ズームの往復換算。
          *
