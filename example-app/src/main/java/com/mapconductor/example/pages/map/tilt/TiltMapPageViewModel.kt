@@ -8,12 +8,17 @@ import androidx.lifecycle.ViewModel
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewStateInterface
+import com.mapconductor.core.marker.ColorDefaultIcon
+import com.mapconductor.core.marker.MarkerAnimation
+import com.mapconductor.core.marker.MarkerState
+import com.mapconductor.core.spherical.Spherical
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 interface TiltMapPageViewModelInterface {
     val initCameraPosition: MapCameraPosition
+    val markerStates: List<MarkerState>
     val cameraPosition: StateFlow<MapCameraPosition>
     val disableSlider: StateFlow<Boolean>
     var tilt: Double
@@ -45,6 +50,18 @@ class TiltMapPageViewModel :
             bearing = 270.0,
         )
     private var currentPosition: MapCameraPosition = initCameraPosition
+
+    /**
+     * 中心 1 個 + 同心円 5 本（各 8 個、45 度おき）= 41 個。
+     * react-sdk の `examples/basic` の Tilt ページと同じ構成にしてある。
+     *
+     * ## 間隔がリングごとに 60m なのは、この画面のズームに合わせたため
+     *
+     * react 側はズーム 11 で 3km 間隔だが、こちらはエッフェル塔をズーム 17 で見ている。
+     * 同じ 3km だと 1 本目から画面外へ出る。**傾けたときに手前と奥で見え方が変わるのを
+     * 確かめるページ**なので、リングが画面に収まっていることが要件。
+     */
+    override val markerStates: List<MarkerState> = buildTiltRingMarkers(initCameraPosition.position)
 
     private var _disableSlider: MutableStateFlow<Boolean> = MutableStateFlow<Boolean>(false)
 
@@ -93,3 +110,51 @@ class TiltMapPageViewModel :
         }
     }
 }
+
+/** 中心の色。 */
+private val CENTER_COLOR = Color(0xFF111827)
+
+/** リングごとの色（内側から外側へ）。react-sdk の Tilt ページと同じ並び。 */
+private val RING_COLORS =
+    listOf(
+        Color(0xFFE74C3C),
+        Color(0xFFE67E22),
+        Color(0xFFF1C40F),
+        Color(0xFF2ECC71),
+        Color(0xFF3498DB),
+    )
+
+private const val RING_SPACING_METERS = 60.0
+private const val MARKERS_PER_RING = 8
+
+/**
+ * 中心 1 個と、[RING_COLORS] の本数ぶんの同心円上のマーカーを作る。
+ *
+ * タップするとバウンドする。Android のコアはアニメーションが終わると
+ * `animate(null)` を自分で呼ぶので、react 側のようにタイマーで戻す必要はない。
+ */
+private fun buildTiltRingMarkers(center: GeoPoint): List<MarkerState> =
+    buildList {
+        add(
+            MarkerState(
+                id = "tilt-center",
+                position = center,
+                icon = ColorDefaultIcon(fillColor = CENTER_COLOR),
+                onClick = { it.animate(MarkerAnimation.Bounce) },
+            ),
+        )
+        RING_COLORS.forEachIndexed { ringIndex, color ->
+            val distance = (ringIndex + 1) * RING_SPACING_METERS
+            repeat(MARKERS_PER_RING) { step ->
+                val heading = step * (360.0 / MARKERS_PER_RING)
+                add(
+                    MarkerState(
+                        id = "tilt-ring${ringIndex + 1}-${heading.toInt()}",
+                        position = Spherical.computeOffset(center, distance, heading),
+                        icon = ColorDefaultIcon(fillColor = color),
+                        onClick = { it.animate(MarkerAnimation.Bounce) },
+                    ),
+                )
+            }
+        }
+    }
