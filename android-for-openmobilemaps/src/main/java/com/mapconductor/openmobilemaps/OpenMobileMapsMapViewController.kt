@@ -96,6 +96,9 @@ class OpenMobileMapsMapViewController(
      */
     private var logicalTilt: Double = 0.0
 
+    /** 直近に適用した tilt。アイコンの引き伸ばしを毎フレーム付け直さないための番人。 */
+    private var lastAppliedTilt: Double = 0.0
+
     /** カメラ通知の間引き。GL スレッドからも触るので [AtomicBoolean]。詳細は [notifyCamera]。 */
     private val cameraNotifyPending = AtomicBoolean(false)
     private var lastNotifiedCamera: MapCameraPosition? = null
@@ -317,6 +320,14 @@ class OpenMobileMapsMapViewController(
     private fun applyCamera(position: MapCameraPosition) {
         logicalTilt = position.tilt
         holder.mapView.visualTilt = position.tilt
+        if (position.tilt != lastAppliedTilt) {
+            lastAppliedTilt = position.tilt
+            // 傾きが変わったらアイコンの縦の引き伸ばしを付け直す。
+            // 詳細は OpenMobileMapsMarkerOverlayRenderer.verticalStretch。
+            markerEventControllers
+                .mapNotNull { it.renderer as? OpenMobileMapsMarkerOverlayRenderer }
+                .forEach { it.onVisualTiltChanged() }
+        }
 
         val (center, zoom) = OpenMobileMapsTiltEmulation.shiftedCamera(position)
         val camera = holder.map.getCamera()

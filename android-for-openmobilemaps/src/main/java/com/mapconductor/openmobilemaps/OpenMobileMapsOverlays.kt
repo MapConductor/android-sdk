@@ -68,6 +68,8 @@ import io.openmobilemaps.mapscore.shared.map.layers.polygon.PolygonLayerInterfac
 import io.openmobilemaps.mapscore.shared.map.layers.polygon.TexturedPolygonLayerInterface
 import io.openmobilemaps.mapscore.shared.map.layers.tiled.raster.Tiled2dMapRasterLayerInterface
 import io.openmobilemaps.mapscore.shared.map.loader.LoaderInterface
+import kotlin.math.abs
+import kotlin.math.cos
 import android.graphics.Bitmap
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -119,6 +121,9 @@ class OpenMobileMapsMarkerOverlayRenderer(
 
     /** アイコンごとのテクスチャ。詳しい理由は [textureFor] を参照。 */
     private val textureCache = mutableMapOf<Int, TextureHolderInterface>()
+
+    /** いま地図上のアイコンに掛かっている縦の引き伸ばし。詳細は [verticalStretch]。 */
+    private var appliedStretch: Float = 1.0f
 
     override fun setMarkerVisible(
         markerEntity: MarkerEntityInterface<OpenMobileMapsActualMarker>,
@@ -195,6 +200,46 @@ class OpenMobileMapsMarkerOverlayRenderer(
     }
 
     /**
+     * 傾きが変わったので、アイコンの縦の引き伸ばしを付け直す。
+     *
+     * 既にあるアイコンの大きさを比率で直すだけなので、`BitmapIcon` を作り直さない。
+     */
+    fun onVisualTiltChanged() {
+        val stretch = verticalStretch()
+        if (stretch == appliedStretch) return
+        val ratio = stretch / appliedStretch
+        appliedStretch = stretch
+        markerManager.allEntities().forEach { entity ->
+            val marker = entity.marker ?: return@forEach
+            val size = marker.getIconSize()
+            marker.setIconSize(Vec2F(size.x, size.y * ratio))
+        }
+        iconLayer.invalidate()
+    }
+
+    /**
+     * 傾けたときにアイコンを縦へ引き伸ばす量。
+     *
+     * ## なぜ要るのか
+     *
+     * tilt は内側の `MapView` を `rotationX` で回して作っている。視点距離を十分大きく
+     * 取った**ほぼ正射影**なので、SDK が描いたものは一律に縦が `cos(傾き)` へ潰れる。
+     * 地面に寝ているもの（ポリゴン・ポリライン・地図タイル）はそれで正しいが、
+     * **マーカーは常に正面を向いていなければならない**ので潰れては困る。
+     *
+     * Multiple InfoBubble ページ（tilt = 45）で、マーカーが MapLibre の 0.73 倍
+     * （≒ cos 45°）の高さになっているのを実測して分かった。
+     *
+     * 先に `1 / cos(傾き)` だけ縦へ伸ばしておけば、潰れたあとちょうど元の高さになる。
+     * アンカーは割合なので、伸ばしても指す位置は変わらない。
+     */
+    private fun verticalStretch(): Float {
+        val angle =
+            abs(holder.mapView.visualTilt).coerceIn(0.0, OpenMobileMapsTiltEmulation.MAX_TILT_DEGREES)
+        return (1.0 / cos(Math.toRadians(angle))).toFloat()
+    }
+
+    /**
      * アイコンを 1 つ作る。
      *
      * [IconType.INVARIANT] は「ズームでも回転でも見た目の大きさが変わらない」種別で、
@@ -208,16 +253,19 @@ class OpenMobileMapsMarkerOverlayRenderer(
         id: String,
         position: GeoPointInterface,
         icon: BitmapIcon,
-    ): OpenMobileMapsActualMarker =
-        IconFactory.createIconWithAnchor(
+    ): OpenMobileMapsActualMarker {
+        // 新しく作るアイコンも、いま掛かっている引き伸ばしに合わせる。
+        appliedStretch = verticalStretch()
+        return IconFactory.createIconWithAnchor(
             id,
             position.toOmmCoord(),
             textureFor(icon),
-            Vec2F(icon.size.width, icon.size.height),
+            Vec2F(icon.size.width, icon.size.height * appliedStretch),
             IconType.INVARIANT,
             BlendMode.NORMAL,
             Vec2F(icon.anchor.x, icon.anchor.y),
         )
+    }
 
     /**
      * アイコンのテクスチャ。**必ずここを通すこと。**

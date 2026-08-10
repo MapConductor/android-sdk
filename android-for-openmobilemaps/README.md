@@ -97,6 +97,14 @@ SDK 同梱の web メルカトル設定はレベル 0 が 1:500,000,000 で統�
 
 ### 3-2. tilt（`OpenMobileMapsTiltEmulation.kt`）
 
+ビューを回す方式なので、**投影の畳み込みとアイコンの引き伸ばしが必ず対で要ります**。
+
+- 投影は内側の `MapView` の座標系で返るので、`OpenMobileMapsMapSurface.fromInnerToSurface` /
+  `fromSurfaceToInner` で入れ物の座標へ畳む。畳まないと InfoBubble が画面外へ飛ぶ
+- SDK が描いたものは一律に縦が `cos(傾き)` へ潰れる。地面に寝ているもの（ポリゴン・
+  タイル）はそれで正しいが、マーカーは正面を向くべきなので先に `1 / cos(傾き)` 伸ばして相殺する
+
+
 2D カメラにピッチがありません。`MapCamera3dInterface` なら傾けられますが、それは
 `setupMap(..., is3D = true)` で**地球儀表示**にしたときだけで、平面地図のまま傾けることはできません。
 
@@ -143,7 +151,8 @@ adb shell am start -n com.mapconductor.example/.MainActivity \
 
 - 地図デザインはラスタータイルのみ。ベクタータイル（`TiledVectorLayer`）にも対応できますが、
   ラベルの描画に距離場フォントのアセットを同梱する必要があり、別作業です
-- 傾けているとき、投影は内側の `MapView` の座標系で返るため InfoBubble の位置と
-  可視領域がその分ずれます（android-for-arcgis の 2D と同じ割り切り。tilt = 0 なら厳密に一致）
+- 傾きはビューを `rotationX` で回して作るので、**マーカー以外の画面固定物は一緒に寝ます**。
+  マーカーは縦の引き伸ばしで相殺していますが（`verticalStretch`）、
+  同じ相殺を要するものが増えたらそこに足してください
 - `MapUISettings` はスクロール／ズームの個別切り替えを持てません
   （SDK にタッチハンドラ全体の on/off しか無いため）。capability で宣言済み

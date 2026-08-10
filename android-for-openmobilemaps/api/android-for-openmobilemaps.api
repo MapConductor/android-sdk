@@ -233,6 +233,7 @@ public final class com.mapconductor.openmobilemaps.OpenMobileMapsMarkerOverlayRe
   public java.lang.Object onPostProcess(kotlin.coroutines.Continuation<? super kotlin.Unit>);
   public void onDragSelectionChanged(com.mapconductor.core.marker.MarkerEntityInterface<io.openmobilemaps.mapscore.shared.map.layers.icon.IconInfoInterface>, com.mapconductor.core.marker.MarkerEntityInterface<io.openmobilemaps.mapscore.shared.map.layers.icon.IconInfoInterface>);
   public void onDragPositionChanged(com.mapconductor.core.features.GeoPointInterface);
+  public final void onVisualTiltChanged();
 }
 public final class com.mapconductor.openmobilemaps.OpenMobileMapsOverlaysKt {
   public static final io.openmobilemaps.mapscore.shared.map.layers.line.LineStyle access$strokeStyle-DxMtmZc(long, float);
