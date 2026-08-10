@@ -125,6 +125,18 @@ class OpenMobileMapsMarkerOverlayRenderer(
     /** いま地図上のアイコンに掛かっている縦の引き伸ばし。詳細は [verticalStretch]。 */
     private var appliedStretch: Float = 1.0f
 
+    /**
+     * アイコン id → 引き伸ばす前の高さ（px）。
+     *
+     * **比率を掛け続けないこと。** 以前は「今の大きさ × 変化比」で更新していたが、
+     * [createIcon] も [appliedStretch] を書くため、マーカーの追加と傾きの変更が
+     * 混ざると比率の基準がずれ、アイコンの大きさが本来の値から離れていく。
+     * アンカーは割合なので、大きさがずれるとアイコンの見える位置もずれる。
+     * 元の高さを覚えておいて**毎回 `元の高さ × 引き伸ばし` を入れる**ほうが、
+     * 順序に関係なく必ず正しい。
+     */
+    private val baseIconHeight = mutableMapOf<String, Float>()
+
     override fun setMarkerVisible(
         markerEntity: MarkerEntityInterface<OpenMobileMapsActualMarker>,
         visible: Boolean,
@@ -162,6 +174,7 @@ class OpenMobileMapsMarkerOverlayRenderer(
         }
 
     override suspend fun onRemove(data: List<MarkerEntityInterface<OpenMobileMapsActualMarker>>) {
+        data.forEach { baseIconHeight.remove(it.state.id) }
         iconLayer.removeIdentifierList(ArrayList(data.map { it.state.id }))
     }
 
@@ -206,13 +219,14 @@ class OpenMobileMapsMarkerOverlayRenderer(
      */
     fun onVisualTiltChanged() {
         val stretch = verticalStretch()
-        if (stretch == appliedStretch) return
-        val ratio = stretch / appliedStretch
+        // 目に見えない差でレイヤを作り直さない。カメラアニメーション中は毎フレーム
+        // 呼ばれるので、ここを外すと 41 個のアイコンを毎フレーム作り直すことになる。
+        if (abs(stretch - appliedStretch) < STRETCH_EPSILON) return
         appliedStretch = stretch
         markerManager.allEntities().forEach { entity ->
             val marker = entity.marker ?: return@forEach
-            val size = marker.getIconSize()
-            marker.setIconSize(Vec2F(size.x, size.y * ratio))
+            val base = baseIconHeight[entity.state.id] ?: return@forEach
+            marker.setIconSize(Vec2F(marker.getIconSize().x, base * stretch))
         }
         iconLayer.invalidate()
     }
@@ -255,12 +269,13 @@ class OpenMobileMapsMarkerOverlayRenderer(
         icon: BitmapIcon,
     ): OpenMobileMapsActualMarker {
         // 新しく作るアイコンも、いま掛かっている引き伸ばしに合わせる。
-        appliedStretch = verticalStretch()
+        val stretch = verticalStretch()
+        baseIconHeight[id] = icon.size.height
         return IconFactory.createIconWithAnchor(
             id,
             position.toOmmCoord(),
             textureFor(icon),
-            Vec2F(icon.size.width, icon.size.height * appliedStretch),
+            Vec2F(icon.size.width, icon.size.height * stretch),
             IconType.INVARIANT,
             BlendMode.NORMAL,
             Vec2F(icon.anchor.x, icon.anchor.y),
@@ -616,6 +631,9 @@ class OpenMobileMapsRasterLayerController(
  * 平面の地図では 0 でよい。
  */
 private val RENDER_ORIGIN = Vec3D(0.0, 0.0, 0.0)
+
+/** これ未満の引き伸ばしの差ではアイコンを作り直さない。 */
+private const val STRETCH_EPSILON = 0.002f
 
 // ── 線の見た目 ────────────────────────────────────────────────────────────
 
