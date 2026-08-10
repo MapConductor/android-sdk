@@ -28,6 +28,8 @@ import com.mapconductor.core.polygon.PolygonController
 import com.mapconductor.core.polygon.PolygonEntityInterface
 import com.mapconductor.core.polygon.PolygonManagerInterface
 import com.mapconductor.core.polygon.PolygonState
+import com.mapconductor.core.polygon.ensureClockwiseRing
+import com.mapconductor.core.polygon.ensureCounterClockwise
 import com.mapconductor.core.polygon.unionHoles
 import com.mapconductor.core.polyline.AbstractPolylineOverlayRenderer
 import com.mapconductor.core.polyline.PolylineController
@@ -44,6 +46,7 @@ import com.mapconductor.core.raster.RasterLayerState
 import com.mapconductor.openmobilemaps.tile.WebMercatorTileLayerConfig
 import io.openmobilemaps.mapscore.graphics.BitmapTextureHolder
 import io.openmobilemaps.mapscore.shared.graphics.common.Vec2F
+import io.openmobilemaps.mapscore.shared.graphics.common.Vec3D
 import io.openmobilemaps.mapscore.shared.graphics.objects.TextureHolderInterface
 import io.openmobilemaps.mapscore.shared.graphics.shader.BlendMode
 import io.openmobilemaps.mapscore.shared.map.coordinates.Coord
@@ -308,7 +311,13 @@ class OpenMobileMapsPolygonOverlayRenderer(
             rings.outerRings.mapIndexed { index, outer ->
                 PolygonInfo(
                     "polygon-${resolved.id}-$index",
-                    polygonCoordOf(outer, rings.holeRings),
+                    polygonCoordOf(
+                        // 巻き方向を揃えること。SDK のテッセレータは外周 CCW / 穴 CW を前提に
+                        // していて、逆向きのリングは**塗りが丸ごと消える**（例外も警告も出ない）。
+                        // 円が塗れてポリゴンが塗れない、という形で最初に出た。
+                        ensureCounterClockwise(outer),
+                        rings.holeRings.map { ensureClockwiseRing(it) },
+                    ),
                     resolved.fillColor.toOmmColor(),
                     resolved.fillColor.toOmmColor(),
                 )
@@ -336,8 +345,10 @@ class OpenMobileMapsPolygonOverlayRenderer(
 
     override suspend fun onPostProcess() {
         val entities = polygonManager.allEntities()
-        fillLayer.clear()
-        fillLayer.addAll(entities.flatMapTo(ArrayList()) { it.polygon.fills })
+        // add / addAll ではなく setPolygons を使うこと。4.0 の PolygonLayer は
+        // 原点（第 2 引数）を持つようになっていて、setPolygons を一度も通っていない
+        // レイヤに add すると**何も描かれない**（例外も警告も出ない）。
+        fillLayer.setPolygons(entities.flatMapTo(ArrayList()) { it.polygon.fills }, RENDER_ORIGIN)
         outlineLayer.setLines(entities.flatMapTo(ArrayList()) { it.polygon.outlines })
     }
 }
@@ -363,7 +374,7 @@ class OpenMobileMapsCircleOverlayRenderer(
                 listOf(
                     PolygonInfo(
                         "circle-${state.id}",
-                        polygonCoordOf(ring, emptyList()),
+                        polygonCoordOf(ensureCounterClockwise(ring), emptyList()),
                         state.fillColor.toOmmColor(),
                         state.fillColor.toOmmColor(),
                     ),
@@ -389,8 +400,7 @@ class OpenMobileMapsCircleOverlayRenderer(
 
     override suspend fun onPostProcess() {
         val entities = circleManager.allEntities()
-        fillLayer.clear()
-        fillLayer.addAll(entities.flatMapTo(ArrayList()) { it.circle.fills })
+        fillLayer.setPolygons(entities.flatMapTo(ArrayList()) { it.circle.fills }, RENDER_ORIGIN)
         outlineLayer.setLines(entities.flatMapTo(ArrayList()) { it.circle.outlines })
     }
 }
@@ -440,8 +450,10 @@ class OpenMobileMapsGroundImageOverlayRenderer(
         layer.loadTexture(BitmapTextureHolder(state.image))
         layer.setAlpha(state.opacity)
 
-        layers.insertBelowOverlays(holder.map, layer.asLayerInterface())
-        return OpenMobileMapsActualGroundImage(layer)
+        return OpenMobileMapsActualGroundImage(
+            layer = layer,
+            layerInterface = layers.insertBelowOverlays(holder.map, layer.asLayerInterface()),
+        )
     }
 
     override suspend fun updateGroundImageProperties(
@@ -449,12 +461,12 @@ class OpenMobileMapsGroundImageOverlayRenderer(
         current: GroundImageEntityInterface<OpenMobileMapsActualGroundImage>,
         prev: GroundImageEntityInterface<OpenMobileMapsActualGroundImage>,
     ): OpenMobileMapsActualGroundImage? {
-        layers.remove(holder.map, groundImage.layer.asLayerInterface())
+        layers.remove(holder.map, groundImage.layerInterface)
         return createGroundImage(current.state)
     }
 
     override suspend fun removeGroundImage(entity: GroundImageEntityInterface<OpenMobileMapsActualGroundImage>) {
-        layers.remove(holder.map, entity.groundImage.layer.asLayerInterface())
+        layers.remove(holder.map, entity.groundImage.layerInterface)
     }
 
     override suspend fun onPostProcess() = Unit
@@ -493,7 +505,7 @@ class OpenMobileMapsRasterLayerOverlayRenderer(
 
     override suspend fun onRemove(data: List<RasterLayerEntityInterface<OpenMobileMapsActualRasterLayer>>) {
         data.forEach { entity ->
-            layers.remove(holder.map, entity.layer.layer.asLayerInterface())
+            layers.remove(holder.map, entity.layer.layerInterface)
         }
     }
 
@@ -517,8 +529,10 @@ class OpenMobileMapsRasterLayerOverlayRenderer(
             )
         val layer = Tiled2dMapRasterLayerInterface.create(config, loaders)
         layer.setAlpha(state.opacity)
-        layers.insertBelowOverlays(holder.map, layer.asLayerInterface())
-        return OpenMobileMapsActualRasterLayer(layer)
+        return OpenMobileMapsActualRasterLayer(
+            layer = layer,
+            layerInterface = layers.insertBelowOverlays(holder.map, layer.asLayerInterface()),
+        )
     }
 }
 
@@ -544,6 +558,16 @@ class OpenMobileMapsRasterLayerController(
     renderer: OpenMobileMapsRasterLayerOverlayRenderer,
     manager: RasterLayerManagerInterface<OpenMobileMapsActualRasterLayer> = RasterLayerManager(),
 ) : RasterLayerController<OpenMobileMapsActualRasterLayer>(manager, renderer)
+
+// ── 描画の共通値 ──────────────────────────────────────────────────────────
+
+/**
+ * ポリゴンの座標の原点。
+ *
+ * 4.0 の [PolygonLayerInterface.setPolygons] は原点を要求する（3D 表示で精度を保つため）。
+ * 平面の地図では 0 でよい。
+ */
+private val RENDER_ORIGIN = Vec3D(0.0, 0.0, 0.0)
 
 // ── 線の見た目 ────────────────────────────────────────────────────────────
 

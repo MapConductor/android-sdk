@@ -4,6 +4,7 @@ import androidx.compose.ui.graphics.Color
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoPointInterface
 import io.openmobilemaps.mapscore.shared.graphics.common.Color as OmmColor
+import io.openmobilemaps.mapscore.shared.map.LayerInterface
 import io.openmobilemaps.mapscore.shared.map.coordinates.Coord
 import io.openmobilemaps.mapscore.shared.map.coordinates.CoordinateSystemIdentifiers
 import io.openmobilemaps.mapscore.shared.map.coordinates.PolygonCoord
@@ -48,14 +49,22 @@ data class OpenMobileMapsActualCircle(
     val outlines: List<LineInfoInterface>,
 )
 
-/** グラウンドイメージ。SDK の「テクスチャ付きポリゴンレイヤ」1 枚に対応する。 */
+/**
+ * グラウンドイメージ。SDK の「テクスチャ付きポリゴンレイヤ」1 枚に対応する。
+ *
+ * [layerInterface] を持っているのは、`asLayerInterface()` が**呼ぶたびに別のオブジェクトを
+ * 返す**ため（[OpenMobileMapsLayers] のコメント参照）。載せたときの値をそのまま持っておかないと
+ * 地図から外せない。
+ */
 data class OpenMobileMapsActualGroundImage(
     val layer: TexturedPolygonLayerInterface,
+    val layerInterface: LayerInterface,
 )
 
-/** ラスターレイヤ。 */
+/** ラスターレイヤ。[layerInterface] を持つ理由は [OpenMobileMapsActualGroundImage] と同じ。 */
 data class OpenMobileMapsActualRasterLayer(
     val layer: Tiled2dMapRasterLayerInterface,
+    val layerInterface: LayerInterface,
 )
 
 // ── 座標 ──────────────────────────────────────────────────────────────────
