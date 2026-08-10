@@ -1,0 +1,265 @@
+public final class com.mapconductor.template.TemplateActualCircle {
+  public com.mapconductor.template.TemplateActualCircle(java.lang.String, com.mapconductor.core.features.GeoPointInterface, double);
+  public final java.lang.String getId();
+  public final com.mapconductor.core.features.GeoPointInterface getCenter();
+  public final void setCenter(com.mapconductor.core.features.GeoPointInterface);
+  public final double getRadiusMeters();
+  public final void setRadiusMeters(double);
+  public final java.lang.String component1();
+  public final com.mapconductor.core.features.GeoPointInterface component2();
+  public final double component3();
+  public final com.mapconductor.template.TemplateActualCircle copy(java.lang.String, com.mapconductor.core.features.GeoPointInterface, double);
+  public java.lang.String toString();
+  public int hashCode();
+  public boolean equals(java.lang.Object);
+}
+public final class com.mapconductor.template.TemplateActualGroundImage {
+  public com.mapconductor.template.TemplateActualGroundImage(java.lang.String);
+  public final java.lang.String getId();
+  public final java.lang.String component1();
+  public final com.mapconductor.template.TemplateActualGroundImage copy(java.lang.String);
+  public java.lang.String toString();
+  public int hashCode();
+  public boolean equals(java.lang.Object);
+}
+public final class com.mapconductor.template.TemplateActualMarker {
+  public com.mapconductor.template.TemplateActualMarker(java.lang.String, com.mapconductor.core.features.GeoPointInterface, boolean);
+  public com.mapconductor.template.TemplateActualMarker(java.lang.String, com.mapconductor.core.features.GeoPointInterface, boolean, int, kotlin.jvm.internal.DefaultConstructorMarker);
+  public final java.lang.String getId();
+  public final com.mapconductor.core.features.GeoPointInterface getPosition();
+  public final void setPosition(com.mapconductor.core.features.GeoPointInterface);
+  public final boolean getVisible();
+  public final void setVisible(boolean);
+  public final java.lang.String component1();
+  public final com.mapconductor.core.features.GeoPointInterface component2();
+  public final boolean component3();
+  public final com.mapconductor.template.TemplateActualMarker copy(java.lang.String, com.mapconductor.core.features.GeoPointInterface, boolean);
+  public java.lang.String toString();
+  public int hashCode();
+  public boolean equals(java.lang.Object);
+}
+public final class com.mapconductor.template.TemplateActualPolygon {
+  public com.mapconductor.template.TemplateActualPolygon(java.lang.String, java.util.List<? extends com.mapconductor.core.features.GeoPointInterface>);
+  public final java.lang.String getId();
+  public final java.util.List<com.mapconductor.core.features.GeoPointInterface> getPoints();
+  public final void setPoints(java.util.List<? extends com.mapconductor.core.features.GeoPointInterface>);
+  public final java.lang.String component1();
+  public final java.util.List<com.mapconductor.core.features.GeoPointInterface> component2();
+  public final com.mapconductor.template.TemplateActualPolygon copy(java.lang.String, java.util.List<? extends com.mapconductor.core.features.GeoPointInterface>);
+  public java.lang.String toString();
+  public int hashCode();
+  public boolean equals(java.lang.Object);
+}
+public final class com.mapconductor.template.TemplateActualPolyline {
+  public com.mapconductor.template.TemplateActualPolyline(java.lang.String, java.util.List<? extends com.mapconductor.core.features.GeoPointInterface>);
+  public final java.lang.String getId();
+  public final java.util.List<com.mapconductor.core.features.GeoPointInterface> getPoints();
+  public final void setPoints(java.util.List<? extends com.mapconductor.core.features.GeoPointInterface>);
+  public final java.lang.String component1();
+  public final java.util.List<com.mapconductor.core.features.GeoPointInterface> component2();
+  public final com.mapconductor.template.TemplateActualPolyline copy(java.lang.String, java.util.List<? extends com.mapconductor.core.features.GeoPointInterface>);
+  public java.lang.String toString();
+  public int hashCode();
+  public boolean equals(java.lang.Object);
+}
+public final class com.mapconductor.template.TemplateActualRasterLayer {
+  public com.mapconductor.template.TemplateActualRasterLayer(java.lang.String);
+  public final java.lang.String getId();
+  public final java.lang.String component1();
+  public final com.mapconductor.template.TemplateActualRasterLayer copy(java.lang.String);
+  public java.lang.String toString();
+  public int hashCode();
+  public boolean equals(java.lang.Object);
+}
+public final class com.mapconductor.template.TemplateCamera {
+  public com.mapconductor.template.TemplateCamera(com.mapconductor.core.features.GeoPoint, double, double, double);
+  public com.mapconductor.template.TemplateCamera(com.mapconductor.core.features.GeoPoint, double, double, double, int, kotlin.jvm.internal.DefaultConstructorMarker);
+  public final com.mapconductor.core.features.GeoPoint getPosition();
+  public final double getZoom();
+  public final double getBearing();
+  public final double getTilt();
+  public final com.mapconductor.core.features.GeoPoint component1();
+  public final double component2();
+  public final double component3();
+  public final double component4();
+  public final com.mapconductor.template.TemplateCamera copy(com.mapconductor.core.features.GeoPoint, double, double, double);
+  public java.lang.String toString();
+  public int hashCode();
+  public boolean equals(java.lang.Object);
+  public com.mapconductor.template.TemplateCamera();
+}
+public final class com.mapconductor.template.TemplateCircleController extends com.mapconductor.core.circle.CircleController<com.mapconductor.template.TemplateActualCircle> {
+  public com.mapconductor.template.TemplateCircleController(com.mapconductor.template.TemplateCircleRenderer);
+}
+public final class com.mapconductor.template.TemplateCircleRenderer implements com.mapconductor.core.circle.CircleOverlayRendererInterface<com.mapconductor.template.TemplateActualCircle> {
+  public com.mapconductor.template.TemplateCircleRenderer(com.mapconductor.template.TemplateMapViewHolder);
+  public final com.mapconductor.template.TemplateMapViewHolder getHolder();
+  public java.lang.Object onAdd(java.util.List<? extends com.mapconductor.core.circle.CircleOverlayRendererInterface$AddParamsInterface>, kotlin.coroutines.Continuation<? super java.util.List<com.mapconductor.template.TemplateActualCircle>>);
+  public java.lang.Object onChange(java.util.List<? extends com.mapconductor.core.circle.CircleOverlayRendererInterface$ChangeParamsInterface<com.mapconductor.template.TemplateActualCircle>>, kotlin.coroutines.Continuation<? super java.util.List<com.mapconductor.template.TemplateActualCircle>>);
+  public java.lang.Object onRemove(java.util.List<? extends com.mapconductor.core.circle.CircleEntityInterface<com.mapconductor.template.TemplateActualCircle>>, kotlin.coroutines.Continuation<? super kotlin.Unit>);
+  public java.lang.Object onPostProcess(kotlin.coroutines.Continuation<? super kotlin.Unit>);
+}
+public final class com.mapconductor.template.TemplateDesign implements com.mapconductor.template.TemplateMapDesignType {
+  public com.mapconductor.template.TemplateDesign(java.lang.String, long, int, kotlin.jvm.internal.DefaultConstructorMarker);
+  public java.lang.String getId();
+  public long getBackground-0d7_KjU();
+  public final java.lang.String component1();
+  public final long component2-0d7_KjU();
+  public final com.mapconductor.template.TemplateDesign copy-4WTKRHQ(java.lang.String, long);
+  public java.lang.String toString();
+  public int hashCode();
+  public boolean equals(java.lang.Object);
+  public com.mapconductor.template.TemplateDesign(java.lang.String, long, kotlin.jvm.internal.DefaultConstructorMarker);
+}
+public final class com.mapconductor.template.TemplateDisplayList {
+  public com.mapconductor.template.TemplateDisplayList();
+  public final java.util.Map<java.lang.String, com.mapconductor.template.TemplateActualMarker> getMarkers();
+  public final java.util.Map<java.lang.String, com.mapconductor.template.TemplateActualPolyline> getPolylines();
+  public final java.util.Map<java.lang.String, com.mapconductor.template.TemplateActualPolygon> getPolygons();
+  public final java.util.Map<java.lang.String, com.mapconductor.template.TemplateActualCircle> getCircles();
+  public final java.util.Map<java.lang.String, com.mapconductor.template.TemplateActualGroundImage> getGroundImages();
+  public final java.util.Map<java.lang.String, com.mapconductor.template.TemplateActualRasterLayer> getRasterLayers();
+  public final void clear();
+}
+public final class com.mapconductor.template.TemplateGroundImageController extends com.mapconductor.core.groundimage.GroundImageController<com.mapconductor.template.TemplateActualGroundImage> {
+  public com.mapconductor.template.TemplateGroundImageController(com.mapconductor.template.TemplateGroundImageRenderer);
+}
+public final class com.mapconductor.template.TemplateGroundImageRenderer implements com.mapconductor.core.groundimage.GroundImageOverlayRendererInterface<com.mapconductor.template.TemplateActualGroundImage> {
+  public com.mapconductor.template.TemplateGroundImageRenderer(com.mapconductor.template.TemplateMapViewHolder);
+  public final com.mapconductor.template.TemplateMapViewHolder getHolder();
+  public java.lang.Object onAdd(java.util.List<? extends com.mapconductor.core.groundimage.GroundImageOverlayRendererInterface$AddParamsInterface>, kotlin.coroutines.Continuation<? super java.util.List<com.mapconductor.template.TemplateActualGroundImage>>);
+  public java.lang.Object onChange(java.util.List<? extends com.mapconductor.core.groundimage.GroundImageOverlayRendererInterface$ChangeParamsInterface<com.mapconductor.template.TemplateActualGroundImage>>, kotlin.coroutines.Continuation<? super java.util.List<com.mapconductor.template.TemplateActualGroundImage>>);
+  public java.lang.Object onRemove(java.util.List<? extends com.mapconductor.core.groundimage.GroundImageEntityInterface<com.mapconductor.template.TemplateActualGroundImage>>, kotlin.coroutines.Continuation<? super kotlin.Unit>);
+  public java.lang.Object onPostProcess(kotlin.coroutines.Continuation<? super kotlin.Unit>);
+}
+public final class com.mapconductor.template.TemplateMap {
+  public static final double TILE_SIZE;
+  public static final double MAX_LATITUDE;
+  public com.mapconductor.template.TemplateMap();
+  public final com.mapconductor.template.TemplateCamera getCamera();
+  public final long getViewportSize-NH-jbRc();
+  public final void setViewportSize-uvyYCjk(long);
+  public final com.mapconductor.template.TemplateDisplayList getDisplayList();
+  public final kotlin.jvm.functions.Function1<com.mapconductor.core.features.GeoPoint, kotlin.Unit> getOnMapClick();
+  public final void setOnMapClick(kotlin.jvm.functions.Function1<? super com.mapconductor.core.features.GeoPoint, kotlin.Unit>);
+  public final kotlin.jvm.functions.Function1<com.mapconductor.core.features.GeoPoint, kotlin.Unit> getOnMapLongClick();
+  public final void setOnMapLongClick(kotlin.jvm.functions.Function1<? super com.mapconductor.core.features.GeoPoint, kotlin.Unit>);
+  public final kotlin.jvm.functions.Function1<com.mapconductor.template.TemplateCamera, kotlin.Unit> getOnCameraMove();
+  public final void setOnCameraMove(kotlin.jvm.functions.Function1<? super com.mapconductor.template.TemplateCamera, kotlin.Unit>);
+  public final kotlin.jvm.functions.Function0<kotlin.Unit> getOnInvalidate();
+  public final void setOnInvalidate(kotlin.jvm.functions.Function0<kotlin.Unit>);
+  public final void moveCamera(com.mapconductor.template.TemplateCamera);
+  public final void invalidate();
+  public final androidx.compose.ui.geometry.Offset project-x-9fifI(com.mapconductor.core.features.GeoPointInterface);
+  public final com.mapconductor.core.features.GeoPoint unproject-k-4lQ0M(long);
+}
+final class com.mapconductor.template.TemplateMap$Companion {
+  public final double lngToWorldX(double);
+  public final double latToWorldY(double);
+  public final double worldXToLng(double);
+  public final double worldYToLat(double);
+  public final double unusedSin(double);
+}
+public interface com.mapconductor.template.TemplateMapDesignType {
+  public abstract java.lang.String getId();
+  public abstract long getBackground-0d7_KjU();
+}
+public final class com.mapconductor.template.TemplateMapSurface {
+  public com.mapconductor.template.TemplateMapSurface(com.mapconductor.template.TemplateMap);
+  public final com.mapconductor.template.TemplateMap getMap();
+}
+public final class com.mapconductor.template.TemplateMapViewController extends com.mapconductor.core.controller.BaseMapViewController {
+  public static final com.mapconductor.template.TemplateMapViewController$Companion Companion;
+  public com.mapconductor.template.TemplateMapViewController(com.mapconductor.template.TemplateMapViewHolder, com.mapconductor.template.TemplateMarkerController, com.mapconductor.template.TemplatePolylineController, com.mapconductor.template.TemplatePolygonController, com.mapconductor.template.TemplateCircleController, com.mapconductor.template.TemplateGroundImageController, com.mapconductor.template.TemplateRasterLayerController, kotlinx.coroutines.CoroutineScope, kotlinx.coroutines.CoroutineScope);
+  public com.mapconductor.template.TemplateMapViewController(com.mapconductor.template.TemplateMapViewHolder, com.mapconductor.template.TemplateMarkerController, com.mapconductor.template.TemplatePolylineController, com.mapconductor.template.TemplatePolygonController, com.mapconductor.template.TemplateCircleController, com.mapconductor.template.TemplateGroundImageController, com.mapconductor.template.TemplateRasterLayerController, kotlinx.coroutines.CoroutineScope, kotlinx.coroutines.CoroutineScope, int, kotlin.jvm.internal.DefaultConstructorMarker);
+  public com.mapconductor.template.TemplateMapViewHolder getHolder();
+  public kotlinx.coroutines.CoroutineScope getMainCoroutine();
+  public kotlinx.coroutines.CoroutineScope getDefaultCoroutine();
+  protected boolean dispatchMarkerTap(com.mapconductor.core.features.GeoPointInterface);
+  public final void installListeners();
+  public final com.mapconductor.core.map.MapCameraPosition readNativeCamera(com.mapconductor.template.TemplateCamera);
+  public void moveCamera(com.mapconductor.core.map.MapCameraPosition);
+  public void animateCamera(com.mapconductor.core.map.MapCameraPosition, long);
+  public void fitBounds(com.mapconductor.core.features.GeoRectBounds, int);
+  public java.lang.Object clearOverlays(kotlin.coroutines.Continuation<? super kotlin.Unit>);
+  public final void declareCapabilities(com.mapconductor.core.map.MutableMapServiceRegistry);
+  public com.mapconductor.core.map.MapViewHolderInterface getHolder();
+}
+public final class com.mapconductor.template.TemplateMapViewController$Companion {
+  public final com.mapconductor.core.zoom.WebMercatorZoomAltitudeConverter getZOOM_CONVERTER();
+}
+public final class com.mapconductor.template.TemplateMapViewHolder implements com.mapconductor.core.map.MapViewHolderInterface<com.mapconductor.template.TemplateMapSurface, com.mapconductor.template.TemplateMap> {
+  public com.mapconductor.template.TemplateMapViewHolder(com.mapconductor.template.TemplateMapSurface, com.mapconductor.template.TemplateMap);
+  public com.mapconductor.template.TemplateMapSurface getMapView();
+  public com.mapconductor.template.TemplateMap getMap();
+  public androidx.compose.ui.geometry.Offset toScreenOffset-x-9fifI(com.mapconductor.core.features.GeoPointInterface);
+  public com.mapconductor.core.features.GeoPoint fromScreenOffsetSync-k-4lQ0M(long);
+  public java.lang.Object fromScreenOffset-3MmeM6k(long, kotlin.coroutines.Continuation<? super com.mapconductor.core.features.GeoPoint>);
+  public java.lang.Object getMapView();
+  public java.lang.Object getMap();
+}
+public final class com.mapconductor.template.TemplateMapViewKt {
+  public static final com.mapconductor.template.TemplateMapViewState rememberTemplateMapViewState(com.mapconductor.template.TemplateMapDesignType, com.mapconductor.core.map.MapCameraPositionInterface, androidx.compose.runtime.Composer, int, int);
+  public static final void TemplateMapView(com.mapconductor.template.TemplateMapViewState, androidx.compose.ui.Modifier, androidx.compose.runtime.Composer, int, int);
+}
+public final class com.mapconductor.template.TemplateMapViewState extends com.mapconductor.core.map.MapViewState<com.mapconductor.template.TemplateMapDesignType> implements com.mapconductor.core.map.MapViewStateInterface<com.mapconductor.template.TemplateMapDesignType> {
+  public com.mapconductor.template.TemplateMapViewState(com.mapconductor.template.TemplateMapDesignType, java.lang.String, com.mapconductor.core.map.MapCameraPosition);
+  public com.mapconductor.template.TemplateMapViewState(com.mapconductor.template.TemplateMapDesignType, java.lang.String, com.mapconductor.core.map.MapCameraPosition, int, kotlin.jvm.internal.DefaultConstructorMarker);
+  public java.lang.String getId();
+  public com.mapconductor.template.TemplateMapDesignType getMapDesignType();
+  public void setMapDesignType(com.mapconductor.template.TemplateMapDesignType);
+  public com.mapconductor.template.TemplateMapViewHolder getMapViewHolder();
+  public java.lang.Object getMapDesignType();
+  public void setMapDesignType(java.lang.Object);
+  public com.mapconductor.core.map.MapViewHolderInterface getMapViewHolder();
+}
+public final class com.mapconductor.template.TemplateMarkerController extends com.mapconductor.core.marker.AbstractMarkerController<com.mapconductor.template.TemplateActualMarker> {
+  public com.mapconductor.template.TemplateMarkerController(com.mapconductor.template.TemplateMarkerRenderer);
+}
+public final class com.mapconductor.template.TemplateMarkerRenderer extends com.mapconductor.core.marker.AbstractMarkerOverlayRenderer<com.mapconductor.template.TemplateMapViewHolder, com.mapconductor.template.TemplateActualMarker> {
+  public com.mapconductor.template.TemplateMarkerRenderer(com.mapconductor.template.TemplateMapViewHolder, kotlinx.coroutines.CoroutineScope, com.mapconductor.core.marker.MarkerManager<com.mapconductor.template.TemplateActualMarker>);
+  public com.mapconductor.template.TemplateMarkerRenderer(com.mapconductor.template.TemplateMapViewHolder, kotlinx.coroutines.CoroutineScope, com.mapconductor.core.marker.MarkerManager, int, kotlin.jvm.internal.DefaultConstructorMarker);
+  public final com.mapconductor.core.marker.MarkerManager<com.mapconductor.template.TemplateActualMarker> getMarkerManager();
+  public boolean getSupportsAnimationOverlay();
+  public void setMarkerVisible(com.mapconductor.core.marker.MarkerEntityInterface<com.mapconductor.template.TemplateActualMarker>, boolean);
+  public void setMarkerPosition(com.mapconductor.core.marker.MarkerEntityInterface<com.mapconductor.template.TemplateActualMarker>, com.mapconductor.core.features.GeoPoint);
+  public java.lang.Object onAdd(java.util.List<? extends com.mapconductor.core.marker.MarkerOverlayRendererInterface$AddParamsInterface>, kotlin.coroutines.Continuation<? super java.util.List<com.mapconductor.template.TemplateActualMarker>>);
+  public java.lang.Object onChange(java.util.List<? extends com.mapconductor.core.marker.MarkerOverlayRendererInterface$ChangeParamsInterface<com.mapconductor.template.TemplateActualMarker>>, kotlin.coroutines.Continuation<? super java.util.List<com.mapconductor.template.TemplateActualMarker>>);
+  public java.lang.Object onRemove(java.util.List<? extends com.mapconductor.core.marker.MarkerEntityInterface<com.mapconductor.template.TemplateActualMarker>>, kotlin.coroutines.Continuation<? super kotlin.Unit>);
+  public java.lang.Object onPostProcess(kotlin.coroutines.Continuation<? super kotlin.Unit>);
+}
+public final class com.mapconductor.template.TemplatePolygonController extends com.mapconductor.core.polygon.PolygonController<com.mapconductor.template.TemplateActualPolygon> {
+  public com.mapconductor.template.TemplatePolygonController(com.mapconductor.template.TemplatePolygonRenderer);
+}
+public final class com.mapconductor.template.TemplatePolygonRenderer implements com.mapconductor.core.polygon.PolygonOverlayRendererInterface<com.mapconductor.template.TemplateActualPolygon> {
+  public com.mapconductor.template.TemplatePolygonRenderer(com.mapconductor.template.TemplateMapViewHolder);
+  public final com.mapconductor.template.TemplateMapViewHolder getHolder();
+  public java.lang.Object onAdd(java.util.List<? extends com.mapconductor.core.polygon.PolygonOverlayRendererInterface$AddParamsInterface>, kotlin.coroutines.Continuation<? super java.util.List<com.mapconductor.template.TemplateActualPolygon>>);
+  public java.lang.Object onChange(java.util.List<? extends com.mapconductor.core.polygon.PolygonOverlayRendererInterface$ChangeParamsInterface<com.mapconductor.template.TemplateActualPolygon>>, kotlin.coroutines.Continuation<? super java.util.List<com.mapconductor.template.TemplateActualPolygon>>);
+  public java.lang.Object onRemove(java.util.List<? extends com.mapconductor.core.polygon.PolygonEntityInterface<com.mapconductor.template.TemplateActualPolygon>>, kotlin.coroutines.Continuation<? super kotlin.Unit>);
+  public java.lang.Object onPostProcess(kotlin.coroutines.Continuation<? super kotlin.Unit>);
+}
+public final class com.mapconductor.template.TemplatePolylineController extends com.mapconductor.core.polyline.PolylineController<com.mapconductor.template.TemplateActualPolyline> {
+  public com.mapconductor.template.TemplatePolylineController(com.mapconductor.template.TemplatePolylineRenderer);
+}
+public final class com.mapconductor.template.TemplatePolylineRenderer implements com.mapconductor.core.polyline.PolylineOverlayRendererInterface<com.mapconductor.template.TemplateActualPolyline> {
+  public com.mapconductor.template.TemplatePolylineRenderer(com.mapconductor.template.TemplateMapViewHolder);
+  public final com.mapconductor.template.TemplateMapViewHolder getHolder();
+  public java.lang.Object onAdd(java.util.List<? extends com.mapconductor.core.polyline.PolylineOverlayRendererInterface$AddParamsInterface>, kotlin.coroutines.Continuation<? super java.util.List<com.mapconductor.template.TemplateActualPolyline>>);
+  public java.lang.Object onChange(java.util.List<? extends com.mapconductor.core.polyline.PolylineOverlayRendererInterface$ChangeParamsInterface<com.mapconductor.template.TemplateActualPolyline>>, kotlin.coroutines.Continuation<? super java.util.List<com.mapconductor.template.TemplateActualPolyline>>);
+  public java.lang.Object onRemove(java.util.List<? extends com.mapconductor.core.polyline.PolylineEntityInterface<com.mapconductor.template.TemplateActualPolyline>>, kotlin.coroutines.Continuation<? super kotlin.Unit>);
+  public java.lang.Object onPostProcess(kotlin.coroutines.Continuation<? super kotlin.Unit>);
+}
+public final class com.mapconductor.template.TemplateRasterLayerController extends com.mapconductor.core.raster.RasterLayerController<com.mapconductor.template.TemplateActualRasterLayer> {
+  public com.mapconductor.template.TemplateRasterLayerController(com.mapconductor.template.TemplateRasterLayerRenderer);
+}
+public final class com.mapconductor.template.TemplateRasterLayerRenderer implements com.mapconductor.core.raster.RasterLayerOverlayRendererInterface<com.mapconductor.template.TemplateActualRasterLayer> {
+  public com.mapconductor.template.TemplateRasterLayerRenderer(com.mapconductor.template.TemplateMapViewHolder, kotlinx.coroutines.CoroutineScope);
+  public final com.mapconductor.template.TemplateMapViewHolder getHolder();
+  public kotlinx.coroutines.CoroutineScope getCoroutine();
+  public java.lang.Object onAdd(java.util.List<? extends com.mapconductor.core.raster.RasterLayerOverlayRendererInterface$AddParamsInterface>, kotlin.coroutines.Continuation<? super java.util.List<com.mapconductor.template.TemplateActualRasterLayer>>);
+  public java.lang.Object onChange(java.util.List<? extends com.mapconductor.core.raster.RasterLayerOverlayRendererInterface$ChangeParamsInterface<com.mapconductor.template.TemplateActualRasterLayer>>, kotlin.coroutines.Continuation<? super java.util.List<com.mapconductor.template.TemplateActualRasterLayer>>);
+  public java.lang.Object onRemove(java.util.List<? extends com.mapconductor.core.raster.RasterLayerEntityInterface<com.mapconductor.template.TemplateActualRasterLayer>>, kotlin.coroutines.Continuation<? super kotlin.Unit>);
+  public java.lang.Object onCameraChanged(com.mapconductor.core.map.MapCameraPosition, kotlin.coroutines.Continuation<? super kotlin.Unit>);
+  public java.lang.Object onPostProcess(kotlin.coroutines.Continuation<? super kotlin.Unit>);
+}
