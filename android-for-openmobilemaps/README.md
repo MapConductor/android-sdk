@@ -97,19 +97,20 @@ SDK 同梱の web メルカトル設定はレベル 0 が 1:500,000,000 で統�
 
 ### 3-2. tilt（`OpenMobileMapsTiltEmulation.kt`）
 
-ビューを回す方式なので、**投影の畳み込みとアイコンの引き伸ばしが必ず対で要ります**。
-
-- 投影は内側の `MapView` の座標系で返るので、`OpenMobileMapsMapSurface.fromInnerToSurface` /
-  `fromSurfaceToInner` で入れ物の座標へ畳む。畳まないと InfoBubble が画面外へ飛ぶ
-- SDK が描いたものは一律に縦が `cos(傾き)` へ潰れる。地面に寝ているもの（ポリゴン・
-  タイル）はそれで正しいが、マーカーは正面を向くべきなので先に `1 / cos(傾き)` 伸ばして相殺する
-
-
 2D カメラにピッチがありません。`MapCamera3dInterface` なら傾けられますが、それは
 `setupMap(..., is3D = true)` で**地球儀表示**にしたときだけで、平面地図のまま傾けることはできません。
 
 android-for-arcgis の 2D と**同じ方式・同じ定数**で擬似表現します。遠近感は
 `OpenMobileMapsMapSurface` がビューを X 軸まわりに回して作り、tilt < 0 は中心を進行方向へ前進させます。
+
+ビューを回す方式なので、**次の 2 つが必ず対で要ります**。片方だけだと傾けたページで崩れます。
+
+- **投影の畳み込み**。投影は内側の `MapView` の座標系で返るので、
+  `OpenMobileMapsMapSurface.fromInnerToSurface` / `fromSurfaceToInner` で入れ物の座標へ畳む。
+  畳まないと InfoBubble が画面外へ飛ぶ
+- **アイコンの引き伸ばし**。SDK が描いたものは一律に縦が `cos(傾き)` へ潰れる。地面に
+  寝ているもの（ポリゴン・ポリライン・タイル）はそれで正しいが、マーカーは正面を向くべきなので、
+  先に `1 / cos(傾き)` 伸ばして相殺する（`OpenMobileMapsMarkerOverlayRenderer.verticalStretch`）
 
 ### 3-3. カメラアニメーション（`OpenMobileMapsCameraAnimation.kt`）
 
