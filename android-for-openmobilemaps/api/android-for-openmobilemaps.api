@@ -1,0 +1,265 @@
+public final class com.mapconductor.openmobilemaps.OpenMobileMapsActualCircle {
+  public com.mapconductor.openmobilemaps.OpenMobileMapsActualCircle(java.lang.String, com.mapconductor.core.features.GeoPointInterface, double);
+  public final java.lang.String getId();
+  public final com.mapconductor.core.features.GeoPointInterface getCenter();
+  public final void setCenter(com.mapconductor.core.features.GeoPointInterface);
+  public final double getRadiusMeters();
+  public final void setRadiusMeters(double);
+  public final java.lang.String component1();
+  public final com.mapconductor.core.features.GeoPointInterface component2();
+  public final double component3();
+  public final com.mapconductor.openmobilemaps.OpenMobileMapsActualCircle copy(java.lang.String, com.mapconductor.core.features.GeoPointInterface, double);
+  public java.lang.String toString();
+  public int hashCode();
+  public boolean equals(java.lang.Object);
+}
+public final class com.mapconductor.openmobilemaps.OpenMobileMapsActualGroundImage {
+  public com.mapconductor.openmobilemaps.OpenMobileMapsActualGroundImage(java.lang.String);
+  public final java.lang.String getId();
+  public final java.lang.String component1();
+  public final com.mapconductor.openmobilemaps.OpenMobileMapsActualGroundImage copy(java.lang.String);
+  public java.lang.String toString();
+  public int hashCode();
+  public boolean equals(java.lang.Object);
+}
+public final class com.mapconductor.openmobilemaps.OpenMobileMapsActualMarker {
+  public com.mapconductor.openmobilemaps.OpenMobileMapsActualMarker(java.lang.String, com.mapconductor.core.features.GeoPointInterface, boolean);
+  public com.mapconductor.openmobilemaps.OpenMobileMapsActualMarker(java.lang.String, com.mapconductor.core.features.GeoPointInterface, boolean, int, kotlin.jvm.internal.DefaultConstructorMarker);
+  public final java.lang.String getId();
+  public final com.mapconductor.core.features.GeoPointInterface getPosition();
+  public final void setPosition(com.mapconductor.core.features.GeoPointInterface);
+  public final boolean getVisible();
+  public final void setVisible(boolean);
+  public final java.lang.String component1();
+  public final com.mapconductor.core.features.GeoPointInterface component2();
+  public final boolean component3();
+  public final com.mapconductor.openmobilemaps.OpenMobileMapsActualMarker copy(java.lang.String, com.mapconductor.core.features.GeoPointInterface, boolean);
+  public java.lang.String toString();
+  public int hashCode();
+  public boolean equals(java.lang.Object);
+}
+public final class com.mapconductor.openmobilemaps.OpenMobileMapsActualPolygon {
+  public com.mapconductor.openmobilemaps.OpenMobileMapsActualPolygon(java.lang.String, java.util.List<? extends com.mapconductor.core.features.GeoPointInterface>);
+  public final java.lang.String getId();
+  public final java.util.List<com.mapconductor.core.features.GeoPointInterface> getPoints();
+  public final void setPoints(java.util.List<? extends com.mapconductor.core.features.GeoPointInterface>);
+  public final java.lang.String component1();
+  public final java.util.List<com.mapconductor.core.features.GeoPointInterface> component2();
+  public final com.mapconductor.openmobilemaps.OpenMobileMapsActualPolygon copy(java.lang.String, java.util.List<? extends com.mapconductor.core.features.GeoPointInterface>);
+  public java.lang.String toString();
+  public int hashCode();
+  public boolean equals(java.lang.Object);
+}
+public final class com.mapconductor.openmobilemaps.OpenMobileMapsActualPolyline {
+  public com.mapconductor.openmobilemaps.OpenMobileMapsActualPolyline(java.lang.String, java.util.List<? extends com.mapconductor.core.features.GeoPointInterface>);
+  public final java.lang.String getId();
+  public final java.util.List<com.mapconductor.core.features.GeoPointInterface> getPoints();
+  public final void setPoints(java.util.List<? extends com.mapconductor.core.features.GeoPointInterface>);
+  public final java.lang.String component1();
+  public final java.util.List<com.mapconductor.core.features.GeoPointInterface> component2();
+  public final com.mapconductor.openmobilemaps.OpenMobileMapsActualPolyline copy(java.lang.String, java.util.List<? extends com.mapconductor.core.features.GeoPointInterface>);
+  public java.lang.String toString();
+  public int hashCode();
+  public boolean equals(java.lang.Object);
+}
+public final class com.mapconductor.openmobilemaps.OpenMobileMapsActualRasterLayer {
+  public com.mapconductor.openmobilemaps.OpenMobileMapsActualRasterLayer(java.lang.String);
+  public final java.lang.String getId();
+  public final java.lang.String component1();
+  public final com.mapconductor.openmobilemaps.OpenMobileMapsActualRasterLayer copy(java.lang.String);
+  public java.lang.String toString();
+  public int hashCode();
+  public boolean equals(java.lang.Object);
+}
+public final class com.mapconductor.openmobilemaps.OpenMobileMapsCamera {
+  public com.mapconductor.openmobilemaps.OpenMobileMapsCamera(com.mapconductor.core.features.GeoPoint, double, double, double);
+  public com.mapconductor.openmobilemaps.OpenMobileMapsCamera(com.mapconductor.core.features.GeoPoint, double, double, double, int, kotlin.jvm.internal.DefaultConstructorMarker);
+  public final com.mapconductor.core.features.GeoPoint getPosition();
+  public final double getZoom();
+  public final double getBearing();
+  public final double getTilt();
+  public final com.mapconductor.core.features.GeoPoint component1();
+  public final double component2();
+  public final double component3();
+  public final double component4();
+  public final com.mapconductor.openmobilemaps.OpenMobileMapsCamera copy(com.mapconductor.core.features.GeoPoint, double, double, double);
+  public java.lang.String toString();
+  public int hashCode();
+  public boolean equals(java.lang.Object);
+  public com.mapconductor.openmobilemaps.OpenMobileMapsCamera();
+}
+public final class com.mapconductor.openmobilemaps.OpenMobileMapsCircleController extends com.mapconductor.core.circle.CircleController<com.mapconductor.openmobilemaps.OpenMobileMapsActualCircle> {
+  public com.mapconductor.openmobilemaps.OpenMobileMapsCircleController(com.mapconductor.openmobilemaps.OpenMobileMapsCircleRenderer);
+}
+public final class com.mapconductor.openmobilemaps.OpenMobileMapsCircleRenderer implements com.mapconductor.core.circle.CircleOverlayRendererInterface<com.mapconductor.openmobilemaps.OpenMobileMapsActualCircle> {
+  public com.mapconductor.openmobilemaps.OpenMobileMapsCircleRenderer(com.mapconductor.openmobilemaps.OpenMobileMapsMapViewHolder);
+  public final com.mapconductor.openmobilemaps.OpenMobileMapsMapViewHolder getHolder();
+  public java.lang.Object onAdd(java.util.List<? extends com.mapconductor.core.circle.CircleOverlayRendererInterface$AddParamsInterface>, kotlin.coroutines.Continuation<? super java.util.List<com.mapconductor.openmobilemaps.OpenMobileMapsActualCircle>>);
+  public java.lang.Object onChange(java.util.List<? extends com.mapconductor.core.circle.CircleOverlayRendererInterface$ChangeParamsInterface<com.mapconductor.openmobilemaps.OpenMobileMapsActualCircle>>, kotlin.coroutines.Continuation<? super java.util.List<com.mapconductor.openmobilemaps.OpenMobileMapsActualCircle>>);
+  public java.lang.Object onRemove(java.util.List<? extends com.mapconductor.core.circle.CircleEntityInterface<com.mapconductor.openmobilemaps.OpenMobileMapsActualCircle>>, kotlin.coroutines.Continuation<? super kotlin.Unit>);
+  public java.lang.Object onPostProcess(kotlin.coroutines.Continuation<? super kotlin.Unit>);
+}
+public final class com.mapconductor.openmobilemaps.OpenMobileMapsDesign implements com.mapconductor.openmobilemaps.OpenMobileMapsMapDesignType {
+  public com.mapconductor.openmobilemaps.OpenMobileMapsDesign(java.lang.String, long, int, kotlin.jvm.internal.DefaultConstructorMarker);
+  public java.lang.String getId();
+  public long getBackground-0d7_KjU();
+  public final java.lang.String component1();
+  public final long component2-0d7_KjU();
+  public final com.mapconductor.openmobilemaps.OpenMobileMapsDesign copy-4WTKRHQ(java.lang.String, long);
+  public java.lang.String toString();
+  public int hashCode();
+  public boolean equals(java.lang.Object);
+  public com.mapconductor.openmobilemaps.OpenMobileMapsDesign(java.lang.String, long, kotlin.jvm.internal.DefaultConstructorMarker);
+}
+public final class com.mapconductor.openmobilemaps.OpenMobileMapsDisplayList {
+  public com.mapconductor.openmobilemaps.OpenMobileMapsDisplayList();
+  public final java.util.Map<java.lang.String, com.mapconductor.openmobilemaps.OpenMobileMapsActualMarker> getMarkers();
+  public final java.util.Map<java.lang.String, com.mapconductor.openmobilemaps.OpenMobileMapsActualPolyline> getPolylines();
+  public final java.util.Map<java.lang.String, com.mapconductor.openmobilemaps.OpenMobileMapsActualPolygon> getPolygons();
+  public final java.util.Map<java.lang.String, com.mapconductor.openmobilemaps.OpenMobileMapsActualCircle> getCircles();
+  public final java.util.Map<java.lang.String, com.mapconductor.openmobilemaps.OpenMobileMapsActualGroundImage> getGroundImages();
+  public final java.util.Map<java.lang.String, com.mapconductor.openmobilemaps.OpenMobileMapsActualRasterLayer> getRasterLayers();
+  public final void clear();
+}
+public final class com.mapconductor.openmobilemaps.OpenMobileMapsGroundImageController extends com.mapconductor.core.groundimage.GroundImageController<com.mapconductor.openmobilemaps.OpenMobileMapsActualGroundImage> {
+  public com.mapconductor.openmobilemaps.OpenMobileMapsGroundImageController(com.mapconductor.openmobilemaps.OpenMobileMapsGroundImageRenderer);
+}
+public final class com.mapconductor.openmobilemaps.OpenMobileMapsGroundImageRenderer implements com.mapconductor.core.groundimage.GroundImageOverlayRendererInterface<com.mapconductor.openmobilemaps.OpenMobileMapsActualGroundImage> {
+  public com.mapconductor.openmobilemaps.OpenMobileMapsGroundImageRenderer(com.mapconductor.openmobilemaps.OpenMobileMapsMapViewHolder);
+  public final com.mapconductor.openmobilemaps.OpenMobileMapsMapViewHolder getHolder();
+  public java.lang.Object onAdd(java.util.List<? extends com.mapconductor.core.groundimage.GroundImageOverlayRendererInterface$AddParamsInterface>, kotlin.coroutines.Continuation<? super java.util.List<com.mapconductor.openmobilemaps.OpenMobileMapsActualGroundImage>>);
+  public java.lang.Object onChange(java.util.List<? extends com.mapconductor.core.groundimage.GroundImageOverlayRendererInterface$ChangeParamsInterface<com.mapconductor.openmobilemaps.OpenMobileMapsActualGroundImage>>, kotlin.coroutines.Continuation<? super java.util.List<com.mapconductor.openmobilemaps.OpenMobileMapsActualGroundImage>>);
+  public java.lang.Object onRemove(java.util.List<? extends com.mapconductor.core.groundimage.GroundImageEntityInterface<com.mapconductor.openmobilemaps.OpenMobileMapsActualGroundImage>>, kotlin.coroutines.Continuation<? super kotlin.Unit>);
+  public java.lang.Object onPostProcess(kotlin.coroutines.Continuation<? super kotlin.Unit>);
+}
+public final class com.mapconductor.openmobilemaps.OpenMobileMapsMap {
+  public static final double TILE_SIZE;
+  public static final double MAX_LATITUDE;
+  public com.mapconductor.openmobilemaps.OpenMobileMapsMap();
+  public final com.mapconductor.openmobilemaps.OpenMobileMapsCamera getCamera();
+  public final long getViewportSize-NH-jbRc();
+  public final void setViewportSize-uvyYCjk(long);
+  public final com.mapconductor.openmobilemaps.OpenMobileMapsDisplayList getDisplayList();
+  public final kotlin.jvm.functions.Function1<com.mapconductor.core.features.GeoPoint, kotlin.Unit> getOnMapClick();
+  public final void setOnMapClick(kotlin.jvm.functions.Function1<? super com.mapconductor.core.features.GeoPoint, kotlin.Unit>);
+  public final kotlin.jvm.functions.Function1<com.mapconductor.core.features.GeoPoint, kotlin.Unit> getOnMapLongClick();
+  public final void setOnMapLongClick(kotlin.jvm.functions.Function1<? super com.mapconductor.core.features.GeoPoint, kotlin.Unit>);
+  public final kotlin.jvm.functions.Function1<com.mapconductor.openmobilemaps.OpenMobileMapsCamera, kotlin.Unit> getOnCameraMove();
+  public final void setOnCameraMove(kotlin.jvm.functions.Function1<? super com.mapconductor.openmobilemaps.OpenMobileMapsCamera, kotlin.Unit>);
+  public final kotlin.jvm.functions.Function0<kotlin.Unit> getOnInvalidate();
+  public final void setOnInvalidate(kotlin.jvm.functions.Function0<kotlin.Unit>);
+  public final void moveCamera(com.mapconductor.openmobilemaps.OpenMobileMapsCamera);
+  public final void invalidate();
+  public final androidx.compose.ui.geometry.Offset project-x-9fifI(com.mapconductor.core.features.GeoPointInterface);
+  public final com.mapconductor.core.features.GeoPoint unproject-k-4lQ0M(long);
+}
+final class com.mapconductor.openmobilemaps.OpenMobileMapsMap$Companion {
+  public final double lngToWorldX(double);
+  public final double latToWorldY(double);
+  public final double worldXToLng(double);
+  public final double worldYToLat(double);
+  public final double unusedSin(double);
+}
+public interface com.mapconductor.openmobilemaps.OpenMobileMapsMapDesignType {
+  public abstract java.lang.String getId();
+  public abstract long getBackground-0d7_KjU();
+}
+public final class com.mapconductor.openmobilemaps.OpenMobileMapsMapSurface {
+  public com.mapconductor.openmobilemaps.OpenMobileMapsMapSurface(com.mapconductor.openmobilemaps.OpenMobileMapsMap);
+  public final com.mapconductor.openmobilemaps.OpenMobileMapsMap getMap();
+}
+public final class com.mapconductor.openmobilemaps.OpenMobileMapsMapViewController extends com.mapconductor.core.controller.BaseMapViewController {
+  public static final com.mapconductor.openmobilemaps.OpenMobileMapsMapViewController$Companion Companion;
+  public com.mapconductor.openmobilemaps.OpenMobileMapsMapViewController(com.mapconductor.openmobilemaps.OpenMobileMapsMapViewHolder, com.mapconductor.openmobilemaps.OpenMobileMapsMarkerController, com.mapconductor.openmobilemaps.OpenMobileMapsPolylineController, com.mapconductor.openmobilemaps.OpenMobileMapsPolygonController, com.mapconductor.openmobilemaps.OpenMobileMapsCircleController, com.mapconductor.openmobilemaps.OpenMobileMapsGroundImageController, com.mapconductor.openmobilemaps.OpenMobileMapsRasterLayerController, kotlinx.coroutines.CoroutineScope, kotlinx.coroutines.CoroutineScope);
+  public com.mapconductor.openmobilemaps.OpenMobileMapsMapViewController(com.mapconductor.openmobilemaps.OpenMobileMapsMapViewHolder, com.mapconductor.openmobilemaps.OpenMobileMapsMarkerController, com.mapconductor.openmobilemaps.OpenMobileMapsPolylineController, com.mapconductor.openmobilemaps.OpenMobileMapsPolygonController, com.mapconductor.openmobilemaps.OpenMobileMapsCircleController, com.mapconductor.openmobilemaps.OpenMobileMapsGroundImageController, com.mapconductor.openmobilemaps.OpenMobileMapsRasterLayerController, kotlinx.coroutines.CoroutineScope, kotlinx.coroutines.CoroutineScope, int, kotlin.jvm.internal.DefaultConstructorMarker);
+  public com.mapconductor.openmobilemaps.OpenMobileMapsMapViewHolder getHolder();
+  public kotlinx.coroutines.CoroutineScope getMainCoroutine();
+  public kotlinx.coroutines.CoroutineScope getDefaultCoroutine();
+  protected boolean dispatchMarkerTap(com.mapconductor.core.features.GeoPointInterface);
+  public final void installListeners();
+  public final com.mapconductor.core.map.MapCameraPosition readNativeCamera(com.mapconductor.openmobilemaps.OpenMobileMapsCamera);
+  public void moveCamera(com.mapconductor.core.map.MapCameraPosition);
+  public void animateCamera(com.mapconductor.core.map.MapCameraPosition, long);
+  public void fitBounds(com.mapconductor.core.features.GeoRectBounds, int);
+  public java.lang.Object clearOverlays(kotlin.coroutines.Continuation<? super kotlin.Unit>);
+  public final void declareCapabilities(com.mapconductor.core.map.MutableMapServiceRegistry);
+  public com.mapconductor.core.map.MapViewHolderInterface getHolder();
+}
+public final class com.mapconductor.openmobilemaps.OpenMobileMapsMapViewController$Companion {
+  public final com.mapconductor.core.zoom.WebMercatorZoomAltitudeConverter getZOOM_CONVERTER();
+}
+public final class com.mapconductor.openmobilemaps.OpenMobileMapsMapViewHolder implements com.mapconductor.core.map.MapViewHolderInterface<com.mapconductor.openmobilemaps.OpenMobileMapsMapSurface, com.mapconductor.openmobilemaps.OpenMobileMapsMap> {
+  public com.mapconductor.openmobilemaps.OpenMobileMapsMapViewHolder(com.mapconductor.openmobilemaps.OpenMobileMapsMapSurface, com.mapconductor.openmobilemaps.OpenMobileMapsMap);
+  public com.mapconductor.openmobilemaps.OpenMobileMapsMapSurface getMapView();
+  public com.mapconductor.openmobilemaps.OpenMobileMapsMap getMap();
+  public androidx.compose.ui.geometry.Offset toScreenOffset-x-9fifI(com.mapconductor.core.features.GeoPointInterface);
+  public com.mapconductor.core.features.GeoPoint fromScreenOffsetSync-k-4lQ0M(long);
+  public java.lang.Object fromScreenOffset-3MmeM6k(long, kotlin.coroutines.Continuation<? super com.mapconductor.core.features.GeoPoint>);
+  public java.lang.Object getMapView();
+  public java.lang.Object getMap();
+}
+public final class com.mapconductor.openmobilemaps.OpenMobileMapsMapViewKt {
+  public static final com.mapconductor.openmobilemaps.OpenMobileMapsMapViewState rememberOpenMobileMapsMapViewState(com.mapconductor.openmobilemaps.OpenMobileMapsMapDesignType, com.mapconductor.core.map.MapCameraPositionInterface, androidx.compose.runtime.Composer, int, int);
+  public static final void OpenMobileMapsMapView(com.mapconductor.openmobilemaps.OpenMobileMapsMapViewState, androidx.compose.ui.Modifier, androidx.compose.runtime.Composer, int, int);
+}
+public final class com.mapconductor.openmobilemaps.OpenMobileMapsMapViewState extends com.mapconductor.core.map.MapViewState<com.mapconductor.openmobilemaps.OpenMobileMapsMapDesignType> implements com.mapconductor.core.map.MapViewStateInterface<com.mapconductor.openmobilemaps.OpenMobileMapsMapDesignType> {
+  public com.mapconductor.openmobilemaps.OpenMobileMapsMapViewState(com.mapconductor.openmobilemaps.OpenMobileMapsMapDesignType, java.lang.String, com.mapconductor.core.map.MapCameraPosition);
+  public com.mapconductor.openmobilemaps.OpenMobileMapsMapViewState(com.mapconductor.openmobilemaps.OpenMobileMapsMapDesignType, java.lang.String, com.mapconductor.core.map.MapCameraPosition, int, kotlin.jvm.internal.DefaultConstructorMarker);
+  public java.lang.String getId();
+  public com.mapconductor.openmobilemaps.OpenMobileMapsMapDesignType getMapDesignType();
+  public void setMapDesignType(com.mapconductor.openmobilemaps.OpenMobileMapsMapDesignType);
+  public com.mapconductor.openmobilemaps.OpenMobileMapsMapViewHolder getMapViewHolder();
+  public java.lang.Object getMapDesignType();
+  public void setMapDesignType(java.lang.Object);
+  public com.mapconductor.core.map.MapViewHolderInterface getMapViewHolder();
+}
+public final class com.mapconductor.openmobilemaps.OpenMobileMapsMarkerController extends com.mapconductor.core.marker.AbstractMarkerController<com.mapconductor.openmobilemaps.OpenMobileMapsActualMarker> {
+  public com.mapconductor.openmobilemaps.OpenMobileMapsMarkerController(com.mapconductor.openmobilemaps.OpenMobileMapsMarkerRenderer);
+}
+public final class com.mapconductor.openmobilemaps.OpenMobileMapsMarkerRenderer extends com.mapconductor.core.marker.AbstractMarkerOverlayRenderer<com.mapconductor.openmobilemaps.OpenMobileMapsMapViewHolder, com.mapconductor.openmobilemaps.OpenMobileMapsActualMarker> {
+  public com.mapconductor.openmobilemaps.OpenMobileMapsMarkerRenderer(com.mapconductor.openmobilemaps.OpenMobileMapsMapViewHolder, kotlinx.coroutines.CoroutineScope, com.mapconductor.core.marker.MarkerManager<com.mapconductor.openmobilemaps.OpenMobileMapsActualMarker>);
+  public com.mapconductor.openmobilemaps.OpenMobileMapsMarkerRenderer(com.mapconductor.openmobilemaps.OpenMobileMapsMapViewHolder, kotlinx.coroutines.CoroutineScope, com.mapconductor.core.marker.MarkerManager, int, kotlin.jvm.internal.DefaultConstructorMarker);
+  public final com.mapconductor.core.marker.MarkerManager<com.mapconductor.openmobilemaps.OpenMobileMapsActualMarker> getMarkerManager();
+  public boolean getSupportsAnimationOverlay();
+  public void setMarkerVisible(com.mapconductor.core.marker.MarkerEntityInterface<com.mapconductor.openmobilemaps.OpenMobileMapsActualMarker>, boolean);
+  public void setMarkerPosition(com.mapconductor.core.marker.MarkerEntityInterface<com.mapconductor.openmobilemaps.OpenMobileMapsActualMarker>, com.mapconductor.core.features.GeoPoint);
+  public java.lang.Object onAdd(java.util.List<? extends com.mapconductor.core.marker.MarkerOverlayRendererInterface$AddParamsInterface>, kotlin.coroutines.Continuation<? super java.util.List<com.mapconductor.openmobilemaps.OpenMobileMapsActualMarker>>);
+  public java.lang.Object onChange(java.util.List<? extends com.mapconductor.core.marker.MarkerOverlayRendererInterface$ChangeParamsInterface<com.mapconductor.openmobilemaps.OpenMobileMapsActualMarker>>, kotlin.coroutines.Continuation<? super java.util.List<com.mapconductor.openmobilemaps.OpenMobileMapsActualMarker>>);
+  public java.lang.Object onRemove(java.util.List<? extends com.mapconductor.core.marker.MarkerEntityInterface<com.mapconductor.openmobilemaps.OpenMobileMapsActualMarker>>, kotlin.coroutines.Continuation<? super kotlin.Unit>);
+  public java.lang.Object onPostProcess(kotlin.coroutines.Continuation<? super kotlin.Unit>);
+}
+public final class com.mapconductor.openmobilemaps.OpenMobileMapsPolygonController extends com.mapconductor.core.polygon.PolygonController<com.mapconductor.openmobilemaps.OpenMobileMapsActualPolygon> {
+  public com.mapconductor.openmobilemaps.OpenMobileMapsPolygonController(com.mapconductor.openmobilemaps.OpenMobileMapsPolygonRenderer);
+}
+public final class com.mapconductor.openmobilemaps.OpenMobileMapsPolygonRenderer implements com.mapconductor.core.polygon.PolygonOverlayRendererInterface<com.mapconductor.openmobilemaps.OpenMobileMapsActualPolygon> {
+  public com.mapconductor.openmobilemaps.OpenMobileMapsPolygonRenderer(com.mapconductor.openmobilemaps.OpenMobileMapsMapViewHolder);
+  public final com.mapconductor.openmobilemaps.OpenMobileMapsMapViewHolder getHolder();
+  public java.lang.Object onAdd(java.util.List<? extends com.mapconductor.core.polygon.PolygonOverlayRendererInterface$AddParamsInterface>, kotlin.coroutines.Continuation<? super java.util.List<com.mapconductor.openmobilemaps.OpenMobileMapsActualPolygon>>);
+  public java.lang.Object onChange(java.util.List<? extends com.mapconductor.core.polygon.PolygonOverlayRendererInterface$ChangeParamsInterface<com.mapconductor.openmobilemaps.OpenMobileMapsActualPolygon>>, kotlin.coroutines.Continuation<? super java.util.List<com.mapconductor.openmobilemaps.OpenMobileMapsActualPolygon>>);
+  public java.lang.Object onRemove(java.util.List<? extends com.mapconductor.core.polygon.PolygonEntityInterface<com.mapconductor.openmobilemaps.OpenMobileMapsActualPolygon>>, kotlin.coroutines.Continuation<? super kotlin.Unit>);
+  public java.lang.Object onPostProcess(kotlin.coroutines.Continuation<? super kotlin.Unit>);
+}
+public final class com.mapconductor.openmobilemaps.OpenMobileMapsPolylineController extends com.mapconductor.core.polyline.PolylineController<com.mapconductor.openmobilemaps.OpenMobileMapsActualPolyline> {
+  public com.mapconductor.openmobilemaps.OpenMobileMapsPolylineController(com.mapconductor.openmobilemaps.OpenMobileMapsPolylineRenderer);
+}
+public final class com.mapconductor.openmobilemaps.OpenMobileMapsPolylineRenderer implements com.mapconductor.core.polyline.PolylineOverlayRendererInterface<com.mapconductor.openmobilemaps.OpenMobileMapsActualPolyline> {
+  public com.mapconductor.openmobilemaps.OpenMobileMapsPolylineRenderer(com.mapconductor.openmobilemaps.OpenMobileMapsMapViewHolder);
+  public final com.mapconductor.openmobilemaps.OpenMobileMapsMapViewHolder getHolder();
+  public java.lang.Object onAdd(java.util.List<? extends com.mapconductor.core.polyline.PolylineOverlayRendererInterface$AddParamsInterface>, kotlin.coroutines.Continuation<? super java.util.List<com.mapconductor.openmobilemaps.OpenMobileMapsActualPolyline>>);
+  public java.lang.Object onChange(java.util.List<? extends com.mapconductor.core.polyline.PolylineOverlayRendererInterface$ChangeParamsInterface<com.mapconductor.openmobilemaps.OpenMobileMapsActualPolyline>>, kotlin.coroutines.Continuation<? super java.util.List<com.mapconductor.openmobilemaps.OpenMobileMapsActualPolyline>>);
+  public java.lang.Object onRemove(java.util.List<? extends com.mapconductor.core.polyline.PolylineEntityInterface<com.mapconductor.openmobilemaps.OpenMobileMapsActualPolyline>>, kotlin.coroutines.Continuation<? super kotlin.Unit>);
+  public java.lang.Object onPostProcess(kotlin.coroutines.Continuation<? super kotlin.Unit>);
+}
+public final class com.mapconductor.openmobilemaps.OpenMobileMapsRasterLayerController extends com.mapconductor.core.raster.RasterLayerController<com.mapconductor.openmobilemaps.OpenMobileMapsActualRasterLayer> {
+  public com.mapconductor.openmobilemaps.OpenMobileMapsRasterLayerController(com.mapconductor.openmobilemaps.OpenMobileMapsRasterLayerRenderer);
+}
+public final class com.mapconductor.openmobilemaps.OpenMobileMapsRasterLayerRenderer implements com.mapconductor.core.raster.RasterLayerOverlayRendererInterface<com.mapconductor.openmobilemaps.OpenMobileMapsActualRasterLayer> {
+  public com.mapconductor.openmobilemaps.OpenMobileMapsRasterLayerRenderer(com.mapconductor.openmobilemaps.OpenMobileMapsMapViewHolder, kotlinx.coroutines.CoroutineScope);
+  public final com.mapconductor.openmobilemaps.OpenMobileMapsMapViewHolder getHolder();
+  public kotlinx.coroutines.CoroutineScope getCoroutine();
+  public java.lang.Object onAdd(java.util.List<? extends com.mapconductor.core.raster.RasterLayerOverlayRendererInterface$AddParamsInterface>, kotlin.coroutines.Continuation<? super java.util.List<com.mapconductor.openmobilemaps.OpenMobileMapsActualRasterLayer>>);
+  public java.lang.Object onChange(java.util.List<? extends com.mapconductor.core.raster.RasterLayerOverlayRendererInterface$ChangeParamsInterface<com.mapconductor.openmobilemaps.OpenMobileMapsActualRasterLayer>>, kotlin.coroutines.Continuation<? super java.util.List<com.mapconductor.openmobilemaps.OpenMobileMapsActualRasterLayer>>);
+  public java.lang.Object onRemove(java.util.List<? extends com.mapconductor.core.raster.RasterLayerEntityInterface<com.mapconductor.openmobilemaps.OpenMobileMapsActualRasterLayer>>, kotlin.coroutines.Continuation<? super kotlin.Unit>);
+  public java.lang.Object onCameraChanged(com.mapconductor.core.map.MapCameraPosition, kotlin.coroutines.Continuation<? super kotlin.Unit>);
+  public java.lang.Object onPostProcess(kotlin.coroutines.Continuation<? super kotlin.Unit>);
+}
