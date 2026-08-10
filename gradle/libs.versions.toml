@@ -1,8 +1,9 @@
 [versions]
+openmobilemaps = "4.0.0"
 agp = "9.2.1"
 
 core = "1.7.0"
-kotlin = "2.0.21"
+kotlin = "2.4.10"
 
 coreKtx = "1.16.0"
 appcompat = "1.7.1"
@@ -37,6 +38,8 @@ coroutines = "1.9.0"
 ui = "1.11.4"
 
 [libraries]
+# Open Mobile Maps (https://github.com/openmobilemaps/maps-core) — MPL 2.0
+openmobilemaps-mapscore = { module = "io.openmobilemaps:mapscore", version.ref = "openmobilemaps" }
 # Android ??
 androidx-core = { module = "androidx.test:core", version.ref = "core" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
