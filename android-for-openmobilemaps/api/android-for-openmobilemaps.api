@@ -157,6 +157,8 @@ public final class com.mapconductor.openmobilemaps.OpenMobileMapsMapSurface exte
   public final double getVisualTilt();
   public final void setVisualTilt(double);
   protected void onLayout(boolean, int, int, int, int);
+  public final long fromInnerToSurface-MK-Hz9U(long);
+  public final androidx.compose.ui.geometry.Offset fromSurfaceToInner-PeaRLWg(long);
 }
 final class com.mapconductor.openmobilemaps.OpenMobileMapsMapSurface$Companion {
 }

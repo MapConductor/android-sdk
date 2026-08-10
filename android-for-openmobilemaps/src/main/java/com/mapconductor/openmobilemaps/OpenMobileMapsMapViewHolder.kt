@@ -33,17 +33,24 @@ class OpenMobileMapsMapViewHolder(
     override val mapView: OpenMobileMapsMapSurface,
     override val map: MapInterface,
 ) : MapViewHolderInterface<OpenMobileMapsMapSurface, MapInterface> {
-    /** 地理座標 → 画面座標。 */
+    /**
+     * 地理座標 → 画面座標。
+     *
+     * SDK が返すのは**内側の [io.openmobilemaps.mapscore.map.view.MapView] の座標**なので、
+     * [OpenMobileMapsMapSurface.fromInnerToSurface] で入れ物の座標へ畳んでから返すこと。
+     * 傾けているとき内側は拡大・回転しているため、畳まないとオーバーレイが全部ずれる。
+     */
     override fun toScreenOffset(position: GeoPointInterface): Offset? {
         val screen =
             runCatching { map.getCamera().screenPosFromCoord(position.toOmmCoord()) }.getOrNull() ?: return null
-        return Offset(screen.x, screen.y)
+        return mapView.fromInnerToSurface(Offset(screen.x, screen.y))
     }
 
-    /** 画面座標 → 地理座標。 */
+    /** 画面座標 → 地理座標。入り口で入れ物の座標を内側の座標へ戻す（[toScreenOffset] の逆）。 */
     override fun fromScreenOffsetSync(offset: Offset): GeoPoint? {
+        val inner = mapView.fromSurfaceToInner(offset) ?: return null
         val coord =
-            runCatching { map.getCamera().coordFromScreenPosition(Vec2F(offset.x, offset.y)) }.getOrNull()
+            runCatching { map.getCamera().coordFromScreenPosition(Vec2F(inner.x, inner.y)) }.getOrNull()
                 ?: return null
         return toWgs84(coord)?.toGeoPoint()
     }
@@ -52,10 +59,8 @@ class OpenMobileMapsMapViewHolder(
      * ビューポートの大きさはコアの [com.mapconductor.core.map.viewportSizePx] が
      * [mapView] から解決する（拡張関数なので override はできない）。
      *
-     * tilt を掛けているとき、内側の [io.openmobilemaps.mapscore.map.view.MapView] は
-     * [OpenMobileMapsMapSurface] より広く、投影は内側の座標系で返る。そのぶん
-     * `visibleRegion` と InfoBubble の位置はずれる。android-for-arcgis の 2D も
-     * 同じ割り切りで、tilt = 0 のときは厳密に一致する。
+     * 返るのは入れ物（[OpenMobileMapsMapSurface]）の大きさ。投影も入れ物の座標系へ
+     * 畳んであるので、傾けていても `visibleRegion` の 4 隅は実際に見えている範囲になる。
      */
 
     /** 地図の座標系（EPSG:3857）→ EPSG:4326。 */

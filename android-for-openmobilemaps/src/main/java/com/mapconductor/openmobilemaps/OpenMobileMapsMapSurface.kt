@@ -1,9 +1,11 @@
 package com.mapconductor.openmobilemaps
 
+import androidx.compose.ui.geometry.Offset
 import io.openmobilemaps.mapscore.map.view.MapView
 import kotlin.math.abs
 import kotlin.math.max
 import android.content.Context
+import android.graphics.Matrix
 import android.util.AttributeSet
 import android.view.Gravity
 import android.widget.FrameLayout
@@ -17,11 +19,16 @@ import android.widget.FrameLayout
  *
  * 負の tilt は中心の前進で表現されるので、描画角度は常に `abs(tilt)` を使う。
  *
- * ## 投影は傾きを補正しない
+ * ## 投影はここで畳む
  *
- * [OpenMobileMapsMapViewHolder] の投影は内側の [MapView] の座標系で返る。傾けているときは
- * 内側が [PLANE_SCALE] 倍に広がっているため、InfoBubble の位置と可視領域はその分ずれる。
- * android-for-arcgis の 2D も同じ割り切りで、tilt = 0 のときは厳密に一致する。
+ * SDK の投影は内側の [MapView] の座標系で返るので、傾けているあいだは拡大・回転のぶんだけ
+ * Compose 側（InfoBubble・マーカーアニメーション）とずれる。[fromInnerToSurface] /
+ * [fromSurfaceToInner] を必ず通すこと。
+ *
+ * ## 直せていないこと
+ *
+ * マーカーは内側の [MapView] が描くので、この回転で**一緒に寝る**（本来は常に正面を向くべき）。
+ * ビューを回す方式である以上ここでは避けられない。android-for-arcgis の 2D も同じ。
  */
 class OpenMobileMapsMapSurface : FrameLayout {
     lateinit var mapView: MapView
@@ -29,6 +36,10 @@ class OpenMobileMapsMapSurface : FrameLayout {
     constructor(context: Context) : super(context)
     constructor(context: Context, attrs: AttributeSet?) : super(context, attrs)
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
+
+    /** [fromInnerToSurface] / [fromSurfaceToInner] の作業領域。毎フレーム何度も呼ぶので使い回す。 */
+    private val scratchPoint = FloatArray(2)
+    private val inverseMatrix = Matrix()
 
     /** 見た目を傾ける角度（論理 tilt、度）。 */
     var visualTilt: Double = 0.0
@@ -75,6 +86,38 @@ class OpenMobileMapsMapSurface : FrameLayout {
         // perspective を置いておらず、[PLANE_SCALE] = 1 / cos(60°) がちょうど効く前提。
         mapView.cameraDistance = max(targetWidth, targetHeight) * ORTHOGRAPHIC_DISTANCE_FACTOR
         mapView.rotationX = angle
+    }
+
+    /**
+     * 内側の [MapView] の座標 → この入れ物の座標。
+     *
+     * ## これを通さないとオーバーレイが全部ずれる
+     *
+     * SDK の投影は**内側の [MapView] の座標系**で返る。傾けているとき内側は
+     * [PLANE_SCALE] 倍に広げて中央寄せしてあるので、そのまま Compose 側
+     * （InfoBubble・マーカーアニメーション）へ渡すと、拡大と中央寄せのぶんだけずれる。
+     * tilt 45 度のページで **InfoBubble が画面外へ飛ぶ**という形で出た。
+     *
+     * [android.view.View.getMatrix] は `rotationX` と `cameraDistance` による射影も
+     * 含むので、遠近ぶんも正しく畳める。ただし left/top の平行移動は含まれないので足す。
+     * tilt = 0 のときは単位行列 + 移動ゼロなので、何も変わらない。
+     */
+    fun fromInnerToSurface(point: Offset): Offset {
+        if (!this::mapView.isInitialized) return point
+        scratchPoint[0] = point.x
+        scratchPoint[1] = point.y
+        mapView.matrix.mapPoints(scratchPoint)
+        return Offset(scratchPoint[0] + mapView.left, scratchPoint[1] + mapView.top)
+    }
+
+    /** この入れ物の座標 → 内側の [MapView] の座標。逆行列が作れなければ null。 */
+    fun fromSurfaceToInner(point: Offset): Offset? {
+        if (!this::mapView.isInitialized) return point
+        if (!mapView.matrix.invert(inverseMatrix)) return null
+        scratchPoint[0] = point.x - mapView.left
+        scratchPoint[1] = point.y - mapView.top
+        inverseMatrix.mapPoints(scratchPoint)
+        return Offset(scratchPoint[0], scratchPoint[1])
     }
 
     private companion object {
