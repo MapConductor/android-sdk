@@ -1,0 +1,22 @@
+<!--
+  Open Mobile Maps の一覧用アイコン。ロゴの再配布を避けるため、
+  「開いた地図」を表す中立な図形にしてある（longdo_logo.xml と同じ扱い）。
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <path
+        android:fillColor="#1B7F79"
+        android:pathData="M4,12L17,8L31,12L44,8V36L31,40L17,36L4,40Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M17,8V36L19,36.5V8.5Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M29,11.5V39.5L31,40V12Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M24,17A5,5 0,0 0,19 22C19,26 24,32 24,32C24,32 29,26 29,22A5,5 0,0 0,24 17ZM24,20A2,2 0,0 1,26 22A2,2 0,0 1,24 24A2,2 0,0 1,22 22A2,2 0,0 1,24 20Z" />
+</vector>

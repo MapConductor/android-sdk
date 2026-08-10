@@ -127,6 +127,10 @@ android {
 
         jniLibs {
             useLegacyPackaging = true
+            // TomTom（common-ndk27）と Open Mobile Maps（mapscore）が
+            // どちらも libc++_shared.so を同梱していて衝突する。どちらも同じ
+            // NDK の STL なので 1 つに畳んでよい。
+            pickFirsts += "lib/**/libc++_shared.so"
         }
     }
 
@@ -227,6 +231,11 @@ dependencies {
     debugImplementation(project(":android-for-tomtom"))
     debugImplementation(project(":android-for-maptiler"))
     debugImplementation(project(":android-for-longdo"))
+
+    // Open Mobile Maps はまだ Maven へ publish していないので、全ビルドタイプで
+    // プロジェクト依存にしている。publish したら他プロバイダと同じく
+    // releaseImplementation(libs...) / "localImplementation"(...) へ移すこと。
+    implementation(project(":android-for-openmobilemaps"))
     debugImplementation(project(":android-marker-clustering"))
     debugImplementation(project(":android-heatmap"))
     debugImplementation(project(":android-geojson-layer"))

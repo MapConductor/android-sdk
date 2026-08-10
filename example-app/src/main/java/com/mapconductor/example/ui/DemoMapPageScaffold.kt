@@ -54,6 +54,9 @@ import com.mapconductor.maplibre.rememberMapLibreMapViewState
 import com.mapconductor.maptiler.MapTilerDesign
 import com.mapconductor.maptiler.MapTilerViewState
 import com.mapconductor.maptiler.rememberMapTilerMapViewState
+import com.mapconductor.openmobilemaps.OpenMobileMapsDesign
+import com.mapconductor.openmobilemaps.OpenMobileMapsViewState
+import com.mapconductor.openmobilemaps.rememberOpenMobileMapsMapViewState
 import com.mapconductor.tomtom.TomTomMapDesign
 import com.mapconductor.tomtom.TomTomMapViewState
 import com.mapconductor.tomtom.rememberTomTomMapViewState
@@ -212,6 +215,22 @@ fun longdoViewItem(initCameraPosition: MapCameraPositionInterface): IconItem<Lon
 }
 
 @Composable
+fun openMobileMapsViewItem(initCameraPosition: MapCameraPositionInterface): IconItem<OpenMobileMapsViewState> {
+    val openMobileMapsState =
+        rememberOpenMobileMapsMapViewState(
+            mapDesign = OpenMobileMapsDesign.OpenStreetMap,
+            cameraPosition = initCameraPosition,
+        )
+    return IconItem(
+        key = "openmobilemaps",
+        label = "Open Mobile Maps",
+        lightIconResId = R.drawable.openmobilemaps_logo,
+        darkIconResId = R.drawable.openmobilemaps_logo,
+        value = openMobileMapsState,
+    )
+}
+
+@Composable
 fun DefaultMapViewItems(initCameraPosition: MapCameraPositionInterface): List<IconItem<out MapViewState<out Any>>> =
     listOf(
         mapLibreViewItem(initCameraPosition),
@@ -223,6 +242,7 @@ fun DefaultMapViewItems(initCameraPosition: MapCameraPositionInterface): List<Ic
         tomtomViewItem(initCameraPosition),
         maptilerViewItem(initCameraPosition),
         longdoViewItem(initCameraPosition),
+        openMobileMapsViewItem(initCameraPosition),
     )
 
 @Composable

@@ -1,12 +1,9 @@
 package com.mapconductor.openmobilemaps
 
-import android.view.View
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.map.MapViewHolderInterface
-import io.openmobilemaps.mapscore.map.view.MapView
 import io.openmobilemaps.mapscore.shared.graphics.common.Vec2F
 import io.openmobilemaps.mapscore.shared.map.MapInterface
 import io.openmobilemaps.mapscore.shared.map.coordinates.Coord
@@ -20,47 +17,52 @@ import io.openmobilemaps.mapscore.shared.map.coordinates.CoordinateSystemIdentif
  * InfoBubble・タイル方式マーカーの当たり判定・マーカーアニメ・`buildVisibleRegion` が
  * すべてそのまま動く（ios-for-longdo のように同期変換が無い SDK ではここが nil になる）。
  *
- * ## 座標系
+ * ## 座標系の変換方向に注意
  *
- * SDK の [Coord] は「系 ID + x + y + z」で、EPSG:4326 のとき **x が経度・y が緯度**。
- * MapConductor 側は latitude / longitude なので、順序を取り違えないこと
- * （取り違えても座標が入れ替わるだけで例外は出ないので気づきにくい）。
+ * 地図は EPSG:3857（Web メルカトル、単位はメートル）で構成してある。タイルがどれも
+ * 3857 なのと、[com.mapconductor.openmobilemaps.zoom.ZoomAltitudeConverter] の縮尺の
+ * 導出が「地図単位 = メルカトルメートル」を前提にしているため。
+ *
+ * - **入力**（`toScreenOffset`）: EPSG:4326 の [Coord] をそのまま渡してよい。
+ *   SDK が `CoordinateConversionHelper` で地図の系へ変換する。
+ * - **出力**（`fromScreenOffsetSync`）: SDK は**地図の系（3857）**で返す。
+ *   ここで 4326 へ戻さないと、緯度経度のつもりでメートル値を扱うことになる。
+ *   症状は「タップ位置が地球の裏側になる」で、非常に分かりやすく壊れる。
  */
 class OpenMobileMapsMapViewHolder(
-    override val mapView: MapView,
+    override val mapView: OpenMobileMapsMapSurface,
     override val map: MapInterface,
-) : MapViewHolderInterface<MapView, MapInterface> {
+) : MapViewHolderInterface<OpenMobileMapsMapSurface, MapInterface> {
     /** 地理座標 → 画面座標。 */
     override fun toScreenOffset(position: GeoPointInterface): Offset? {
-        val camera = runCatching { map.camera }.getOrNull() ?: return null
-        val screen = runCatching { camera.screenPosFromCoord(position.toOmmCoord()) }.getOrNull() ?: return null
+        val screen =
+            runCatching { map.getCamera().screenPosFromCoord(position.toOmmCoord()) }.getOrNull() ?: return null
         return Offset(screen.x, screen.y)
     }
 
     /** 画面座標 → 地理座標。 */
     override fun fromScreenOffsetSync(offset: Offset): GeoPoint? {
-        val camera = runCatching { map.camera }.getOrNull() ?: return null
-        val coord = runCatching { camera.coordFromScreenPosition(Vec2F(offset.x, offset.y)) }.getOrNull() ?: return null
-        return coord.toGeoPoint()
+        val coord =
+            runCatching { map.getCamera().coordFromScreenPosition(Vec2F(offset.x, offset.y)) }.getOrNull()
+                ?: return null
+        return toWgs84(coord)?.toGeoPoint()
     }
 
-    /**
-     * ビューポートの大きさ。`buildVisibleRegion()` が 4 隅を逆投影するのに使う。
+    /*
+     * ビューポートの大きさはコアの [com.mapconductor.core.map.viewportSizePx] が
+     * [mapView] から解決する（拡張関数なので override はできない）。
      *
-     * 既定実装（`mapView as? View` の幅高さ）で足りるので本来は書かなくてよいが、
-     * SDK の [MapView] は `GLSurfaceView` 系でレイアウト前は 0 を返すため、
-     * その場合に null を返すことを明示しておく。
+     * tilt を掛けているとき、内側の [io.openmobilemaps.mapscore.map.view.MapView] は
+     * [OpenMobileMapsMapSurface] より広く、投影は内側の座標系で返る。そのぶん
+     * `visibleRegion` と InfoBubble の位置はずれる。android-for-arcgis の 2D も
+     * 同じ割り切りで、tilt = 0 のときは厳密に一致する。
      */
-    override fun viewportSizePx(): Size? {
-        val view = mapView as? View ?: return null
-        if (view.width <= 0 || view.height <= 0) return null
-        return Size(view.width.toFloat(), view.height.toFloat())
+
+    /** 地図の座標系（EPSG:3857）→ EPSG:4326。 */
+    internal fun toWgs84(coord: Coord): Coord? {
+        if (coord.systemIdentifier == CoordinateSystemIdentifiers.EPSG4326()) return coord
+        return runCatching {
+            map.getCoordinateConverterHelper().convert(CoordinateSystemIdentifiers.EPSG4326(), coord)
+        }.getOrNull()
     }
 }
-
-/** MapConductor の座標 → SDK の [Coord]（EPSG:4326 は x=経度 / y=緯度）。 */
-internal fun GeoPointInterface.toOmmCoord(): Coord =
-    Coord(CoordinateSystemIdentifiers.EPSG4326(), longitude, latitude, altitude ?: 0.0)
-
-/** SDK の [Coord] → MapConductor の座標。 */
-internal fun Coord.toGeoPoint(): GeoPoint = GeoPoint(latitude = y, longitude = x, altitude = z)
