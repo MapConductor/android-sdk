@@ -29,6 +29,8 @@ import io.openmobilemaps.mapscore.shared.map.coordinates.RectCoord
 import io.openmobilemaps.mapscore.shared.map.layers.icon.IconLayerInterface
 import io.openmobilemaps.mapscore.shared.map.layers.tiled.raster.Tiled2dMapRasterLayerInterface
 import io.openmobilemaps.mapscore.shared.map.loader.LoaderInterface
+import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.math.abs
 import android.view.View
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -91,6 +93,10 @@ class OpenMobileMapsMapViewController(
      */
     private var logicalTilt: Double = 0.0
 
+    /** カメラ通知の間引き。GL スレッドからも触るので [AtomicBoolean]。詳細は [notifyCamera]。 */
+    private val cameraNotifyPending = AtomicBoolean(false)
+    private var lastNotifiedCamera: MapCameraPosition? = null
+
     private var mapDesignTypeChangeListener: OpenMobileMapsDesignTypeChangeHandler? = null
     private var currentDesign: OpenMobileMapsMapDesignTypeInterface? = null
 
@@ -152,12 +158,45 @@ class OpenMobileMapsMapViewController(
         notifyMapInitialized()
     }
 
+    /**
+     * カメラの通知。**必ず 1 フレームに 1 回へ間引くこと。**
+     *
+     * この SDK は [MapCameraListenerInterface.onVisibleBoundsChanged] を描画フレームごとに、
+     * しかも同じ値で何度も呼ぶ（実測: 1 秒のカメラアニメーションで **388 回**、うち大半は
+     * まったく同じ値）。1 回ごとに [readNativeCamera] を回すと、可視領域の 4 隅の逆投影
+     * （JNI）がメインスレッドで 1 秒に 1,500 回以上走る。
+     *
+     * その結果**他の地図の動きが止まる**。CameraSync で Google Maps と並べたとき、
+     * Google 側のカメラアニメーションが途中で固まる形で表面化した
+     * （Google のアニメーションもメインスレッドで進むため）。
+     * 他プロバイダの通知は毎秒 60 回程度なので、ここだけが突出していた。
+     *
+     * 対策は 2 段:
+     *  1. 未処理の通知があるあいだは新しい通知を積まない（フレームごとに 1 回へ畳む）
+     *  2. 前回とまったく同じカメラなら配らない
+     */
     private fun notifyCamera() {
+        if (!cameraNotifyPending.compareAndSet(false, true)) return
         mainCoroutine.launch {
+            cameraNotifyPending.set(false)
             val position = readNativeCamera()
+            if (isSameCamera(lastNotifiedCamera, position)) return@launch
+            lastNotifiedCamera = position
             defaultCoroutine.launch { notifyMapCameraPosition(position) }
             cameraMoveCallback?.invoke(position)
         }
+    }
+
+    private fun isSameCamera(
+        previous: MapCameraPosition?,
+        current: MapCameraPosition,
+    ): Boolean {
+        val last = previous ?: return false
+        return last.position.latitude == current.position.latitude &&
+            last.position.longitude == current.position.longitude &&
+            last.zoom == current.zoom &&
+            last.bearing == current.bearing &&
+            last.tilt == current.tilt
     }
 
     /**
@@ -215,7 +254,12 @@ class OpenMobileMapsMapViewController(
         val (center, zoom) = OpenMobileMapsTiltEmulation.shiftedCamera(position)
         val camera = holder.map.getCamera()
         camera.moveToCenterPositionZoom(center.toOmmCoord(), ZOOM_CONVERTER.toNativeZoom(zoom), animated)
-        camera.setRotation(nativeRotationFromBearing(position.bearing), animated)
+        // 方位が変わっていないなら触らない。`setRotation` は直前の
+        // `moveToCenterPositionZoom` のアニメーションを打ち切ってしまう。
+        val rotation = nativeRotationFromBearing(position.bearing)
+        if (abs(camera.getRotation() - rotation) > ROTATION_EPSILON) {
+            camera.setRotation(rotation, animated)
+        }
     }
 
     override fun fitBounds(
@@ -376,5 +420,8 @@ class OpenMobileMapsMapViewController(
          * オフセット方式では変換できない（[ZoomAltitudeConverter] のコメント参照）。
          */
         val ZOOM_CONVERTER = ZoomAltitudeConverter()
+
+        /** これ未満の方位差では `setRotation` を呼ばない（度）。 */
+        private const val ROTATION_EPSILON = 0.01f
     }
 }
