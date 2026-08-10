@@ -13,10 +13,12 @@ public final class com.mapconductor.openmobilemaps.OpenMobileMapsActualCircle {
   public boolean equals(java.lang.Object);
 }
 public final class com.mapconductor.openmobilemaps.OpenMobileMapsActualGroundImage {
-  public com.mapconductor.openmobilemaps.OpenMobileMapsActualGroundImage(io.openmobilemaps.mapscore.shared.map.layers.polygon.TexturedPolygonLayerInterface);
+  public com.mapconductor.openmobilemaps.OpenMobileMapsActualGroundImage(io.openmobilemaps.mapscore.shared.map.layers.polygon.TexturedPolygonLayerInterface, io.openmobilemaps.mapscore.shared.map.LayerInterface);
   public final io.openmobilemaps.mapscore.shared.map.layers.polygon.TexturedPolygonLayerInterface getLayer();
+  public final io.openmobilemaps.mapscore.shared.map.LayerInterface getLayerInterface();
   public final io.openmobilemaps.mapscore.shared.map.layers.polygon.TexturedPolygonLayerInterface component1();
-  public final com.mapconductor.openmobilemaps.OpenMobileMapsActualGroundImage copy(io.openmobilemaps.mapscore.shared.map.layers.polygon.TexturedPolygonLayerInterface);
+  public final io.openmobilemaps.mapscore.shared.map.LayerInterface component2();
+  public final com.mapconductor.openmobilemaps.OpenMobileMapsActualGroundImage copy(io.openmobilemaps.mapscore.shared.map.layers.polygon.TexturedPolygonLayerInterface, io.openmobilemaps.mapscore.shared.map.LayerInterface);
   public java.lang.String toString();
   public int hashCode();
   public boolean equals(java.lang.Object);
@@ -33,10 +35,12 @@ public final class com.mapconductor.openmobilemaps.OpenMobileMapsActualPolygon {
   public boolean equals(java.lang.Object);
 }
 public final class com.mapconductor.openmobilemaps.OpenMobileMapsActualRasterLayer {
-  public com.mapconductor.openmobilemaps.OpenMobileMapsActualRasterLayer(io.openmobilemaps.mapscore.shared.map.layers.tiled.raster.Tiled2dMapRasterLayerInterface);
+  public com.mapconductor.openmobilemaps.OpenMobileMapsActualRasterLayer(io.openmobilemaps.mapscore.shared.map.layers.tiled.raster.Tiled2dMapRasterLayerInterface, io.openmobilemaps.mapscore.shared.map.LayerInterface);
   public final io.openmobilemaps.mapscore.shared.map.layers.tiled.raster.Tiled2dMapRasterLayerInterface getLayer();
+  public final io.openmobilemaps.mapscore.shared.map.LayerInterface getLayerInterface();
   public final io.openmobilemaps.mapscore.shared.map.layers.tiled.raster.Tiled2dMapRasterLayerInterface component1();
-  public final com.mapconductor.openmobilemaps.OpenMobileMapsActualRasterLayer copy(io.openmobilemaps.mapscore.shared.map.layers.tiled.raster.Tiled2dMapRasterLayerInterface);
+  public final io.openmobilemaps.mapscore.shared.map.LayerInterface component2();
+  public final com.mapconductor.openmobilemaps.OpenMobileMapsActualRasterLayer copy(io.openmobilemaps.mapscore.shared.map.layers.tiled.raster.Tiled2dMapRasterLayerInterface, io.openmobilemaps.mapscore.shared.map.LayerInterface);
   public java.lang.String toString();
   public int hashCode();
   public boolean equals(java.lang.Object);
@@ -109,6 +113,9 @@ public final class com.mapconductor.openmobilemaps.OpenMobileMapsGroundImageOver
   public java.lang.Object updateGroundImageProperties(java.lang.Object, com.mapconductor.core.groundimage.GroundImageEntityInterface, com.mapconductor.core.groundimage.GroundImageEntityInterface, kotlin.coroutines.Continuation);
 }
 public final class com.mapconductor.openmobilemaps.OpenMobileMapsLayers {
+  public static final int DESIGN_INDEX;
+  public static final int BELOW_INDEX_FIRST;
+  public static final int FIXED_INDEX_FIRST;
   public com.mapconductor.openmobilemaps.OpenMobileMapsLayers();
   public final io.openmobilemaps.mapscore.shared.map.layers.polygon.PolygonLayerInterface getPolygonFillLayer();
   public final io.openmobilemaps.mapscore.shared.map.layers.line.LineLayerInterface getPolygonOutlineLayer();
@@ -118,9 +125,11 @@ public final class com.mapconductor.openmobilemaps.OpenMobileMapsLayers {
   public final io.openmobilemaps.mapscore.shared.map.layers.icon.IconLayerInterface getIconLayer();
   public final void attachTo(io.openmobilemaps.mapscore.shared.map.MapInterface);
   public final void setDesignLayer(io.openmobilemaps.mapscore.shared.map.MapInterface, io.openmobilemaps.mapscore.shared.map.LayerInterface);
-  public final void insertBelowOverlays(io.openmobilemaps.mapscore.shared.map.MapInterface, io.openmobilemaps.mapscore.shared.map.LayerInterface);
+  public final io.openmobilemaps.mapscore.shared.map.LayerInterface insertBelowOverlays(io.openmobilemaps.mapscore.shared.map.MapInterface, io.openmobilemaps.mapscore.shared.map.LayerInterface);
   public final void remove(io.openmobilemaps.mapscore.shared.map.MapInterface, io.openmobilemaps.mapscore.shared.map.LayerInterface);
   public final void clearAll();
+}
+final class com.mapconductor.openmobilemaps.OpenMobileMapsLayers$Companion {
 }
 public interface com.mapconductor.openmobilemaps.OpenMobileMapsMapDesignTypeInterface extends com.mapconductor.core.map.MapDesignTypeInterface<java.lang.String> {
   public abstract java.lang.String getTileUrlTemplate();
