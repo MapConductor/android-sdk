@@ -31,9 +31,12 @@ import io.openmobilemaps.mapscore.shared.map.layers.tiled.raster.Tiled2dMapRaste
 import io.openmobilemaps.mapscore.shared.map.loader.LoaderInterface
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.abs
+import android.os.SystemClock
 import android.view.View
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 typealias OpenMobileMapsDesignTypeChangeHandler = (OpenMobileMapsMapDesignTypeInterface) -> Unit
@@ -96,6 +99,14 @@ class OpenMobileMapsMapViewController(
     /** カメラ通知の間引き。GL スレッドからも触るので [AtomicBoolean]。詳細は [notifyCamera]。 */
     private val cameraNotifyPending = AtomicBoolean(false)
     private var lastNotifiedCamera: MapCameraPosition? = null
+
+    /**
+     * 走っているカメラアニメーション。詳細は [animateCamera]。
+     *
+     * [cancelCameraAnimation] はタッチハンドラのスレッドからも呼ばれるので `@Volatile`。
+     */
+    @Volatile
+    private var cameraAnimationJob: Job? = null
 
     private var mapDesignTypeChangeListener: OpenMobileMapsDesignTypeChangeHandler? = null
     private var currentDesign: OpenMobileMapsMapDesignTypeInterface? = null
@@ -213,7 +224,15 @@ class OpenMobileMapsMapViewController(
      * tilt < 0 のときは SDK に渡した中心・ズームが前進済みなので、
      * [OpenMobileMapsTiltEmulation.restoreLogicalCamera] で論理値へ巻き戻す。
      */
-    fun readNativeCamera(): MapCameraPosition {
+    fun readNativeCamera(): MapCameraPosition = readLogicalCamera().copy(visibleRegion = visibleRegion())
+
+    /**
+     * 可視領域を載せない軽い読み取り。
+     *
+     * [visibleRegion] は 4 隅の逆投影（JNI 4 回）なので、アニメーションの開始点を
+     * 取るためだけに回したくない。
+     */
+    private fun readLogicalCamera(): MapCameraPosition {
         val camera = holder.map.getCamera()
         val rawCenter = holder.toWgs84(camera.getCenterPosition())?.toGeoPoint() ?: GeoPoint.fromLatLong(0.0, 0.0)
         val rawZoom = ZOOM_CONVERTER.toUnifiedZoom(camera.getZoom())
@@ -221,44 +240,92 @@ class OpenMobileMapsMapViewController(
         val (center, zoom) =
             OpenMobileMapsTiltEmulation.restoreLogicalCamera(rawCenter, rawZoom, bearing, logicalTilt)
 
-        return MapCameraPosition(
-            position = center,
-            zoom = zoom,
-            bearing = bearing,
-            tilt = logicalTilt,
-            visibleRegion = visibleRegion(),
-        )
+        return MapCameraPosition(position = center, zoom = zoom, bearing = bearing, tilt = logicalTilt)
     }
 
     private fun visibleRegion(): VisibleRegion? = holder.buildVisibleRegion()
 
-    override fun moveCamera(position: MapCameraPosition) = applyCamera(position, animated = false)
+    override fun moveCamera(position: MapCameraPosition) {
+        cancelCameraAnimation()
+        applyCamera(position)
+    }
 
+    /**
+     * カメラを [duration] ミリ秒かけて動かす。
+     *
+     * ## SDK のアニメーションは使わない
+     *
+     * `moveToCenterPositionZoom(..., animated = true)` は**尺を指定できず、実測で常に
+     * 約 300ms** で着地する。アプリが 1000ms と言っても 300ms で終わるので、
+     * 他プロバイダと並べると明らかに先に着いてしまう。フレームを刻んで
+     * `animated = false` の移動を繰り返し、こちらで尺を守る。
+     *
+     * 補間の中身（メルカトル空間での線形補間・方位の最短回り・イージング）は
+     * [OpenMobileMapsCameraAnimation] にある。
+     */
     override fun animateCamera(
         position: MapCameraPosition,
         duration: Long,
     ) {
-        // SDK のアニメーションは尺を指定できない（既定のカーブで動く）。
-        // duration を無視するのは他プロバイダと差が出る点なので、
-        // MapCapability には出していないが README に書いてある。
-        applyCamera(position, animated = true)
+        cancelCameraAnimation()
+        if (duration <= 0L) {
+            applyCamera(position)
+            return
+        }
+
+        val from = readLogicalCamera()
+        cameraAnimationJob =
+            mainCoroutine.launch {
+                val startedAt = SystemClock.uptimeMillis()
+                var frame = 0L
+                while (true) {
+                    val elapsed = SystemClock.uptimeMillis() - startedAt
+                    val progress = (elapsed.toDouble() / duration).coerceIn(0.0, 1.0)
+                    if (progress >= 1.0) break
+                    applyCamera(
+                        OpenMobileMapsCameraAnimation.interpolate(
+                            from,
+                            position,
+                            OpenMobileMapsCameraAnimation.ease(progress),
+                        ),
+                    )
+                    // 「16ms 待つ」ではなく「次のフレーム時刻まで待つ」。1 フレームぶんの
+                    // 仕事（投影と通知）に 10ms 使ったあと固定で 16ms 待つと 27ms 周期＝37fps
+                    // まで落ちる（実測）。境界に合わせれば 60fps 近くを保てる。
+                    frame += 1
+                    val nextFrameAt = startedAt + frame * FRAME_INTERVAL_MS
+                    delay((nextFrameAt - SystemClock.uptimeMillis()).coerceAtLeast(0L))
+                }
+                // 補間の誤差を残さないよう、最後は要求された値そのものを入れる。
+                applyCamera(position)
+                cameraAnimationJob = null
+            }
     }
 
-    private fun applyCamera(
-        position: MapCameraPosition,
-        animated: Boolean,
-    ) {
+    /**
+     * 走っているカメラアニメーションを止める。
+     *
+     * 新しいカメラ指示のたびに呼ぶ。**指が触れたときも呼ぶこと**
+     * （[OpenMobileMapsTouchListener] から）。止めないとアニメーションが
+     * ユーザーの操作と綱引きになり、地図が引き戻される。
+     */
+    internal fun cancelCameraAnimation() {
+        cameraAnimationJob?.cancel()
+        cameraAnimationJob = null
+    }
+
+    private fun applyCamera(position: MapCameraPosition) {
         logicalTilt = position.tilt
         holder.mapView.visualTilt = position.tilt
 
         val (center, zoom) = OpenMobileMapsTiltEmulation.shiftedCamera(position)
         val camera = holder.map.getCamera()
-        camera.moveToCenterPositionZoom(center.toOmmCoord(), ZOOM_CONVERTER.toNativeZoom(zoom), animated)
-        // 方位が変わっていないなら触らない。`setRotation` は直前の
-        // `moveToCenterPositionZoom` のアニメーションを打ち切ってしまう。
+        camera.moveToCenterPositionZoom(center.toOmmCoord(), ZOOM_CONVERTER.toNativeZoom(zoom), false)
+        // 方位が変わっていないなら触らない。毎フレーム呼ぶと SDK 側で無駄な
+        // 行列の作り直しが走る。
         val rotation = nativeRotationFromBearing(position.bearing)
         if (abs(camera.getRotation() - rotation) > ROTATION_EPSILON) {
-            camera.setRotation(rotation, animated)
+            camera.setRotation(rotation, false)
         }
     }
 
@@ -381,6 +448,7 @@ class OpenMobileMapsMapViewController(
     }
 
     override fun destroy() {
+        cancelCameraAnimation()
         runCatching { holder.map.getCamera().removeListener(cameraListener) }
         removeDragTouchInterceptor()
         super.destroy()
@@ -423,5 +491,8 @@ class OpenMobileMapsMapViewController(
 
         /** これ未満の方位差では `setRotation` を呼ばない（度）。 */
         private const val ROTATION_EPSILON = 0.01f
+
+        /** カメラアニメーションの刻み。60fps 相当。 */
+        private const val FRAME_INTERVAL_MS = 16L
     }
 }

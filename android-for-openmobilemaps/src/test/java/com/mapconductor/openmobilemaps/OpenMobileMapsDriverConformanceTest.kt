@@ -158,6 +158,90 @@ class OpenMobileMapsDriverConformanceTest {
         assertEquals(small * 3.0, retina, retina * 1e-9)
     }
 
+    // ── カメラアニメーションの補間 ────────────────────────────────────
+
+    @Test
+    fun `補間の両端は入力そのものになる`() {
+        val from = camera(35.681, 139.767, zoom = 10.0, bearing = 0.0, tilt = 0.0)
+        val to = camera(21.3069, -157.8583, zoom = 14.0, bearing = 90.0, tilt = 30.0)
+
+        val start = OpenMobileMapsCameraAnimation.interpolate(from, to, 0.0)
+        assertEquals(35.681, start.position.latitude, 1e-9)
+        assertEquals(139.767, start.position.longitude, 1e-9)
+        assertEquals(10.0, start.zoom, 1e-9)
+
+        val end = OpenMobileMapsCameraAnimation.interpolate(from, to, 1.0)
+        assertEquals(21.3069, end.position.latitude, 1e-9)
+        assertEquals(-157.8583, end.position.longitude, 1e-9)
+        assertEquals(14.0, end.zoom, 1e-9)
+        assertEquals(90.0, end.bearing, 1e-9)
+        assertEquals(30.0, end.tilt, 1e-9)
+    }
+
+    @Test
+    fun `中心はメルカトル空間で線形に動く`() {
+        // 緯度 0 と 60 の中点は、緯度で測ると 30 だがメルカトルでは約 35.2。
+        // 緯度を直接混ぜていると 30 になるので、これが取り違えを捕まえる。
+        val mid =
+            OpenMobileMapsCameraAnimation.interpolate(
+                camera(0.0, 0.0),
+                camera(60.0, 0.0),
+                0.5,
+            )
+        assertEquals(35.2, mid.position.latitude, 0.1)
+    }
+
+    @Test
+    fun `経度は近い方向へ回る`() {
+        // 東京 170 度 → ハワイ -170 度 は、太平洋を渡る 20 度が近い。
+        // 素直に線形補間すると 0 度（アフリカ沖）を通ってしまう。
+        val mid =
+            OpenMobileMapsCameraAnimation.interpolate(
+                camera(0.0, 170.0),
+                camera(0.0, -170.0),
+                0.5,
+            )
+        assertTrue("日付変更線を跨ぐべき（実際 ${mid.position.longitude}）", kotlin.math.abs(mid.position.longitude) > 179.0)
+    }
+
+    @Test
+    fun `方位は近い方向へ回る`() {
+        // 350 度 → 10 度 は +20 度。180 度側へ回ってはいけない。
+        assertEquals(0.0, OpenMobileMapsCameraAnimation.interpolateBearing(350.0, 10.0, 0.5), 1e-9)
+        // 戻る向きも同じ。
+        assertEquals(0.0, OpenMobileMapsCameraAnimation.interpolateBearing(10.0, 350.0, 0.5), 1e-9)
+        // 常に 0 以上 360 未満へ正規化される。
+        val bearing = OpenMobileMapsCameraAnimation.interpolateBearing(10.0, 350.0, 0.9)
+        assertTrue(bearing in 0.0..<360.0)
+    }
+
+    @Test
+    fun `イージングは両端で止まり、中点で半分になる`() {
+        assertEquals(0.0, OpenMobileMapsCameraAnimation.ease(0.0), 1e-12)
+        assertEquals(1.0, OpenMobileMapsCameraAnimation.ease(1.0), 1e-12)
+        assertEquals(0.5, OpenMobileMapsCameraAnimation.ease(0.5), 1e-12)
+        // 単調増加であること（ここが崩れるとカメラが戻る）。
+        var previous = -1.0
+        (0..100).forEach { step ->
+            val eased = OpenMobileMapsCameraAnimation.ease(step / 100.0)
+            assertTrue("単調増加でない（step=$step）", eased >= previous)
+            previous = eased
+        }
+    }
+
+    private fun camera(
+        latitude: Double,
+        longitude: Double,
+        zoom: Double = 10.0,
+        bearing: Double = 0.0,
+        tilt: Double = 0.0,
+    ) = MapCameraPosition(
+        position = GeoPoint.fromLatLong(latitude, longitude),
+        zoom = zoom,
+        bearing = bearing,
+        tilt = tilt,
+    )
+
     // ── 契約 ────────────────────────────────────────────────────────────
 
     @Test

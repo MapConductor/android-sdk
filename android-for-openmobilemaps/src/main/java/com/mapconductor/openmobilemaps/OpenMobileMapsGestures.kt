@@ -23,6 +23,19 @@ import kotlinx.coroutines.launch
 internal class OpenMobileMapsTouchListener(
     private val controller: OpenMobileMapsMapViewController,
 ) : SimpleTouchInterface() {
+    /**
+     * 指が触れたらカメラアニメーションを止める。
+     *
+     * [OpenMobileMapsMapViewController.animateCamera] は自前でフレームを刻んで
+     * カメラを動かすので、止めないとユーザーの操作と綱引きになり、
+     * パンしても引き戻される。**消費はしない**（false を返す）ので、
+     * SDK 側の通常の操作はそのまま流れる。
+     */
+    override fun onTouchDown(posScreen: Vec2F): Boolean {
+        controller.cancelCameraAnimation()
+        return false
+    }
+
     override fun onClickConfirmed(posScreen: Vec2F): Boolean {
         val position = controller.holder.fromScreenOffsetSync(Offset(posScreen.x, posScreen.y)) ?: return false
         // カスケード（marker → circle → groundImage → polyline → polygon → map）は

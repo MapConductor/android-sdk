@@ -45,6 +45,12 @@ public final class com.mapconductor.openmobilemaps.OpenMobileMapsActualRasterLay
   public int hashCode();
   public boolean equals(java.lang.Object);
 }
+public final class com.mapconductor.openmobilemaps.OpenMobileMapsCameraAnimation {
+  public static final com.mapconductor.openmobilemaps.OpenMobileMapsCameraAnimation INSTANCE;
+  public final com.mapconductor.core.map.MapCameraPosition interpolate(com.mapconductor.core.map.MapCameraPosition, com.mapconductor.core.map.MapCameraPosition, double);
+  public final double interpolateBearing(double, double, double);
+  public final double ease(double);
+}
 public final class com.mapconductor.openmobilemaps.OpenMobileMapsCapabilities {
   public static final com.mapconductor.openmobilemaps.OpenMobileMapsCapabilities INSTANCE;
   public final void declare(com.mapconductor.core.map.MutableMapServiceRegistry);
@@ -287,6 +293,7 @@ public final class com.mapconductor.openmobilemaps.OpenMobileMapsTiltEmulation {
 }
 public final class com.mapconductor.openmobilemaps.OpenMobileMapsTouchListener extends io.openmobilemaps.mapscore.map.util.SimpleTouchInterface {
   public com.mapconductor.openmobilemaps.OpenMobileMapsTouchListener(com.mapconductor.openmobilemaps.OpenMobileMapsMapViewController);
+  public boolean onTouchDown(io.openmobilemaps.mapscore.shared.graphics.common.Vec2F);
   public boolean onClickConfirmed(io.openmobilemaps.mapscore.shared.graphics.common.Vec2F);
   public boolean onLongPress(io.openmobilemaps.mapscore.shared.graphics.common.Vec2F);
   public boolean onMoveComplete();
