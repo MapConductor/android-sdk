@@ -4,7 +4,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
+import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewStateInterface
@@ -19,6 +21,7 @@ import kotlinx.coroutines.flow.asStateFlow
 interface TiltMapPageViewModelInterface {
     val initCameraPosition: MapCameraPosition
     val markerStates: List<MarkerState>
+    val anchorCircleStates: List<CircleState>
     val cameraPosition: StateFlow<MapCameraPosition>
     val disableSlider: StateFlow<Boolean>
     var tilt: Double
@@ -62,6 +65,27 @@ class TiltMapPageViewModel :
      * 確かめるページ**なので、リングが画面に収まっていることが要件。
      */
     override val markerStates: List<MarkerState> = buildTiltRingMarkers(initCameraPosition.position)
+
+    /**
+     * 各マーカーの真下に置く小さな円。
+     *
+     * 円はポリゴン（地面に貼り付く）として描かれ、マーカーはアイコンレイヤ
+     * （画面固定サイズ）で描かれる。**傾けたときにピンの先端がこの円から
+     * 外れたら、ズレているのはアイコンレイヤの側**だと確定できる。
+     */
+    override val anchorCircleStates: List<CircleState> =
+        markerStates.map { marker ->
+            CircleState(
+                id = "anchor-${marker.id}",
+                center = marker.position,
+                radiusMeters = 2.5,
+                geodesic = true,
+                fillColor = Color(0xFFFF00FF),
+                strokeColor = Color.Black,
+                strokeWidth = 1.dp,
+                clickable = false,
+            )
+        }
 
     private var _disableSlider: MutableStateFlow<Boolean> = MutableStateFlow<Boolean>(false)
 

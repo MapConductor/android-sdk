@@ -70,7 +70,10 @@ import io.openmobilemaps.mapscore.shared.map.layers.tiled.raster.Tiled2dMapRaste
 import io.openmobilemaps.mapscore.shared.map.loader.LoaderInterface
 import kotlin.math.abs
 import kotlin.math.cos
+import kotlin.math.max
+import kotlin.math.roundToInt
 import android.graphics.Bitmap
+import android.graphics.Canvas
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -122,8 +125,8 @@ class OpenMobileMapsMarkerOverlayRenderer(
 
     private var draggingEntity: MarkerEntityInterface<OpenMobileMapsActualMarker>? = null
 
-    /** アイコンごとのテクスチャ。詳しい理由は [textureFor] を参照。 */
-    private val textureCache = mutableMapOf<Int, TextureHolderInterface>()
+    /** アイコンごとのテクスチャ。詳しい理由は [paddedTextureFor] を参照。 */
+    private val textureCache = mutableMapOf<Int, PaddedTexture>()
 
     /** いま地図上のアイコンに掛かっている縦の引き伸ばし。詳細は [verticalStretch]。 */
     private var appliedStretch: Float = 1.0f
@@ -296,40 +299,79 @@ class OpenMobileMapsMarkerOverlayRenderer(
     ): OpenMobileMapsActualMarker {
         // 新しく作るアイコンも、いま掛かっている引き伸ばしに合わせる。
         val stretch = verticalStretch()
-        baseIconHeight[id] = icon.size.height
+        val padded = paddedTextureFor(icon)
+        baseIconHeight[id] = padded.height
         return IconFactory.createIconWithAnchor(
             id,
             position.toOmmCoord(),
-            textureFor(icon),
-            Vec2F(icon.size.width, icon.size.height * stretch),
+            padded.texture,
+            Vec2F(padded.width, padded.height * stretch),
             IconType.INVARIANT,
             BlendMode.NORMAL,
-            Vec2F(icon.anchor.x, icon.anchor.y),
+            // ★ 常に中央。アンカーのオフセットは SDK に渡さない（下の理由を参照）。
+            Vec2F(0.5f, 0.5f),
         )
     }
 
     /**
-     * アイコンのテクスチャ。**必ずここを通すこと。**
+     * アンカーを焼き込んだテクスチャ。**必ずここを通すこと。**理由は 2 つある。
      *
-     * ## `BitmapTextureHolder` は渡した Bitmap を recycle する
+     * ## 1. SDK のアンカーオフセットは地図空間で適用される（＝bearing で回る）
      *
-     * SDK の [BitmapTextureHolder] はコンストラクタでテクスチャ用の Bitmap へ描き写したあと、
-     * **元の Bitmap を `recycle()` する**。一方 MapConductor の
-     * [com.mapconductor.core.BitmapIconCache] は同じアイコンに対して同一の [BitmapIcon]
-     * （＝同一の Bitmap）を配る。素直に `BitmapTextureHolder(icon.bitmap)` と書くと、
-     * 1 個目のマーカーで共有 Bitmap が recycle され、
-     * **2 個目で `Canvas: trying to use a recycled bitmap` で落ちる**
-     * （マーカーが 1 個のページでは再現しないので、気づくのが遅れやすい）。
+     * `createIconWithAnchor` のアンカーを素直に渡すと、座標からのオフセットが
+     * **画面空間ではなく地図空間**で掛かる。bearing 0 なら区別が付かないが、
+     * bearing 270 の Tilt ページで**全ピンがちょうど自分の高さぶん横にズレる**
+     * 形で発覚した（マーカー位置に地面固定の円を描いて確定。円は正しく、
+     * アイコンだけズレていた）。さらに傾き補正でアイコンの高さを変えるたびに
+     * オフセット量も変わるので、**スライダに合わせてズレが動く**ように見える。
      *
-     * 複製を渡して共有 Bitmap を守り、できたテクスチャはアイコンごとにキャッシュする。
-     * 同じアイコンのマーカーが何万個あってもテクスチャは 1 枚で済む。
+     * 対策: アンカー点がテクスチャの**中央**へ来るよう透明の余白を足し、SDK には
+     * 常に中央アンカー（オフセット 0）を渡す。オフセットが 0 ならどの空間で
+     * 適用されようと回転のしようがない。既定のピン（アンカー下端中央）なら
+     * 高さが 2 倍のテクスチャになる。縦の引き伸ばしも中央＝アンカー点を
+     * 動かさないまま効く。
+     *
+     * ## 2. `BitmapTextureHolder` は渡した Bitmap を recycle する
+     *
+     * SDK の [BitmapTextureHolder] はコンストラクタでテクスチャへ描き写したあと、
+     * **元の Bitmap を `recycle()` する**。MapConductor の
+     * [com.mapconductor.core.BitmapIconCache] は同じアイコンに同一の Bitmap を配るため、
+     * 素直に渡すと 2 個目のマーカーで `Canvas: trying to use a recycled bitmap` で落ちる。
+     * ここで作る余白入りの複製は自前の Bitmap なので、recycle されても害がない。
+     *
+     * できたテクスチャはアイコンごとにキャッシュする。同じアイコンのマーカーが
+     * 何万個あってもテクスチャは 1 枚で済む。
      */
-    private fun textureFor(icon: BitmapIcon): TextureHolderInterface =
+    private fun paddedTextureFor(icon: BitmapIcon): PaddedTexture =
         textureCache.getOrPut(icon.hashCode()) {
             val source = icon.bitmap
-            BitmapTextureHolder(source.copy(source.config ?: Bitmap.Config.ARGB_8888, false))
+            val anchorX = icon.anchor.x
+            val anchorY = icon.anchor.y
+            val paddedWidthPx =
+                (2f * max(anchorX, 1f - anchorX) * source.width).roundToInt().coerceAtLeast(1)
+            val paddedHeightPx =
+                (2f * max(anchorY, 1f - anchorY) * source.height).roundToInt().coerceAtLeast(1)
+            val padded = Bitmap.createBitmap(paddedWidthPx, paddedHeightPx, Bitmap.Config.ARGB_8888)
+            Canvas(padded).drawBitmap(
+                source,
+                paddedWidthPx / 2f - anchorX * source.width,
+                paddedHeightPx / 2f - anchorY * source.height,
+                null,
+            )
+            PaddedTexture(
+                texture = BitmapTextureHolder(padded),
+                width = icon.size.width * paddedWidthPx / source.width,
+                height = icon.size.height * paddedHeightPx / source.height,
+            )
         }
 }
+
+/** [OpenMobileMapsMarkerOverlayRenderer.paddedTextureFor] の結果。大きさは表示 px。 */
+private class PaddedTexture(
+    val texture: TextureHolderInterface,
+    val width: Float,
+    val height: Float,
+)
 
 // ── ポリライン ────────────────────────────────────────────────────────────
 

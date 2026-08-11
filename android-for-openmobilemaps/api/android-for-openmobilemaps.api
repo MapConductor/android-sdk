@@ -322,6 +322,12 @@ public final class com.mapconductor.openmobilemaps.OpenMobileMapsViewState exten
 }
 public interface com.mapconductor.openmobilemaps.OpenMobileMapsViewStateInterface extends com.mapconductor.core.map.MapViewStateInterface<com.mapconductor.openmobilemaps.OpenMobileMapsMapDesignTypeInterface> {
 }
+final class com.mapconductor.openmobilemaps.PaddedTexture {
+  public com.mapconductor.openmobilemaps.PaddedTexture(io.openmobilemaps.mapscore.shared.graphics.objects.TextureHolderInterface, float, float);
+  public final io.openmobilemaps.mapscore.shared.graphics.objects.TextureHolderInterface getTexture();
+  public final float getWidth();
+  public final float getHeight();
+}
 public final class com.mapconductor.openmobilemaps.marker.OpenMobileMapsMarkerController extends com.mapconductor.core.marker.AbstractMarkerController<io.openmobilemaps.mapscore.shared.map.layers.icon.IconInfoInterface> implements com.mapconductor.core.controller.OnCameraChangeReceiverInterface {
   public com.mapconductor.openmobilemaps.marker.OpenMobileMapsMarkerController(com.mapconductor.openmobilemaps.OpenMobileMapsMarkerOverlayRenderer, com.mapconductor.core.marker.MarkerTilingOptions, kotlinx.coroutines.CoroutineScope);
   public com.mapconductor.openmobilemaps.marker.OpenMobileMapsMarkerController(com.mapconductor.openmobilemaps.OpenMobileMapsMarkerOverlayRenderer, com.mapconductor.core.marker.MarkerTilingOptions, kotlinx.coroutines.CoroutineScope, int, kotlin.jvm.internal.DefaultConstructorMarker);
