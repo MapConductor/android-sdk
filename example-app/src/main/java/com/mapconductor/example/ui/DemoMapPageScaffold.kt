@@ -253,14 +253,16 @@ fun DemoMapPageScaffold(
     onMapViewStateChanged: (MapViewStateInterface<*>) -> Unit = {},
     content: @Composable (BoxScope.(PaddingValues) -> Unit) = {},
 ) {
-    // `--es provider <key>` が指定されていれば、そのプロバイダで開始する（UI テスト用）。
-    // 一致しなければ [initSelect] のまま。
+    // 開始時のプロバイダは次の優先順で決める。
+    //  1. `--es provider <key>`（UI テスト用の指定）
+    //  2. 直近にユーザーが選んだプロバイダ（[SelectedProviderStore]。ページをまたいで引き継ぐ）
+    //  3. [initSelect]
     val requestedIndex =
         remember(menuItems) {
             com.mapconductor.example.MainActivity.providerExtra
                 ?.let { key -> menuItems.indexOfFirst { it.key.equals(key, ignoreCase = true) } }
                 ?.takeIf { it >= 0 }
-                ?: initSelect
+                ?: SelectedProviderStore.indexIn(menuItems, initSelect)
         }
     var selectedIndex by rememberSaveable { mutableIntStateOf(requestedIndex) }
     LaunchedEffect(selectedIndex) {
@@ -313,6 +315,8 @@ fun DemoMapPageScaffold(
                             selectedIndex = selectedIndex,
                             onSelect = { index, _ ->
                                 selectedIndex = index
+                                // 次のページへ引き継ぐ
+                                SelectedProviderStore.remember(menuItems.elementAt(index).key)
                             },
                         )
                     }
