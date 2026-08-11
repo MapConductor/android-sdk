@@ -342,8 +342,8 @@ public final class com.mapconductor.openmobilemaps.marker.OpenMobileMapsMarkerCo
 public final class com.mapconductor.openmobilemaps.tile.WebMercatorTileLayerConfig extends io.openmobilemaps.mapscore.shared.map.layers.tiled.Tiled2dMapLayerConfig {
   public static final double WORLD_WIDTH_METERS;
   public static final double HALF_WORLD;
-  public com.mapconductor.openmobilemaps.tile.WebMercatorTileLayerConfig(java.lang.String, java.lang.String, int, int, int, com.mapconductor.core.raster.TileScheme);
-  public com.mapconductor.openmobilemaps.tile.WebMercatorTileLayerConfig(java.lang.String, java.lang.String, int, int, int, com.mapconductor.core.raster.TileScheme, int, kotlin.jvm.internal.DefaultConstructorMarker);
+  public com.mapconductor.openmobilemaps.tile.WebMercatorTileLayerConfig(java.lang.String, java.lang.String, int, int, int, com.mapconductor.core.raster.TileScheme, int, boolean);
+  public com.mapconductor.openmobilemaps.tile.WebMercatorTileLayerConfig(java.lang.String, java.lang.String, int, int, int, com.mapconductor.core.raster.TileScheme, int, boolean, int, kotlin.jvm.internal.DefaultConstructorMarker);
   public int getCoordinateSystemIdentifier();
   public java.lang.String getLayerName();
   public java.lang.String getTileUrl(int, int, int, int);

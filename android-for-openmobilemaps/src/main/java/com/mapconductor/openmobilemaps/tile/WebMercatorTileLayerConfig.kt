@@ -43,6 +43,8 @@ class WebMercatorTileLayerConfig(
     private val minZoomLevel: Int = 0,
     private val maxZoomLevel: Int = 22,
     private val scheme: TileScheme = TileScheme.XYZ,
+    private val numDrawPreviousLayers: Int = 2,
+    private val maskTile: Boolean = false,
 ) : Tiled2dMapLayerConfig() {
     override fun getCoordinateSystemIdentifier(): Int = CoordinateSystemIdentifiers.EPSG3857()
 
@@ -83,12 +85,11 @@ class WebMercatorTileLayerConfig(
 
     override fun getZoomInfo(): Tiled2dMapZoomInfo =
         Tiled2dMapZoomInfo(
-            // 縮尺はすでに端末密度ぶんを織り込んであるので、SDK 側では調整させない。
             1.0f,
-            2,
+            numDrawPreviousLayers,
             0,
             false,
-            false,
+            maskTile,
             true,
             true,
         )

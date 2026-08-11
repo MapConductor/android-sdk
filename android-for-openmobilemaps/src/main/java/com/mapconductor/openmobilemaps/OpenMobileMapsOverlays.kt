@@ -655,6 +655,9 @@ class OpenMobileMapsRasterLayerOverlayRenderer(
                 minZoomLevel = template.minZoom ?: 0,
                 maxZoomLevel = template.maxZoom ?: 22,
                 scheme = template.scheme,
+                // ラスターオーバーレイは透過前提なので、粗い親レベルを重ね描きしない
+                numDrawPreviousLayers = 0,
+                maskTile = true,
             )
         val layer = Tiled2dMapRasterLayerInterface.create(config, loaders)
         layer.setAlpha(state.opacity)
