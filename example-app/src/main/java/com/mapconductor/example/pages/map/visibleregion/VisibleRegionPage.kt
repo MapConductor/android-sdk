@@ -9,9 +9,10 @@ import com.mapconductor.example.ui.DemoMapPageScaffold
 
 @Composable
 fun VisibleRegionPage(onToggleSidebar: () -> Unit = {}) {
+    // react-sdk / ios の同ページと同じカメラ。並べて数値を突き合わせるため揃えてある。
     val initCameraPosition =
         MapCameraPosition(
-            position = GeoPoint(latitude = 35.6762, longitude = 139.6503),
+            position = GeoPoint(latitude = 21.3069, longitude = -157.8583),
             zoom = 10.0,
         )
 
