@@ -253,16 +253,14 @@ fun DemoMapPageScaffold(
     onMapViewStateChanged: (MapViewStateInterface<*>) -> Unit = {},
     content: @Composable (BoxScope.(PaddingValues) -> Unit) = {},
 ) {
-    // 開始時のプロバイダは次の優先順で決める。
-    //  1. `--es provider <key>`（UI テスト用の指定）
-    //  2. 直近にユーザーが選んだプロバイダ（[SelectedProviderStore]。ページをまたいで引き継ぐ）
-    //  3. [initSelect]
+    // 開始時のプロバイダは [SelectedProviderStore] が覚えているもの、無ければ [initSelect]。
+    //
+    // `--es provider <key>` の指定もここでは見ない。起動時に store へ入れてあるので、
+    // **ユーザーが選び直せば上書きされる**。ここで起動引数を直接見ると、指定が
+    // 常時の上書きになってページを移るたびに元へ戻ってしまう。
     val requestedIndex =
         remember(menuItems) {
-            com.mapconductor.example.MainActivity.providerExtra
-                ?.let { key -> menuItems.indexOfFirst { it.key.equals(key, ignoreCase = true) } }
-                ?.takeIf { it >= 0 }
-                ?: SelectedProviderStore.indexIn(menuItems, initSelect)
+            SelectedProviderStore.indexIn(menuItems, initSelect)
         }
     var selectedIndex by rememberSaveable { mutableIntStateOf(requestedIndex) }
     LaunchedEffect(selectedIndex) {

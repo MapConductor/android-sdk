@@ -35,12 +35,16 @@ object SelectedProviderStore {
      *
      * 覚えているキーがこの一覧に無ければ（そのページが出さないプロバイダなら）
      * [fallback] を返す。
+     *
+     * 大文字小文字は無視する。`--es provider MapLibre` のように起動引数から
+     * 入ってきたキーも引き当てられるようにするため。
      */
     fun indexIn(
         menuItems: List<IconItem<*>>,
         fallback: Int,
     ): Int {
         val remembered = key ?: return fallback
-        return menuItems.indexOfFirst { it.key == remembered }.takeIf { it >= 0 } ?: fallback
+        val index = menuItems.indexOfFirst { it.key.equals(remembered, ignoreCase = true) }
+        return index.takeIf { it >= 0 } ?: fallback
     }
 }
