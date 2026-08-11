@@ -43,6 +43,23 @@ import kotlinx.coroutines.withContext
 
 private const val GEOJSON_ASSET = "N02-22_GML.zip"
 
+/**
+ * 国土数値情報の鉄道データ（N02）の属性名。
+ *
+ * 生の `N02_001` のままだと何の値か分からないので、吹き出しでは日本語名に置き換える。
+ * react / ios と**同じ文言**にしてある（3 プラットフォームを並べて見比べるサンプルなので、
+ * ここが違うと同じ地物を選んでいるのか判断できない）。
+ *
+ * ここに無いキーは生のキー名をそのまま出す。データ側に属性が増えても表から消えないように。
+ */
+private val PROPERTY_LABELS =
+    mapOf(
+        "N02_001" to "鉄道区分(railway category)",
+        "N02_002" to "事業者区分(business category)",
+        "N02_003" to "路線名(railway name)",
+        "N02_004" to "運営会社(railway company)",
+    )
+
 @Composable
 fun GeoJSONLayerMapPage(onToggleSidebar: () -> Unit = {}) {
     val initCameraPosition =
@@ -158,14 +175,14 @@ private fun PropertyTable(properties: Map<String, Any?>) {
                 .verticalScroll(rememberScrollState()),
     ) {
         Row(modifier = Modifier.background(Color(0xFFE0E0E0))) {
-            PropertyTableCell(text = "Property", weight = 0.35f)
-            PropertyTableCell(text = "Value", weight = 0.65f)
+            PropertyTableCell(text = "Property", weight = 0.5f)
+            PropertyTableCell(text = "Value", weight = 0.5f)
         }
 
         properties.forEach { (key, value) ->
             Row(modifier = Modifier.fillMaxWidth()) {
-                PropertyTableCell(text = key, weight = 0.35f)
-                PropertyTableCell(text = value?.toString().orEmpty(), weight = 0.65f)
+                PropertyTableCell(text = PROPERTY_LABELS[key] ?: key, weight = 0.5f)
+                PropertyTableCell(text = value?.toString().orEmpty(), weight = 0.5f)
             }
         }
     }
