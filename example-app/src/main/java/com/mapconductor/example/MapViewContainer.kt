@@ -23,6 +23,8 @@ import com.mapconductor.mapbox.MapboxMapView
 import com.mapconductor.mapbox.MapboxViewState
 import com.mapconductor.maplibre.MapLibreMapView
 import com.mapconductor.maplibre.MapLibreViewState
+import com.mapconductor.mappls.MapplsMapView
+import com.mapconductor.mappls.MapplsViewState
 import com.mapconductor.maptiler.MapTilerMapView
 import com.mapconductor.maptiler.MapTilerViewState
 import com.mapconductor.openmobilemaps.OpenMobileMapsMapView
@@ -190,6 +192,21 @@ fun MapViewContainer(
 
         is OpenMobileMapsViewState ->
             OpenMobileMapsMapView(
+                modifier = modifier,
+                state = state,
+                markerTiling = markerTiling,
+                cameraRestriction = cameraRestriction,
+                onMapLoaded = onMapLoaded,
+                onMapClick = onMapClick,
+                onMapLongClick = onMapLongClick,
+                onCameraMoveStart = onCameraMoveStart,
+                onCameraMove = onCameraMove,
+                onCameraMoveEnd = onCameraMoveEnd,
+                content = content,
+            )
+
+        is MapplsViewState ->
+            MapplsMapView(
                 modifier = modifier,
                 state = state,
                 markerTiling = markerTiling,

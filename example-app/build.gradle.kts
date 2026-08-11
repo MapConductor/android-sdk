@@ -7,6 +7,14 @@ plugins {
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin") version "2.0.1"
 }
 
+// Mappls の認証コンフィグ（このモジュール直下の *.a.conf / *.a.olf、gitignore 済み）を
+// ビルドへ取り込む。classpath はルートの buildscript で宣言している。
+// コンフィグはアカウント固有なので、無い環境（CI など）ではプラグインを適用しない
+// — その場合 Mappls の地図だけ認証エラーになり、他プロバイダには影響しない。
+if (projectDir.listFiles()?.any { it.name.endsWith(".a.conf") } == true) {
+    apply(plugin = "com.mappls.services.android")
+}
+
 ktlint {
     android.set(true)
     reporters {
@@ -236,6 +244,8 @@ dependencies {
     // プロジェクト依存にしている。publish したら他プロバイダと同じく
     // releaseImplementation(libs...) / "localImplementation"(...) へ移すこと。
     implementation(project(":android-for-openmobilemaps"))
+    // Mappls も未 publish（Open Mobile Maps と同じ扱い）
+    implementation(project(":android-for-mappls"))
     debugImplementation(project(":android-marker-clustering"))
     debugImplementation(project(":android-heatmap"))
     debugImplementation(project(":android-geojson-layer"))

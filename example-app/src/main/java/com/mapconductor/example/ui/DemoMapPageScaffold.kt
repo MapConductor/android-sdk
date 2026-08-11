@@ -51,6 +51,9 @@ import com.mapconductor.mapbox.rememberMapboxMapViewState
 import com.mapconductor.maplibre.MapLibreDesign
 import com.mapconductor.maplibre.MapLibreViewState
 import com.mapconductor.maplibre.rememberMapLibreMapViewState
+import com.mapconductor.mappls.MapplsDesign
+import com.mapconductor.mappls.MapplsViewState
+import com.mapconductor.mappls.rememberMapplsMapViewState
 import com.mapconductor.maptiler.MapTilerDesign
 import com.mapconductor.maptiler.MapTilerViewState
 import com.mapconductor.maptiler.rememberMapTilerMapViewState
@@ -231,6 +234,22 @@ fun openMobileMapsViewItem(initCameraPosition: MapCameraPositionInterface): Icon
 }
 
 @Composable
+fun mapplsViewItem(initCameraPosition: MapCameraPositionInterface): IconItem<MapplsViewState> {
+    val mapplsState =
+        rememberMapplsMapViewState(
+            mapDesign = MapplsDesign.Default,
+            cameraPosition = initCameraPosition,
+        )
+    return IconItem(
+        key = "mappls",
+        label = "Mappls",
+        lightIconResId = R.drawable.mappls_logo,
+        darkIconResId = R.drawable.mappls_logo,
+        value = mapplsState,
+    )
+}
+
+@Composable
 fun DefaultMapViewItems(initCameraPosition: MapCameraPositionInterface): List<IconItem<out MapViewState<out Any>>> =
     listOf(
         mapLibreViewItem(initCameraPosition),
@@ -243,6 +262,7 @@ fun DefaultMapViewItems(initCameraPosition: MapCameraPositionInterface): List<Ic
         maptilerViewItem(initCameraPosition),
         longdoViewItem(initCameraPosition),
         openMobileMapsViewItem(initCameraPosition),
+        mapplsViewItem(initCameraPosition),
     )
 
 @Composable

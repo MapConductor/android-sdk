@@ -15,6 +15,13 @@ buildscript {
         mavenLocal()
         google()
         mavenCentral()
+        maven {
+            // Mappls services plugin（example-app が .a.conf / .a.olf を読み込むのに使う）
+            url = uri("https://maven.mappls.com/repository/mappls/")
+        }
+    }
+    dependencies {
+        classpath("com.mappls.services:mappls-services:1.0.1")
     }
 }
 
