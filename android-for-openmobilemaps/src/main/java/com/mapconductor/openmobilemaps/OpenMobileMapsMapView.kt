@@ -38,6 +38,8 @@ import io.openmobilemaps.mapscore.map.view.MapViewState as OmmMapViewState
 import io.openmobilemaps.mapscore.shared.map.MapConfig
 import io.openmobilemaps.mapscore.shared.map.coordinates.CoordinateSystemFactory
 import io.openmobilemaps.mapscore.shared.map.loader.LoaderInterface
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.ResponseBody.Companion.toResponseBody
 import java.util.UUID
 import android.content.Context
 import android.os.Bundle
@@ -168,7 +170,19 @@ fun OpenMobileMapsMapView(
     val registry = remember { scope.buildRegistry() }
     val cameraState = remember { mutableStateOf<MapCameraPositionInterface?>(state.cameraPosition) }
     val loaders =
-        remember { arrayListOf<LoaderInterface>(DataLoader(context, context.cacheDir, CACHE_BYTES, "", USER_AGENT)) }
+        remember {
+            arrayListOf<LoaderInterface>(
+                DataLoader(
+                    context,
+                    context.cacheDir,
+                    CACHE_BYTES,
+                    "",
+                    USER_AGENT,
+                    listOf(emptyLocalTileInterceptor()),
+                    emptyList(),
+                ),
+            )
+        }
 
     MapViewBase(
         state = state,
@@ -353,6 +367,55 @@ fun createOpenMobileMapsViewController(
     }
 
     return mapController
+}
+
+/**
+ * ローカルタイルサーバの 404 を「透明な 1x1 PNG の 200」へ書き換える。
+ *
+ * ## なぜ要るのか
+ *
+ * マーカータイルのローカルサーバは、マーカーが 1 つも無いタイルに 404 を返す
+ * （MapLibre などはそれを「空タイル」として扱うため問題にならない）。
+ * ところが Open Mobile Maps は 404 を **エラー** として扱い、そのタイルを
+ * 「存在しない」と記録する。子タイルが存在しない領域はステンシルマスクに
+ * **穴が開き、保持されている粗い親タイルがそこだけ透けて見え続ける**
+ * （2-6 の対策後も、マーカーの無い領域だけ巨大な赤い矩形が残る、という形で出た）。
+ *
+ * ## 204 ではだめ
+ *
+ * SDK の `DataLoader` には 204 = 空タイルの分岐があるが、判定は
+ * `isSuccessful && bytes != null` が**先**に走る。204 は 2xx で本文も空配列として
+ * 読めてしまうので、その分岐には届かず「デコード失敗」のエラーになる。
+ * 実際に描ける**本物の透明 PNG** を 200 で返すのが確実で、通常の読み込み経路を
+ * そのまま通る（1x1 の透明テクスチャがタイル全面に伸びるだけで、見た目には何も出ない）。
+ */
+private fun emptyLocalTileInterceptor(): okhttp3.Interceptor =
+    okhttp3.Interceptor { chain ->
+        val response = chain.proceed(chain.request())
+        val host = chain.request().url.host
+        if (response.code == 404 && (host == "127.0.0.1" || host == "localhost")) {
+            response.close()
+            okhttp3.Response
+                .Builder()
+                .request(chain.request())
+                .protocol(okhttp3.Protocol.HTTP_1_1)
+                .code(200)
+                .message("OK")
+                .body(transparentTilePng.toResponseBody("image/png".toMediaType()))
+                .build()
+        } else {
+            response
+        }
+    }
+
+/** 空タイルとして返す透明 1x1 PNG。 */
+private val transparentTilePng: ByteArray by lazy {
+    val bitmap = android.graphics.Bitmap.createBitmap(1, 1, android.graphics.Bitmap.Config.ARGB_8888)
+    java.io.ByteArrayOutputStream().use { stream ->
+        bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, stream)
+        bitmap.recycle()
+        stream.toByteArray()
+    }
 }
 
 /** タイルのディスクキャッシュ。他プロバイダの既定と揃えてある。 */

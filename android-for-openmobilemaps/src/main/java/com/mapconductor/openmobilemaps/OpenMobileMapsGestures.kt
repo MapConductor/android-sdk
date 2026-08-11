@@ -37,7 +37,8 @@ internal class OpenMobileMapsTouchListener(
     }
 
     override fun onClickConfirmed(posScreen: Vec2F): Boolean {
-        val position = controller.holder.fromScreenOffsetSync(Offset(posScreen.x, posScreen.y)) ?: return false
+        // SDK から来る座標は内側ビューの座標系（fromInnerOffsetSync のコメント参照）
+        val position = controller.holder.fromInnerOffsetSync(Offset(posScreen.x, posScreen.y)) ?: return false
         // カスケード（marker → circle → groundImage → polyline → polygon → map）は
         // コアが回す。ここは座標を渡すだけ。
         controller.mainCoroutine.launch { controller.dispatchTap(position) }
@@ -45,7 +46,7 @@ internal class OpenMobileMapsTouchListener(
     }
 
     override fun onLongPress(posScreen: Vec2F): Boolean {
-        val position = controller.holder.fromScreenOffsetSync(Offset(posScreen.x, posScreen.y)) ?: return false
+        val position = controller.holder.fromInnerOffsetSync(Offset(posScreen.x, posScreen.y)) ?: return false
         controller.mainCoroutine.launch { controller.handleLongPress(position) }
         return true
     }
@@ -95,7 +96,8 @@ internal fun OpenMobileMapsMapViewController.installDragTouchInterceptor() {
             val selected = controller.getSelectedMarker() ?: return@OnTouchListener false
             when (event.actionMasked) {
                 MotionEvent.ACTION_MOVE -> {
-                    holder.fromScreenOffsetSync(Offset(event.x, event.y))?.let { position ->
+                    // OnTouchListener は内側ビューに載せてあるので event も内側座標
+                    holder.fromInnerOffsetSync(Offset(event.x, event.y))?.let { position ->
                         selected.state.position = position
                         controller.updateDragPosition(position)
                         controller.dispatchDrag(selected.state)
@@ -106,7 +108,7 @@ internal fun OpenMobileMapsMapViewController.installDragTouchInterceptor() {
                 MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                     // 離した位置を確定させてから dragEnd を配送する。ここを省くと
                     // 最後の ACTION_MOVE の位置で確定し、指の位置と 1 フレームずれる。
-                    holder.fromScreenOffsetSync(Offset(event.x, event.y))?.let { position ->
+                    holder.fromInnerOffsetSync(Offset(event.x, event.y))?.let { position ->
                         selected.state.position = position
                         controller.updateDragPosition(position)
                     }

@@ -49,8 +49,26 @@ class OpenMobileMapsMapViewHolder(
     /** 画面座標 → 地理座標。入り口で入れ物の座標を内側の座標へ戻す（[toScreenOffset] の逆）。 */
     override fun fromScreenOffsetSync(offset: Offset): GeoPoint? {
         val inner = mapView.fromSurfaceToInner(offset) ?: return null
+        return fromInnerOffsetSync(inner)
+    }
+
+    /**
+     * **内側の [io.openmobilemaps.mapscore.map.view.MapView] の座標** → 地理座標。
+     *
+     * ## タッチ経路は必ずこちらを使うこと
+     *
+     * Android は子ビューへの MotionEvent を**子のローカル座標へ変換してから**渡す。
+     * つまり SDK のタッチハンドラにも、内側ビューの OnTouchListener にも、
+     * 届く座標はすでに内側の座標系である。そこへ [fromScreenOffsetSync]
+     * （入れ物の座標を受け取る想定）を使うと、内側への逆変換が**二重に**掛かる。
+     *
+     * tilt = 0 では変換が恒等なので気づけない。PostOffice ページの InfoBubble を
+     * タップすると `tilt = 30` でズームインする仕様で、**その直後からマーカーが
+     * タップに反応しなくなる**という形で発覚した。
+     */
+    internal fun fromInnerOffsetSync(offset: Offset): GeoPoint? {
         val coord =
-            runCatching { map.getCamera().coordFromScreenPosition(Vec2F(inner.x, inner.y)) }.getOrNull()
+            runCatching { map.getCamera().coordFromScreenPosition(Vec2F(offset.x, offset.y)) }.getOrNull()
                 ?: return null
         return toWgs84(coord)?.toGeoPoint()
     }
