@@ -17,6 +17,8 @@ import com.mapconductor.mapbox.MapboxMapDesign
 import com.mapconductor.mapbox.MapboxViewStateInterface
 import com.mapconductor.maplibre.MapLibreDesign
 import com.mapconductor.maplibre.MapLibreViewStateInterface
+import com.mapconductor.mappls.MapplsDesign
+import com.mapconductor.mappls.MapplsViewStateInterface
 import com.mapconductor.maptiler.MapTilerDesign
 import com.mapconductor.maptiler.MapTilerViewStateInterface
 import com.mapconductor.tomtom.TomTomMapDesign
@@ -87,6 +89,9 @@ class MapDesignPageViewModel :
             }
             is LongdoViewStateInterface -> {
                 _mapDesignOptions.value = longdoMapDesigns
+            }
+            is MapplsViewStateInterface -> {
+                _mapDesignOptions.value = mapplsDesigns
             }
         }
     }
@@ -247,6 +252,13 @@ class MapDesignPageViewModel :
             MapDesignOption(label = "Landscape", design = MapTilerDesign.Landscape),
             MapDesignOption(label = "Aquarelle", design = MapTilerDesign.Aquarelle),
             MapDesignOption(label = "OpenStreetMap", design = MapTilerDesign.OpenStreetMap),
+        )
+
+    // Mappls のスタイルはアカウント紐付き。ここでは全アカウント共通の 2 つだけ出す
+    private val mapplsDesigns =
+        listOf(
+            MapDesignOption(label = "Default", design = MapplsDesign.Default),
+            MapDesignOption(label = "StandardDay", design = MapplsDesign.StandardDay),
         )
 
     private val longdoMapDesigns =
