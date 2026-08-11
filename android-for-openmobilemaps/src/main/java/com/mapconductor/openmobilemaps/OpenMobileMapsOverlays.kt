@@ -643,8 +643,24 @@ class OpenMobileMapsRasterLayerOverlayRenderer(
 
     override suspend fun onPostProcess() = Unit
 
+    /**
+     * レイヤを作る。**`state.visible == false` でも作って返すこと。**
+     *
+     * ## 不可視を「レイヤ無し」で表してはいけない
+     *
+     * ここで null を返すと、コアの `RasterLayerController.add` は**エンティティを
+     * 登録しない**。その後 `visible` が true へ反転しても、`update(state)` は
+     * 「登録済みのエンティティ」を前提に差分を取るので、**黙って何もしない**。
+     *
+     * GeoJSON レイヤがまさにこの形で生まれる（`visible = false` で add され、
+     * 読み込み完了後に true へ反転する）。以前は null を返していた。Compose の
+     * 再コンポジションで add が呼び直されると自己修復して**動いて見える**ことが
+     * あるが、反転が sync の後に来ると取りこぼしたままになる（iOS で顕在化した）。
+     *
+     * 他プロバイダのレンダラは全部「レイヤは作る・可視性は別のスイッチで切る」。
+     * この SDK では [LayerInterface.hide] / [LayerInterface.show] がそれにあたる。
+     */
     private fun createLayer(state: RasterLayerState): OpenMobileMapsActualRasterLayer? {
-        if (!state.visible) return null
         val template = state.source as? RasterLayerSource.UrlTemplate ?: return null
 
         val config =
@@ -661,6 +677,9 @@ class OpenMobileMapsRasterLayerOverlayRenderer(
             )
         val layer = Tiled2dMapRasterLayerInterface.create(config, loaders)
         layer.setAlpha(state.opacity)
+        if (!state.visible) {
+            layer.asLayerInterface().hide()
+        }
         return OpenMobileMapsActualRasterLayer(
             layer = layer,
             layerInterface = layers.insertBelowOverlays(holder.map, layer.asLayerInterface()),
