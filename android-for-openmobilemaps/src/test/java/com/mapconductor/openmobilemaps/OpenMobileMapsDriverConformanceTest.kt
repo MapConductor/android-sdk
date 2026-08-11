@@ -136,7 +136,7 @@ class OpenMobileMapsDriverConformanceTest {
         // density = 1.0 / 256px タイルなら、レベル L の縮尺は統一ズーム L の縮尺と一致する。
         // ここがずれると常に 1 段ぼけた（あるいは無駄に細かい）タイルが選ばれる。
         (0..22).forEach { level ->
-            val scale = zoomScaleForLevel(level, tileSize = 256, density = 1.0f)
+            val scale = zoomScaleForLevel(level, tileSize = 256)
             assertEquals(
                 "レベル $level の縮尺が統一ズームと一致しない",
                 converter.toNativeZoom(level.toDouble()),
@@ -147,15 +147,25 @@ class OpenMobileMapsDriverConformanceTest {
     }
 
     @Test
-    fun `512px タイルと端末密度でレベルがずれる`() {
-        // 512px タイルは 256px の 2 枚ぶんを覆うので、同じ画面には 1 段浅いレベルでよい。
-        val small = zoomScaleForLevel(10, tileSize = 256, density = 1.0f)
-        val large = zoomScaleForLevel(10, tileSize = 512, density = 1.0f)
+    fun `512dp タイルは 1 段浅いレベルで足りる`() {
+        // 512dp タイルは 256dp の 2 枚ぶんを覆うので、同じ画面には 1 段浅いレベルでよい。
+        val small = zoomScaleForLevel(10, tileSize = 256)
+        val large = zoomScaleForLevel(10, tileSize = 512)
         assertEquals(large * 2.0, small, small * 1e-9)
+    }
 
-        // 高密度端末は同じ画面により細かいタイルが要る（＝縮尺の分母が大きい側へ寄る）。
-        val retina = zoomScaleForLevel(10, tileSize = 256, density = 3.0f)
-        assertEquals(small * 3.0, retina, retina * 1e-9)
+    @Test
+    fun `レベルの選択に端末密度は影響しない`() {
+        // tileSize は画像のピクセル数ではなく dp。密度を掛けると高密度端末だけ
+        // 1 段深いレベルが選ばれ、マーカータイルのアイコンが巨大になる（実機で発生した）。
+        // 引数に密度が無いことをこのテストで固定する。
+        (0..22).forEach { level ->
+            assertEquals(
+                converter.toNativeZoom(level.toDouble()),
+                zoomScaleForLevel(level, tileSize = 256),
+                1e-6,
+            )
+        }
     }
 
     // ── カメラアニメーションの補間 ────────────────────────────────────
@@ -266,7 +276,6 @@ class OpenMobileMapsDriverConformanceTest {
             layerName = "test",
             urlTemplate = "https://example.test/{z}/{x}/{y}.png",
             tileSize = 256,
-            density = 1.0f,
             scheme = scheme,
         )
 }

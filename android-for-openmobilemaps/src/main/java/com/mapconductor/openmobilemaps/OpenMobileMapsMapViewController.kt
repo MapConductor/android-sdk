@@ -396,7 +396,6 @@ class OpenMobileMapsMapViewController(
                 layerName = "design-${value.id}",
                 urlTemplate = value.tileUrlTemplate,
                 tileSize = value.tileSize,
-                density = density,
             )
         val layer = Tiled2dMapRasterLayerInterface.create(config, loaders)
         layers.setDesignLayer(holder.map, layer.asLayerInterface())

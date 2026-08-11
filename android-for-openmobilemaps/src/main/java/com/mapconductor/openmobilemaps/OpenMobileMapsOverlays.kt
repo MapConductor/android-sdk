@@ -615,7 +615,6 @@ class OpenMobileMapsRasterLayerOverlayRenderer(
     val holder: OpenMobileMapsMapViewHolder,
     private val layers: OpenMobileMapsLayers,
     private val loaders: ArrayList<LoaderInterface>,
-    private val density: Float,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
 ) : RasterLayerOverlayRendererInterface<OpenMobileMapsActualRasterLayer> {
     override suspend fun onAdd(
@@ -653,7 +652,6 @@ class OpenMobileMapsRasterLayerOverlayRenderer(
                 layerName = state.id,
                 urlTemplate = template.template,
                 tileSize = template.tileSize,
-                density = density,
                 minZoomLevel = template.minZoom ?: 0,
                 maxZoomLevel = template.maxZoom ?: 22,
                 scheme = template.scheme,

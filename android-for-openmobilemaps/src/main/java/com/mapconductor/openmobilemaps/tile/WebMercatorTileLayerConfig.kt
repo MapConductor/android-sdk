@@ -22,22 +22,24 @@ import kotlin.math.pow
  * そのまま使うと**統一ズーム Z のときに 1 段低いレベルのタイルが選ばれ、常にぼやける**。
  * 自前の設定にして、レベル L の縮尺を統一ズーム L と厳密に一致させる。
  *
- * ## 端末密度ぶんはここで足す
+ * ## 端末密度で補正してはいけない
  *
- * 統一ズーム Z のとき、Google 基準では 256dip 幅のタイルが 1 枚ぶんになる。物理ピクセルでは
- * `256 x density` なので、[tileSize] の画像を 1:1 で貼るには
- * `density x 256 / tileSize` ぶん深いレベルを取りに行く必要がある。その係数を縮尺に掛ける
- * （512px タイル・density 2.0 なら等倍で、Z と同じレベルが選ばれる）。
+ * [tileSize] は**画像のピクセル数ではなく dp** である（`RasterLayerSource.UrlTemplate` の
+ * 意味論。MapLibre の `tileSize` も Google のタイル定義も同じ）。したがってレベルの選択は
+ * dp だけで決まり、端末密度は関係しない。
+ *
+ * 一度ここに `density` を掛けていて、**マーカータイルが 1 段深いレベルで選ばれ、
+ * PostOffice ページのアイコンが巨大かつぼやける**という形で出た。密度を掛けると
+ * 高密度端末だけ挙動が変わるので、他プロバイダと並べても気づきにくい。
  *
  * @param urlTemplate `{z}` `{x}` `{y}` を含む URL。
+ * @param tileSize タイル 1 枚の一辺（**dp**）。OSM 系は 256、@2x 系は 512。
  * @param scheme [TileScheme.TMS] なら y を反転する。
- * @param density `Resources.getDisplayMetrics().density`。
  */
 class WebMercatorTileLayerConfig(
     private val layerName: String,
     private val urlTemplate: String,
     private val tileSize: Int,
-    private val density: Float,
     private val minZoomLevel: Int = 0,
     private val maxZoomLevel: Int = 22,
     private val scheme: TileScheme = TileScheme.XYZ,
@@ -65,7 +67,7 @@ class WebMercatorTileLayerConfig(
                 val tilesPerAxis = 1 shl level
                 out.add(
                     Tiled2dMapZoomLevelInfo(
-                        zoomScaleForLevel(level, tileSize, density),
+                        zoomScaleForLevel(level, tileSize),
                         (WORLD_WIDTH_METERS / tilesPerAxis).toFloat(),
                         tilesPerAxis,
                         tilesPerAxis,
@@ -113,9 +115,11 @@ private const val UNIFIED_TILE_SIZE = 256
 /**
  * タイルレベル [level] を選ばせたい縮尺。
  *
- * `density = 1` かつ 256px タイルなら統一ズーム [level] の縮尺そのもの
- * （＝ Google と同じレベルが選ばれる）。端末密度とタイルの大きさぶんだけ
- * 深い／浅いレベルへずらす。
+ * 256dp タイルなら統一ズーム [level] の縮尺そのもの（＝ Google と同じレベルが選ばれる）。
+ * 512dp タイルは 1 枚で 2 枚ぶんを覆うので 1 段浅いレベルでよい。
+ *
+ * **端末密度を掛けないこと。** [tileSize] は画像のピクセル数ではなく dp なので、
+ * レベルの選択に密度は関係しない。
  *
  * SDK に触らない純粋な計算にしてあるのは、素の JVM テストで検証できるようにするため
  * （[Tiled2dMapZoomLevelInfo] の生成は [CoordinateSystemIdentifiers] を通るので JNI に入る）。
@@ -123,5 +127,4 @@ private const val UNIFIED_TILE_SIZE = 256
 internal fun zoomScaleForLevel(
     level: Int,
     tileSize: Int,
-    density: Float,
-): Double = ZoomAltitudeConverter.SCALE_AT_ZOOM_0 * density * UNIFIED_TILE_SIZE / tileSize / 2.0.pow(level)
+): Double = ZoomAltitudeConverter.SCALE_AT_ZOOM_0 * UNIFIED_TILE_SIZE / tileSize / 2.0.pow(level)

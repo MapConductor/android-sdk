@@ -278,8 +278,8 @@ public final class com.mapconductor.openmobilemaps.OpenMobileMapsRasterLayerCont
   public com.mapconductor.openmobilemaps.OpenMobileMapsRasterLayerController(com.mapconductor.openmobilemaps.OpenMobileMapsRasterLayerOverlayRenderer, com.mapconductor.core.raster.RasterLayerManagerInterface, int, kotlin.jvm.internal.DefaultConstructorMarker);
 }
 public final class com.mapconductor.openmobilemaps.OpenMobileMapsRasterLayerOverlayRenderer implements com.mapconductor.core.raster.RasterLayerOverlayRendererInterface<com.mapconductor.openmobilemaps.OpenMobileMapsActualRasterLayer> {
-  public com.mapconductor.openmobilemaps.OpenMobileMapsRasterLayerOverlayRenderer(com.mapconductor.openmobilemaps.OpenMobileMapsMapViewHolder, com.mapconductor.openmobilemaps.OpenMobileMapsLayers, java.util.ArrayList<io.openmobilemaps.mapscore.shared.map.loader.LoaderInterface>, float, kotlinx.coroutines.CoroutineScope);
-  public com.mapconductor.openmobilemaps.OpenMobileMapsRasterLayerOverlayRenderer(com.mapconductor.openmobilemaps.OpenMobileMapsMapViewHolder, com.mapconductor.openmobilemaps.OpenMobileMapsLayers, java.util.ArrayList, float, kotlinx.coroutines.CoroutineScope, int, kotlin.jvm.internal.DefaultConstructorMarker);
+  public com.mapconductor.openmobilemaps.OpenMobileMapsRasterLayerOverlayRenderer(com.mapconductor.openmobilemaps.OpenMobileMapsMapViewHolder, com.mapconductor.openmobilemaps.OpenMobileMapsLayers, java.util.ArrayList<io.openmobilemaps.mapscore.shared.map.loader.LoaderInterface>, kotlinx.coroutines.CoroutineScope);
+  public com.mapconductor.openmobilemaps.OpenMobileMapsRasterLayerOverlayRenderer(com.mapconductor.openmobilemaps.OpenMobileMapsMapViewHolder, com.mapconductor.openmobilemaps.OpenMobileMapsLayers, java.util.ArrayList, kotlinx.coroutines.CoroutineScope, int, kotlin.jvm.internal.DefaultConstructorMarker);
   public final com.mapconductor.openmobilemaps.OpenMobileMapsMapViewHolder getHolder();
   public kotlinx.coroutines.CoroutineScope getCoroutine();
   public java.lang.Object onAdd(java.util.List<? extends com.mapconductor.core.raster.RasterLayerOverlayRendererInterface$AddParamsInterface>, kotlin.coroutines.Continuation<? super java.util.List<com.mapconductor.openmobilemaps.OpenMobileMapsActualRasterLayer>>);
@@ -342,8 +342,8 @@ public final class com.mapconductor.openmobilemaps.marker.OpenMobileMapsMarkerCo
 public final class com.mapconductor.openmobilemaps.tile.WebMercatorTileLayerConfig extends io.openmobilemaps.mapscore.shared.map.layers.tiled.Tiled2dMapLayerConfig {
   public static final double WORLD_WIDTH_METERS;
   public static final double HALF_WORLD;
-  public com.mapconductor.openmobilemaps.tile.WebMercatorTileLayerConfig(java.lang.String, java.lang.String, int, float, int, int, com.mapconductor.core.raster.TileScheme);
-  public com.mapconductor.openmobilemaps.tile.WebMercatorTileLayerConfig(java.lang.String, java.lang.String, int, float, int, int, com.mapconductor.core.raster.TileScheme, int, kotlin.jvm.internal.DefaultConstructorMarker);
+  public com.mapconductor.openmobilemaps.tile.WebMercatorTileLayerConfig(java.lang.String, java.lang.String, int, int, int, com.mapconductor.core.raster.TileScheme);
+  public com.mapconductor.openmobilemaps.tile.WebMercatorTileLayerConfig(java.lang.String, java.lang.String, int, int, int, com.mapconductor.core.raster.TileScheme, int, kotlin.jvm.internal.DefaultConstructorMarker);
   public int getCoordinateSystemIdentifier();
   public java.lang.String getLayerName();
   public java.lang.String getTileUrl(int, int, int, int);
@@ -357,7 +357,7 @@ final class com.mapconductor.openmobilemaps.tile.WebMercatorTileLayerConfig$Comp
   public final io.openmobilemaps.mapscore.shared.map.coordinates.RectCoord webMercatorBounds();
 }
 public final class com.mapconductor.openmobilemaps.tile.WebMercatorTileLayerConfigKt {
-  public static final double zoomScaleForLevel(int, int, float);
+  public static final double zoomScaleForLevel(int, int);
 }
 public final class com.mapconductor.openmobilemaps.zoom.ZoomAltitudeConverter extends com.mapconductor.core.zoom.AbstractZoomAltitudeConverter {
   public static final com.mapconductor.openmobilemaps.zoom.ZoomAltitudeConverter$Companion Companion;

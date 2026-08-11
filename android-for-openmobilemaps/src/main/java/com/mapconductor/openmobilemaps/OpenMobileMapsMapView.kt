@@ -317,7 +317,6 @@ fun createOpenMobileMapsViewController(
                         holder = holder,
                         layers = layers,
                         loaders = loaders,
-                        density = density,
                     ),
                 ),
             loaders = loaders,
