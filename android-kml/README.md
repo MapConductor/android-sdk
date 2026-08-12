@@ -1,8 +1,8 @@
 # MapConductor KML Layer
 
 `android-kml` adds a tile-rendered KML overlay to MapConductor map views. It parses OGC KML 2.2
-documents into feature models, renders them through MapConductor's raster tile layer pipeline,
-and provides hit-testing for feature selection.
+documents (and KMZ archives) into feature models, renders them through MapConductor's raster tile
+layer pipeline, and provides hit-testing for feature selection.
 
 It shares the tile-rendering architecture of `android-geojson-layer`: rendering is tile based and
 parsed features are supplied as lightweight data objects, so it scales to large KML datasets.
@@ -11,7 +11,12 @@ parsed features are supplied as lightweight data objects, so it scales to large 
 
 - Parses `Point`, `LineString`, `LinearRing`, `Polygon` (with `innerBoundaryIs` holes),
   and `MultiGeometry`.
-- Traverses nested `<Document>` and `<Folder>` containers.
+- Reads KMZ archives transparently: ZIP input is detected by signature and the first `.kml`
+  entry (conventionally `doc.kml`) is used as the document.
+- Traverses nested `<Document>` and `<Folder>` containers with a loop and a depth counter —
+  never recursion — so arbitrarily deep hierarchies cannot overflow the call stack.
+- Follows `<NetworkLink>` references (KML documents hosted elsewhere on the internet) through
+  `KMLLoader`, with relative-href resolution, cycle detection, and a document-count cap.
 - Resolves KML styling: `LineStyle` (color, width), `PolyStyle` (color, fill, outline),
   and `IconStyle` (color), including shared `<Style>` / `<StyleMap>` references via `styleUrl`.
   KML `aabbggrr` colors are converted to Android ARGB.
@@ -75,6 +80,28 @@ fun MapViewScope.KmlExample(context: Context) {
     KMLLayer(state = layerState, features = features)
 }
 ```
+
+### Loading from a URL / following NetworkLinks
+
+`KMLParser` only reads the document you give it; `<NetworkLink>` references are collected but
+not fetched. Use `KMLLoader` to fetch a KML/KMZ from a URL and merge every linked document into
+one feature list (requires the `android.permission.INTERNET` permission in your app):
+
+```kotlin
+val loader = KMLLoader(onDocumentError = { url, e -> Log.w("KML", "skipped $url", e) })
+
+// From the network (http/https, redirects followed; KMZ detected automatically):
+features = loader.load("https://example.com/regions.kmz")
+
+// From a stream you opened yourself; relative NetworkLink hrefs resolve against baseUrl:
+features = loader.load(context.assets.open("sample.kml"), baseUrl = "https://example.com/sample.kml")
+```
+
+Linked documents are fetched iteratively with a queue and a visited set: cyclic references are
+fetched only once, and at most `maxDocuments` (default 20) documents are read. Links with
+`visibility` set to `0` are not followed, and refresh modes (`refreshInterval` etc.) are not
+supported — each document is read once. If you need the raw link list instead, call
+`KMLParser.parseDocument`, which returns a `KMLDocument` holding `features` and `networkLinks`.
 
 Call `KMLLayerState.processClick` from your map's `onMapClick` handler to hit-test features:
 

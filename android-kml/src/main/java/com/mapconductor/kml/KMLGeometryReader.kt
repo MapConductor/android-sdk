@@ -61,16 +61,31 @@ internal object KMLGeometryReader {
         return coords
     }
 
+    /**
+     * `<MultiGeometry>` はネスト可能なので、明示スタック + ループで読む（再帰しない）。
+     * リーフ要素の読み取りは自分の END_TAG まで消費するため、このループに見える
+     * END_TAG は MultiGeometry 自身の閉じタグだけになる。
+     */
     fun readMultiGeometry(parser: XmlPullParser): KMLGeometry {
-        val parts = ArrayList<KMLGeometry>()
-        KMLXmlSupport.forEachChild(parser) { name ->
-            when (name) {
-                "Point", "LineString", "LinearRing", "Polygon", "MultiGeometry" ->
-                    readGeometry(parser, name)?.let { parts.add(it) }
-                else -> KMLXmlSupport.skip(parser)
+        val stack = ArrayDeque<ArrayList<KMLGeometry>>()
+        stack.addLast(ArrayList())
+        while (true) {
+            when (parser.next()) {
+                XmlPullParser.START_TAG ->
+                    when (val name = parser.name) {
+                        "MultiGeometry" -> stack.addLast(ArrayList())
+                        "Point", "LineString", "LinearRing", "Polygon" ->
+                            readGeometry(parser, name)?.let { stack.last().add(it) }
+                        else -> KMLXmlSupport.skip(parser)
+                    }
+                XmlPullParser.END_TAG -> {
+                    val closed = KMLGeometry.GeometryCollection(stack.removeLast())
+                    if (stack.isEmpty()) return closed
+                    stack.last().add(closed)
+                }
+                XmlPullParser.END_DOCUMENT -> return KMLGeometry.GeometryCollection(stack.first())
             }
         }
-        return KMLGeometry.GeometryCollection(parts)
     }
 
     /** Reads the `<coordinates>` child of the current geometry element. */

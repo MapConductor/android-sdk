@@ -66,6 +66,8 @@ dependencies {
     implementation(libs.androidx.compose.runtime)
 
     testImplementation(libs.junit)
+    // JVM 単体テストで XmlPullParserFactory の実装を提供する（Android 実機では OS 内蔵の kxml2 が使われる）
+    testImplementation("net.sf.kxml:kxml2:2.3.0")
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 }

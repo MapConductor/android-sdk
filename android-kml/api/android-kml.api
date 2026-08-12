@@ -29,6 +29,12 @@ public final class com.mapconductor.kml.KMLDefaults {
   public final int getDEFAULT_STROKE_COLOR();
   public final int getDEFAULT_FILL_COLOR();
 }
+public final class com.mapconductor.kml.KMLDocument {
+  public com.mapconductor.kml.KMLDocument(java.util.List<com.mapconductor.kml.KMLFeature>, java.util.List<com.mapconductor.kml.KMLNetworkLink>);
+  public com.mapconductor.kml.KMLDocument(java.util.List, java.util.List, int, kotlin.jvm.internal.DefaultConstructorMarker);
+  public final java.util.List<com.mapconductor.kml.KMLFeature> getFeatures();
+  public final java.util.List<com.mapconductor.kml.KMLNetworkLink> getNetworkLinks();
+}
 public final class com.mapconductor.kml.KMLFeature {
   public com.mapconductor.kml.KMLFeature(java.lang.String, com.mapconductor.kml.KMLGeometry, java.util.Map<java.lang.String, ? extends java.lang.Object>, java.lang.Integer, java.lang.Integer, java.lang.Float, java.lang.Float, boolean);
   public com.mapconductor.kml.KMLFeature(java.lang.String, com.mapconductor.kml.KMLGeometry, java.util.Map, java.lang.Integer, java.lang.Integer, java.lang.Float, java.lang.Float, boolean, int, kotlin.jvm.internal.DefaultConstructorMarker);
@@ -213,10 +219,28 @@ public final class com.mapconductor.kml.KMLLayerState {
   public final com.mapconductor.kml.KMLLayerState copy(float, int, int, float, float, boolean, int, int, com.mapconductor.kml.KMLStyleProviderInterface, kotlin.jvm.functions.Function0<kotlin.Unit>, kotlin.jvm.functions.Function1<? super java.lang.Throwable, kotlin.Unit>, kotlin.jvm.functions.Function2<? super com.mapconductor.kml.KMLFeature, ? super com.mapconductor.core.features.GeoPoint, kotlin.Unit>);
   public com.mapconductor.kml.KMLLayerState();
 }
+public final class com.mapconductor.kml.KMLLoader {
+  public static final com.mapconductor.kml.KMLLoader$Companion Companion;
+  public static final int DEFAULT_MAX_DOCUMENTS;
+  public com.mapconductor.kml.KMLLoader(int, kotlin.jvm.functions.Function2<? super java.lang.String, ? super java.lang.Throwable, kotlin.Unit>, kotlin.jvm.functions.Function1<? super java.lang.String, ? extends java.io.InputStream>);
+  public com.mapconductor.kml.KMLLoader(int, kotlin.jvm.functions.Function2, kotlin.jvm.functions.Function1, int, kotlin.jvm.internal.DefaultConstructorMarker);
+  public final java.lang.Object load(java.lang.String, kotlin.coroutines.Continuation<? super java.util.List<com.mapconductor.kml.KMLFeature>>);
+  public final java.lang.Object load(java.io.InputStream, java.lang.String, kotlin.coroutines.Continuation<? super java.util.List<com.mapconductor.kml.KMLFeature>>);
+  public com.mapconductor.kml.KMLLoader();
+}
+public final class com.mapconductor.kml.KMLLoader$Companion {
+}
+public final class com.mapconductor.kml.KMLNetworkLink {
+  public com.mapconductor.kml.KMLNetworkLink(java.lang.String, boolean);
+  public com.mapconductor.kml.KMLNetworkLink(java.lang.String, boolean, int, kotlin.jvm.internal.DefaultConstructorMarker);
+  public final java.lang.String getHref();
+  public final boolean getVisibility();
+}
 public final class com.mapconductor.kml.KMLParser {
   public static final com.mapconductor.kml.KMLParser INSTANCE;
   public final java.util.List<com.mapconductor.kml.KMLFeature> parse(java.lang.String);
   public final java.util.List<com.mapconductor.kml.KMLFeature> parse(java.io.InputStream);
+  public final com.mapconductor.kml.KMLDocument parseDocument(java.io.InputStream);
 }
 public final class com.mapconductor.kml.KMLRenderFeatureBuilder {
   public static final com.mapconductor.kml.KMLRenderFeatureBuilder INSTANCE;
