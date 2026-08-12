@@ -26,7 +26,7 @@ mapboxAndroid = "11.24.3"
 tomtomMaps = "2.4.1"
 playServicesMaps = "20.0.0"
 
-arcgisMapsKotlin = "200.7.0"
+arcgisMapsKotlin = "300.1.0"
 vectordrawable = "1.2.0"
 ktLint = "14.2.0"
 mapLibreSdk = "13.3.0"

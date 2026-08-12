@@ -66,7 +66,8 @@ android {
         // unitTest の manifest マージが「置換先が無い」で落ちる。ここで
         // defaultConfig に入れておくと test variant にも継承される。
         manifestPlaceholders += secretPlaceholders
-        minSdk = project.property("minSdk").toString().toInt()
+        // ArcGIS Maps SDK for Kotlin 300.x (bundled via android-for-arcgis) requires minSdk 28.
+        minSdk = maxOf(28, project.property("minSdk").toString().toInt())
         targetSdk = project.property("targetSdk").toString().toInt()
         ndk {
             abiFilters += listOf("arm64-v8a")
