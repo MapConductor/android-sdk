@@ -96,6 +96,7 @@ fun DemoAppScreen(initPage: String = "map") {
                         SidebarItem(id = "map-design", title = "Map Design"),
                         SidebarItem(id = "map-visibleregion", title = "Visible Region"),
                         SidebarItem(id = "map-camerasync", title = "Camera Sync"),
+                        SidebarItem(id = "camera-restriction", title = "Camera Restriction"),
                     ),
             ),
             SidebarSection(
@@ -196,6 +197,12 @@ fun DemoAppScreen(initPage: String = "map") {
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
+                    "camera-restriction" -> {
+                        com.mapconductor.example.pages.map.camerarestriction.CameraRestrictionMapPage(
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
+                    }
+
                     "ui-settings" -> {
                         UISettingsMapPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,

@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.material3.Card
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -51,7 +52,7 @@ fun UISettingsMapPage(onToggleSidebar: () -> Unit = {}) {
         menuItems = DefaultMapViewItems(viewModel.initCameraPosition),
         onToggleSidebar = onToggleSidebar,
         onMapViewStateChanged = viewModel::onMapViewChanged,
-    ) { _ ->
+    ) { paddingValues ->
         val mapViewState = viewModel.mapViewState.collectAsState().value
 
         mapViewState?.let { state ->
@@ -70,7 +71,16 @@ fun UISettingsMapPage(onToggleSidebar: () -> Unit = {}) {
             }
         }
 
-        Card(modifier = Modifier.fillMaxWidth().padding(12.dp)) {
+        // ios / react と同じ左下配置（react の .control-panel、ios の bottomLeading と揃える）
+        Card(
+            modifier =
+                Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(
+                        bottom = paddingValues.calculateBottomPadding() + 16.dp,
+                        start = 16.dp,
+                    ).sizeIn(maxWidth = 360.dp),
+        ) {
             Column(modifier = Modifier.padding(12.dp)) {
                 GestureSwitch("scrollGesture", settings.scrollGesture) {
                     settings = settings.copy(scrollGesture = it)
