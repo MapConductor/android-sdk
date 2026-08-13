@@ -84,18 +84,17 @@ internal class KMLHitTester {
                 hitTestRings(wx, wy, geometry.rings, lineTolSq)
 
             is WorldGeometry.Polygon -> {
-                if (lineTolSq != null) {
-                    hitTestRings(wx, wy, geometry.rings, lineTolSq)
-                } else {
-                    val rings = geometry.rings
-                    if (rings.isNotEmpty() &&
+                // 内部（穴を除く）はタップ位置そのものを当たりにする。内部でなければ、
+                // lineTolSq が指定されているときに限り輪郭の近傍（すぐ外側のタップ）も拾う。
+                val rings = geometry.rings
+                val inside =
+                    rings.isNotEmpty() &&
                         pointInRing(wx, wy, rings[0].coords) &&
                         rings.drop(1).none { hole -> pointInRing(wx, wy, hole.coords) }
-                    ) {
-                        GeometryHit(wx, wy, 0.0)
-                    } else {
-                        null
-                    }
+                when {
+                    inside -> GeometryHit(wx, wy, 0.0)
+                    lineTolSq != null -> hitTestRings(wx, wy, geometry.rings, lineTolSq)
+                    else -> null
                 }
             }
 
