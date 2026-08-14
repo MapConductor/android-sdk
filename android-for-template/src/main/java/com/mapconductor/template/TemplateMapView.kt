@@ -9,6 +9,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import com.mapconductor.core.map.MutableMapServiceRegistry
+import kotlinx.coroutines.MainScope
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
@@ -114,27 +116,66 @@ fun TemplateMapView(
 
     val controller =
         remember(state.id) {
-            val holder = TemplateMapViewHolder(TemplateMapSurface(map), map)
-            val markerRenderer = TemplateMarkerRenderer(holder, kotlinx.coroutines.MainScope())
-            TemplateMapViewController(
-                holder = holder,
-                markerController = TemplateMarkerController(markerRenderer),
-                polylineController = TemplatePolylineController(TemplatePolylineRenderer(holder)),
-                polygonController = TemplatePolygonController(TemplatePolygonRenderer(holder)),
-                circleController = TemplateCircleController(TemplateCircleRenderer(holder)),
-                groundImageController =
-                    TemplateGroundImageController(TemplateGroundImageRenderer(holder)),
-                rasterLayerController =
-                    TemplateRasterLayerController(
-                        TemplateRasterLayerRenderer(holder, kotlinx.coroutines.MainScope()),
-                    ),
-            ).also {
+            createTemplateViewController(map).also {
                 map.onInvalidate = { revision.intValue++ }
-                it.installListeners()
                 state.setController(it)
             }
         }
 
+    TemplateMapCanvas(
+        map = map,
+        design = state.mapDesignType,
+        revision = revision.intValue,
+        controller = controller,
+        modifier = modifier,
+    )
+}
+
+/**
+ * コントローラ一式を組み立てる。
+ *
+ * Compose を通さないホスト（React Native の `reactnative-for-template`）からも
+ * 同じ地図を使えるように、`@Composable` の外へ出してある。本物のドライバーでは
+ * `createMapLibreViewController` などがこれに当たる。
+ *
+ * @param serviceRegistry 拡張モジュール（マーカークラスタリング等）が capability を
+ *   引くレジストリ。雛形はマーカーのレンダリング差し替えに対応していないので何も
+ *   登録しないが、対応する場合は `MarkerRenderingSupportKey` をここで登録する
+ *   （`android-for-maplibre` の同名関数を参照）。**登録を忘れると
+ *   クラスタリングが黙って何も描画しない。**
+ */
+fun createTemplateViewController(
+    map: TemplateMap,
+    @Suppress("UNUSED_PARAMETER") serviceRegistry: MutableMapServiceRegistry? = null,
+): TemplateMapViewController {
+    val holder = TemplateMapViewHolder(TemplateMapSurface(map), map)
+    val markerRenderer = TemplateMarkerRenderer(holder, MainScope())
+    return TemplateMapViewController(
+        holder = holder,
+        markerController = TemplateMarkerController(markerRenderer),
+        polylineController = TemplatePolylineController(TemplatePolylineRenderer(holder)),
+        polygonController = TemplatePolygonController(TemplatePolygonRenderer(holder)),
+        circleController = TemplateCircleController(TemplateCircleRenderer(holder)),
+        groundImageController = TemplateGroundImageController(TemplateGroundImageRenderer(holder)),
+        rasterLayerController =
+            TemplateRasterLayerController(TemplateRasterLayerRenderer(holder, MainScope())),
+    ).also { it.installListeners() }
+}
+
+/**
+ * 描画だけを担う Composable。
+ *
+ * 本物のドライバーではここが `AndroidView { SDK の MapView }` になる。
+ * `TemplateMapView` と RN のホストの両方から使う。
+ */
+@Composable
+fun TemplateMapCanvas(
+    map: TemplateMap,
+    design: TemplateMapDesignType,
+    revision: Int,
+    controller: TemplateMapViewController,
+    modifier: Modifier = Modifier,
+) {
     Canvas(
         modifier =
             modifier.pointerInput(controller) {
@@ -148,8 +189,8 @@ fun TemplateMapView(
     ) {
         map.viewportSize = Size(size.width, size.height)
         @Suppress("UNUSED_EXPRESSION")
-        revision.intValue // 再描画のトリガ
-        drawRect(state.mapDesignType.background)
+        revision // 再描画のトリガ
+        drawRect(design.background)
         map.displayList.markers.values.forEach { marker ->
             if (!marker.visible) return@forEach
             map.project(marker.position)?.let { drawCircle(Color.Red, radius = 12f, center = it) }
