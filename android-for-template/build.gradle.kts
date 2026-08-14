@@ -2,6 +2,9 @@ plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.compose)
     id("org.jlleitschuh.gradle.ktlint") version "14.2.0"
+    // 雛形は Maven Central へは出さない（signing / nmcp は付けない）。
+    // reactnative-for-template が mavenLocal 経由で参照できるようにするためだけの publish。
+    id("maven-publish")
 }
 
 ktlint {
@@ -53,4 +56,20 @@ dependencies {
     api(project(":android-sdk-compose"))
 
     testImplementation(libs.junit)
+}
+
+val libraryGroupId = project.findProperty("libraryGroupId") as String? ?: "com.mapconductor"
+val libraryVersion = project.findProperty("libraryVersion") as String? ?: "1.2.0"
+
+afterEvaluate {
+    publishing {
+        publications {
+            create<MavenPublication>("release") {
+                from(components["release"])
+                groupId = libraryGroupId
+                artifactId = "for-template"
+                version = libraryVersion
+            }
+        }
+    }
 }
