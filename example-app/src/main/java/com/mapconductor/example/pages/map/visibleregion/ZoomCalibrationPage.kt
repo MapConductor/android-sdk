@@ -567,16 +567,22 @@ private fun calculateAverageRatio(
     return if (ratios.isEmpty()) 1.0 else ratios.average()
 }
 
+/**
+ * 表示領域の実寸（km）。ズーム較正はプロバイダ間で「同じズームのときの見えている
+ * 広さ」を比べるページなので、必要なのは幅と高さだけ。
+ *
+ * 以前は表示領域サンプルと共有していたが、あちらを react と同じ「数値を並べるだけ」の
+ * 形に揃えた際に使わなくなったので、唯一の利用者であるここへ移した。
+ */
+data class VisibleRegionInfo(
+    val widthKm: Double,
+    val heightKm: Double,
+)
+
 private fun createVisibleRegionInfo(visibleRegion: com.mapconductor.core.map.VisibleRegion): VisibleRegionInfo {
     val bounds = visibleRegion.bounds
     if (bounds.isEmpty || bounds.southWest == null || bounds.northEast == null) {
-        return VisibleRegionInfo(
-            bounds = "Empty bounds",
-            corners = emptyList(),
-            centerPoint = "N/A",
-            widthKm = 0.0,
-            heightKm = 0.0,
-        )
+        return VisibleRegionInfo(widthKm = 0.0, heightKm = 0.0)
     }
 
     val widthKm =
@@ -590,11 +596,5 @@ private fun createVisibleRegionInfo(visibleRegion: com.mapconductor.core.map.Vis
             GeoPoint(bounds.northEast!!.latitude, bounds.southWest!!.longitude),
         )
 
-    return VisibleRegionInfo(
-        bounds = "",
-        corners = emptyList(),
-        centerPoint = "",
-        widthKm = widthKm,
-        heightKm = heightKm,
-    )
+    return VisibleRegionInfo(widthKm = widthKm, heightKm = heightKm)
 }

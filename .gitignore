@@ -32,3 +32,9 @@ arcgis-heatmap-issue.txt
 session.txt
 .idea
 google-services.json
+app1786438676688i1648980499/
+
+# Mappls auth config (account-specific, downloaded from Mappls console)
+example-app/*.a.conf
+example-app/*.a.olf
+example-app/src/debug/assets/mappls-conf.txt

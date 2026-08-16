@@ -23,8 +23,12 @@ import com.mapconductor.mapbox.MapboxMapView
 import com.mapconductor.mapbox.MapboxViewState
 import com.mapconductor.maplibre.MapLibreMapView
 import com.mapconductor.maplibre.MapLibreViewState
+import com.mapconductor.mappls.MapplsMapView
+import com.mapconductor.mappls.MapplsViewState
 import com.mapconductor.maptiler.MapTilerMapView
 import com.mapconductor.maptiler.MapTilerViewState
+import com.mapconductor.openmobilemaps.OpenMobileMapsMapView
+import com.mapconductor.openmobilemaps.OpenMobileMapsViewState
 import com.mapconductor.tomtom.TomTomMapView
 import com.mapconductor.tomtom.TomTomMapViewState
 
@@ -173,6 +177,36 @@ fun MapViewContainer(
 
         is LongdoViewState ->
             LongdoMapView(
+                modifier = modifier,
+                state = state,
+                markerTiling = markerTiling,
+                cameraRestriction = cameraRestriction,
+                onMapLoaded = onMapLoaded,
+                onMapClick = onMapClick,
+                onMapLongClick = onMapLongClick,
+                onCameraMoveStart = onCameraMoveStart,
+                onCameraMove = onCameraMove,
+                onCameraMoveEnd = onCameraMoveEnd,
+                content = content,
+            )
+
+        is OpenMobileMapsViewState ->
+            OpenMobileMapsMapView(
+                modifier = modifier,
+                state = state,
+                markerTiling = markerTiling,
+                cameraRestriction = cameraRestriction,
+                onMapLoaded = onMapLoaded,
+                onMapClick = onMapClick,
+                onMapLongClick = onMapLongClick,
+                onCameraMoveStart = onCameraMoveStart,
+                onCameraMove = onCameraMove,
+                onCameraMoveEnd = onCameraMoveEnd,
+                content = content,
+            )
+
+        is MapplsViewState ->
+            MapplsMapView(
                 modifier = modifier,
                 state = state,
                 markerTiling = markerTiling,

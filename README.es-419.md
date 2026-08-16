@@ -112,11 +112,11 @@ dependencies {
 Cada proveedor de mapas puede requerir su propia clave de API, token de acceso, configuración de Gradle o configuración en el manifiesto de Android.
 
 Por favor revisa la guía de configuración del proveedor que estés usando.
-- [Configuración de Google Maps Android API](https://docs-android.mapconductor.com/setup/google-maps/)
-- [Configuración de MapBox](https://docs-android.mapconductor.com/setup/mapbox/)
-- [Configuración de HERE](https://docs-android.mapconductor.com/setup/here-maps/)
-- [Configuración de ArcGIS](https://docs-android.mapconductor.com/setup/arcgis/)
-- [Configuración de MapLibre](https://docs-android.mapconductor.com/setup/maplibre/)
+- [Configuración de Google Maps Android API](https://mapconductor.com/setup/android/google-maps/)
+- [Configuración de MapBox](https://mapconductor.com/setup/android/mapbox/)
+- [Configuración de HERE](https://mapconductor.com/setup/android/here/)
+- [Configuración de ArcGIS](https://mapconductor.com/setup/android/arcgis/)
+- [Configuración de MapLibre](https://mapconductor.com/setup/android/maplibre/)
 
 ---
 
@@ -354,7 +354,7 @@ Es especialmente útil cuando quieres que tu código de aplicación describa qu�
 
 La documentación está disponible en:
 
-https://docs-android.mapconductor.com/es-419/
+https://mapconductor.com/es-419/
 
 La documentación incluye:
 

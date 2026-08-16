@@ -36,6 +36,8 @@ import com.mapconductor.mapbox.MapboxDesignType
 import com.mapconductor.mapbox.MapboxViewStateInterface
 import com.mapconductor.maplibre.MapLibreDesign
 import com.mapconductor.maplibre.MapLibreViewStateInterface
+import com.mapconductor.mappls.MapplsMapDesignTypeInterface
+import com.mapconductor.mappls.MapplsViewStateInterface
 import com.mapconductor.maptiler.MapTilerMapDesignTypeInterface
 import com.mapconductor.maptiler.MapTilerViewStateInterface
 import com.mapconductor.tomtom.TomTomMapDesignType
@@ -127,6 +129,9 @@ fun MapDesignTypeSelector(
             }
             is LongdoViewStateInterface -> {
                 state.mapDesignType = mapDesignOption.design as LongdoMapDesignTypeInterface
+            }
+            is MapplsViewStateInterface -> {
+                state.mapDesignType = mapDesignOption.design as MapplsMapDesignTypeInterface
             }
             else -> throw IllegalArgumentException("Not implemented yet")
         }

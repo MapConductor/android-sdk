@@ -23,6 +23,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
@@ -42,6 +43,31 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 private const val GEOJSON_ASSET = "N02-22_GML.zip"
+
+/**
+ * 国土数値情報の鉄道データ（N02）の属性名。
+ *
+ * 生の `N02_001` のままだと何の値か分からないので、吹き出しでは名前に置き換える。
+ * react / ios と**同じ文言**にしてある（3 プラットフォームを並べて見比べるサンプルなので、
+ * ここが違うと同じ地物を選んでいるのか判断できない）。
+ *
+ * ここに無いキーは生のキー名をそのまま出す。データ側に属性が増えても表から消えないように。
+ */
+private val PROPERTY_LABELS =
+    mapOf(
+        "N02_001" to ("鉄道区分" to "Railway category"),
+        "N02_002" to ("事業者区分" to "Business category"),
+        "N02_003" to ("路線名" to "Railway name"),
+        "N02_004" to ("運営会社" to "Railway company"),
+    )
+
+/**
+ * 値の英語表記が入っている属性の接尾辞。
+ *
+ * geojson 側が `N02_003`（路線名）に対して `N02_003_en` を持っている。アプリに
+ * 対訳表を置くと 4 プラットフォーム分そろえる羽目になるので、データに持たせてある。
+ */
+private const val ENGLISH_SUFFIX = "_en"
 
 @Composable
 fun GeoJSONLayerMapPage(onToggleSidebar: () -> Unit = {}) {
@@ -148,8 +174,16 @@ private fun GeoJSONLayerMapComponent(mapViewState: MapViewStateInterface<*>?) {
     }
 }
 
+/**
+ * 端末の言語が日本語なら日本語、それ以外は英語で出す。
+ *
+ * 英語のときは値も `N02_003_en` の側へ差し替える。`_en` の行そのものは出さない
+ * （同じ項目が 2 行に増えてしまうため）。
+ */
 @Composable
 private fun PropertyTable(properties: Map<String, Any?>) {
+    val isJapanese = LocalConfiguration.current.locales[0].language == "ja"
+
     Column(
         modifier =
             Modifier
@@ -158,14 +192,17 @@ private fun PropertyTable(properties: Map<String, Any?>) {
                 .verticalScroll(rememberScrollState()),
     ) {
         Row(modifier = Modifier.background(Color(0xFFE0E0E0))) {
-            PropertyTableCell(text = "Property", weight = 0.35f)
-            PropertyTableCell(text = "Value", weight = 0.65f)
+            PropertyTableCell(text = if (isJapanese) "プロパティ" else "Property", weight = 0.5f)
+            PropertyTableCell(text = if (isJapanese) "値" else "Value", weight = 0.5f)
         }
 
         properties.forEach { (key, value) ->
+            if (key.endsWith(ENGLISH_SUFFIX)) return@forEach
+            val label = PROPERTY_LABELS[key]?.let { if (isJapanese) it.first else it.second } ?: key
+            val shown = if (isJapanese) value else properties[key + ENGLISH_SUFFIX] ?: value
             Row(modifier = Modifier.fillMaxWidth()) {
-                PropertyTableCell(text = key, weight = 0.35f)
-                PropertyTableCell(text = value?.toString().orEmpty(), weight = 0.65f)
+                PropertyTableCell(text = label, weight = 0.5f)
+                PropertyTableCell(text = shown?.toString().orEmpty(), weight = 0.5f)
             }
         }
     }

@@ -169,6 +169,44 @@ jobs:
             fi
           done
 
+      - name: Run unit tests
+        if: steps.detect.outputs.changed_modules != ''
+        run: |
+          echo "Running unit tests for modules: ${{ steps.detect.outputs.changed_modules }}"
+          for module in ${{ steps.detect.outputs.changed_modules }}; do
+            # サンプルアプリはユニットテストを持たない
+            case "$module" in
+              example-app|simple-map-app) continue ;;
+            esac
+            echo "Running testDebugUnitTest for $module"
+            if ./gradlew ":$module:testDebugUnitTest"; then
+              echo "✅ unit tests passed for $module"
+            else
+              echo "❌ unit tests failed for $module"
+              exit 1
+            fi
+          done
+
+      # 公開 API サーフェスの凍結ゲート。ドライバー層の共通化中、アプリ開発者向け API を
+      # 変えていないことを機械的に保証する。意図した変更なら ./gradlew :<module>:apiDump で
+      # ベースラインを更新してコミットすること。
+      - name: Check public API surface
+        if: steps.detect.outputs.changed_modules != ''
+        run: |
+          echo "Running apiCheck for modules: ${{ steps.detect.outputs.changed_modules }}"
+          for module in ${{ steps.detect.outputs.changed_modules }}; do
+            case "$module" in
+              example-app|simple-map-app|mapconductor-bom) continue ;;
+            esac
+            echo "Running apiCheck for $module"
+            if ./gradlew ":$module:apiCheck"; then
+              echo "✅ apiCheck passed for $module"
+            else
+              echo "❌ public API changed for $module"
+              exit 1
+            fi
+          done
+
       - name: Save hash cache
         if: success()
         uses: actions/cache/save@v5

@@ -1,8 +1,9 @@
 [versions]
+openmobilemaps = "4.0.0"
 agp = "9.2.1"
 
 core = "1.7.0"
-kotlin = "2.0.21"
+kotlin = "2.4.10"
 
 coreKtx = "1.16.0"
 appcompat = "1.7.1"
@@ -21,22 +22,25 @@ composeBom = "2025.02.00"
 okhttp = "5.3.2"
 runner = "1.7.0"
 
-mapboxAndroid = "11.24.3"
-tomtomMaps = "2.4.1"
+mapboxAndroid = "11.28.0"
+tomtomMaps = "2.4.2"
 playServicesMaps = "20.0.0"
 
-arcgisMapsKotlin = "200.7.0"
+arcgisMapsKotlin = "300.1.0"
 vectordrawable = "1.2.0"
 ktLint = "14.2.0"
-mapLibreSdk = "13.3.0"
+mapLibreSdk = "13.4.1"
 mapLibreAnnotation = "3.0.2"
 maptilerSdk = "2.1.0"
 longdoSdk = "1.3.0"
+mapplsSdk = "9.0.3"
 materialVersion = "1.14.0"
 coroutines = "1.9.0"
 ui = "1.11.4"
 
 [libraries]
+# Open Mobile Maps (https://github.com/openmobilemaps/maps-core) — MPL 2.0
+openmobilemaps-mapscore = { module = "io.openmobilemaps:mapscore", version.ref = "openmobilemaps" }
 # Android ??
 androidx-core = { module = "androidx.test:core", version.ref = "core" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -90,6 +94,9 @@ maptiler-sdk = { module = "com.maptiler:maptiler-sdk-kotlin", version.ref = "map
 
 # Longdo Map API3
 longdo-sdk = { module = "com.longdo.map:sdk3", version.ref = "longdoSdk" }
+
+# Mappls (MapmyIndia)
+mappls-sdk = { module = "com.mappls.sdk:mappls-android-sdk", version.ref = "mapplsSdk" }
 
 # Google Maps
 okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }

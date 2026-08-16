@@ -36,6 +36,10 @@ dependencyResolutionManagement {
             // Longdo Map API3 SDK repository
             url = uri("https://maven.longdo.com/artifactory/libs-release-public")
         }
+        maven {
+            // Mappls (MapmyIndia) Maven repository
+            url = uri("https://maven.mappls.com/repository/mappls/")
+        }
 
         if (System.getenv("GPR_USER") != null && System.getenv("GPR_TOKEN") != null) {
             maven {

@@ -70,8 +70,7 @@ fun DemoAppScreen(initPage: String = "map") {
     val groundImageResources =
         remember {
             GroundImageResources(
-                image = ContextCompat.getDrawable(context, R.drawable.newark_nj_1922_0)!!,
-                clickedImage = ContextCompat.getDrawable(context, R.drawable.newark_nj_1922_1)!!,
+                image = ContextCompat.getDrawable(context, R.drawable.university_of_eswatini)!!,
             )
         }
     val postOfficeIcon =
@@ -97,6 +96,7 @@ fun DemoAppScreen(initPage: String = "map") {
                         SidebarItem(id = "map-design", title = "Map Design"),
                         SidebarItem(id = "map-visibleregion", title = "Visible Region"),
                         SidebarItem(id = "map-camerasync", title = "Camera Sync"),
+                        SidebarItem(id = "camera-restriction", title = "Camera Restriction"),
                     ),
             ),
             SidebarSection(
@@ -197,6 +197,12 @@ fun DemoAppScreen(initPage: String = "map") {
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
+                    "camera-restriction" -> {
+                        com.mapconductor.example.pages.map.camerarestriction.CameraRestrictionMapPage(
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
+                    }
+
                     "ui-settings" -> {
                         UISettingsMapPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,

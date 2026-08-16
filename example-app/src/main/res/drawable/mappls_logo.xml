@@ -1,0 +1,13 @@
+<!-- Mappls ブランドカラー（コーラルレッド）のピン。公式ロゴ画像は同梱しない -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="250dp"
+    android:height="250dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#EE4E4B"
+        android:pathData="M12,2C8.13,2 5,5.13 5,9c0,5.25 7,13 7,13s7,-7.75 7,-13c0,-3.87 -3.13,-7 -7,-7z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M8.5,12V6.5h1.6l1.9,3.2 1.9,-3.2h1.6V12h-1.5V9l-2,3.2L10,9v3H8.5z" />
+</vector>

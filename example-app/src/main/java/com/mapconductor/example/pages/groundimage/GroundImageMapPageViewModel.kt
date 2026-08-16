@@ -4,6 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoRectBounds
@@ -13,6 +14,7 @@ import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewStateInterface
 import com.mapconductor.core.marker.DefaultMarkerIcon
 import com.mapconductor.core.marker.MarkerState
+import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.example.toast.ToastMessage
 import android.graphics.drawable.Drawable
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,6 +27,7 @@ interface GroundImageMapPageViewModelInterface {
     val messages: StateFlow<List<ToastMessage>>
 
     val markers: List<MarkerState>
+    val framePolyline: PolylineState
     val imageResources: GroundImageResources
     val image: Drawable
     var opacity: Float
@@ -47,12 +50,14 @@ class GroundImageMapPageViewModel(
     GroundImageMapPageViewModelInterface {
     override val initCameraPosition =
         MapCameraPosition(
+            // Drone imagery over the University of Eswatini campus. Same content as
+            // react-sdk/examples/basic and the iOS sample.
             position =
                 GeoPoint.fromLatLong(
-                    latitude = 40.7430785,
-                    longitude = -74.175995,
+                    latitude = -26.479235,
+                    longitude = 31.306239,
                 ),
-            zoom = 12.0,
+            zoom = 15.0,
             bearing = 0.0,
             tilt = 0.0,
             paddings = null,
@@ -73,15 +78,15 @@ class GroundImageMapPageViewModel(
 
     private var southWestPosition by mutableStateOf(
         GeoPoint(
-            latitude = 40.712216,
-            longitude = -74.22655,
+            latitude = -26.484901389754125,
+            longitude = 31.2995982170105,
         ),
     )
 
     private var northEastPosition by mutableStateOf(
         GeoPoint(
-            latitude = 40.773941,
-            longitude = -74.12544,
+            latitude = -26.473569450536356,
+            longitude = 31.31288051605225,
         ),
     )
 
@@ -143,7 +148,26 @@ class GroundImageMapPageViewModel(
             )
         }
 
-    override var opacity by mutableStateOf(0.5f)
+    /**
+     * グラウンドイメージの外周をなぞる矩形。
+     *
+     * NE → NW → SW → SE → NE の順に 5 点で閉じる。SW / NE の 2 点だけでは
+     * **画像がどこまで載っているのかが見えない**ので、ドラッグで範囲を変えたときの
+     * 手応えを出すために引いている。react-sdk の `GroundImagePage.tsx` と同じ構成。
+     *
+     * `points` を差し替えるだけで再描画されるので、インスタンスは作り直さない
+     * （作り直すとドラッグ中に id が変わってちらつく）。
+     */
+    override val framePolyline: PolylineState =
+        PolylineState(
+            id = "groundimage-frame",
+            points = framePoints(southWestPosition, northEastPosition),
+            strokeColor = Color.White,
+            strokeWidth = 3.dp,
+            clickable = false,
+        )
+
+    override var opacity by mutableStateOf(1.0f)
 
     override var image by mutableStateOf(imageResources.image)
 
@@ -165,13 +189,7 @@ class GroundImageMapPageViewModel(
             )
 
     override fun onGroundImageClick(clicked: GroundImageEvent) {
-        if (clicked.state.image == imageResources.image) {
-            image = imageResources.clickedImage
-        } else {
-            image = imageResources.image
-        }
-
-        showToast("Ground Image clicked.")
+        showToast("Ground image clicked.")
     }
 
     override fun onMarkerDrag(dragged: MarkerState) {
@@ -187,6 +205,8 @@ class GroundImageMapPageViewModel(
                 it.extend(markers[0].position)
                 it.extend(markers[1].position)
             }
+
+        framePolyline.points = framePoints(southWestPosition, northEastPosition)
     }
 
     override fun showToast(text: String) {
@@ -201,3 +221,20 @@ class GroundImageMapPageViewModel(
         super.onCleared()
     }
 }
+
+/**
+ * 2 つの角から矩形の 4 辺をなぞる点列を作る。NE → NW → SW → SE → NE で閉じる。
+ *
+ * ドラッグで南北・東西が反転しても、常に 2 点を対角とする矩形になる。
+ */
+private fun framePoints(
+    southWest: GeoPoint,
+    northEast: GeoPoint,
+): List<GeoPoint> =
+    listOf(
+        northEast,
+        GeoPoint(latitude = northEast.latitude, longitude = southWest.longitude),
+        southWest,
+        GeoPoint(latitude = southWest.latitude, longitude = northEast.longitude),
+        northEast,
+    )

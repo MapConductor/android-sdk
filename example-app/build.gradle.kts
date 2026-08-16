@@ -7,6 +7,14 @@ plugins {
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin") version "2.0.1"
 }
 
+// Mappls の認証コンフィグ（このモジュール直下の *.a.conf / *.a.olf、gitignore 済み）を
+// ビルドへ取り込む。classpath はルートの buildscript で宣言している。
+// コンフィグはアカウント固有なので、無い環境（CI など）ではプラグインを適用しない
+// — その場合 Mappls の地図だけ認証エラーになり、他プロバイダには影響しない。
+if (projectDir.listFiles()?.any { it.name.endsWith(".a.conf") } == true) {
+    apply(plugin = "com.mappls.services.android")
+}
+
 ktlint {
     android.set(true)
     reporters {
@@ -58,7 +66,8 @@ android {
         // unitTest の manifest マージが「置換先が無い」で落ちる。ここで
         // defaultConfig に入れておくと test variant にも継承される。
         manifestPlaceholders += secretPlaceholders
-        minSdk = project.property("minSdk").toString().toInt()
+        // ArcGIS Maps SDK for Kotlin 300.x (bundled via android-for-arcgis) requires minSdk 28.
+        minSdk = maxOf(28, project.property("minSdk").toString().toInt())
         targetSdk = project.property("targetSdk").toString().toInt()
         ndk {
             abiFilters += listOf("arm64-v8a")
@@ -127,6 +136,10 @@ android {
 
         jniLibs {
             useLegacyPackaging = true
+            // TomTom（common-ndk27）と Open Mobile Maps（mapscore）が
+            // どちらも libc++_shared.so を同梱していて衝突する。どちらも同じ
+            // NDK の STL なので 1 つに畳んでよい。
+            pickFirsts += "lib/**/libc++_shared.so"
         }
     }
 
@@ -227,6 +240,13 @@ dependencies {
     debugImplementation(project(":android-for-tomtom"))
     debugImplementation(project(":android-for-maptiler"))
     debugImplementation(project(":android-for-longdo"))
+
+    // Open Mobile Maps はまだ Maven へ publish していないので、全ビルドタイプで
+    // プロジェクト依存にしている。publish したら他プロバイダと同じく
+    // releaseImplementation(libs...) / "localImplementation"(...) へ移すこと。
+    implementation(project(":android-for-openmobilemaps"))
+    // Mappls も未 publish（Open Mobile Maps と同じ扱い）
+    implementation(project(":android-for-mappls"))
     debugImplementation(project(":android-marker-clustering"))
     debugImplementation(project(":android-heatmap"))
     debugImplementation(project(":android-geojson-layer"))

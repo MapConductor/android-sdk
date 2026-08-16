@@ -4,16 +4,24 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
+import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewStateInterface
+import com.mapconductor.core.marker.ColorDefaultIcon
+import com.mapconductor.core.marker.MarkerAnimation
+import com.mapconductor.core.marker.MarkerState
+import com.mapconductor.core.spherical.Spherical
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 interface TiltMapPageViewModelInterface {
     val initCameraPosition: MapCameraPosition
+    val markerStates: List<MarkerState>
+    val anchorCircleStates: List<CircleState>
     val cameraPosition: StateFlow<MapCameraPosition>
     val disableSlider: StateFlow<Boolean>
     var tilt: Double
@@ -45,6 +53,42 @@ class TiltMapPageViewModel :
             bearing = 270.0,
         )
     private var currentPosition: MapCameraPosition = initCameraPosition
+
+    /**
+     * 中心 1 個 + 同心円 5 本（各 8 個、45 度おき）= 41 個。
+     *
+     * iOS / react の Tilt ページ（`TiltMapPageViewModel.swift` / `TiltPage.tsx`）と
+     * **同じ定数**にしてある。3 プラットフォームを並べて見比べるページなので、
+     * カメラもマーカーの配置も揃っていないと比較にならない。片方だけ変えないこと。
+     *
+     * ## 間隔がリングごとに 60m なのは、この画面のズームに合わせたため
+     *
+     * ズーム 17 では 60m がちょうど画面に収まる。**傾けたときに手前と奥で見え方が
+     * 変わるのを確かめるページ**なので、リングが画面に収まっていることが要件。
+     */
+    override val markerStates: List<MarkerState> = buildTiltRingMarkers(initCameraPosition.position)
+
+    /**
+     * 各マーカーの真下に置く小さな円。
+     *
+     * 円は地面に貼り付き、マーカーは画面固定サイズで描かれる。**傾けたり回したりして
+     * ピンの先端がこの円から外れたら、おかしいのはマーカー側**だと一目で分かる。
+     * android-for-openmobilemaps のアンカーの不具合をこれで特定したので、
+     * 常設の検証装置として残す。
+     */
+    override val anchorCircleStates: List<CircleState> =
+        markerStates.map { marker ->
+            CircleState(
+                id = "anchor-${marker.id}",
+                center = marker.position,
+                radiusMeters = 2.5,
+                geodesic = true,
+                fillColor = Color(0xFFFF00FF),
+                strokeColor = Color.Black,
+                strokeWidth = 1.dp,
+                clickable = false,
+            )
+        }
 
     private var _disableSlider: MutableStateFlow<Boolean> = MutableStateFlow<Boolean>(false)
 
@@ -93,3 +137,51 @@ class TiltMapPageViewModel :
         }
     }
 }
+
+/** 中心の色。 */
+private val CENTER_COLOR = Color(0xFF111827)
+
+/** リングごとの色（内側から外側へ）。react-sdk の Tilt ページと同じ並び。 */
+private val RING_COLORS =
+    listOf(
+        Color(0xFFE74C3C),
+        Color(0xFFE67E22),
+        Color(0xFFF1C40F),
+        Color(0xFF2ECC71),
+        Color(0xFF3498DB),
+    )
+
+private const val RING_SPACING_METERS = 60.0
+private const val MARKERS_PER_RING = 8
+
+/**
+ * 中心 1 個と、[RING_COLORS] の本数ぶんの同心円上のマーカーを作る。
+ *
+ * タップするとバウンドする。Android のコアはアニメーションが終わると
+ * `animate(null)` を自分で呼ぶので、react 側のようにタイマーで戻す必要はない。
+ */
+private fun buildTiltRingMarkers(center: GeoPoint): List<MarkerState> =
+    buildList {
+        add(
+            MarkerState(
+                id = "tilt-center",
+                position = center,
+                icon = ColorDefaultIcon(fillColor = CENTER_COLOR),
+                onClick = { it.animate(MarkerAnimation.Bounce) },
+            ),
+        )
+        RING_COLORS.forEachIndexed { ringIndex, color ->
+            val distance = (ringIndex + 1) * RING_SPACING_METERS
+            repeat(MARKERS_PER_RING) { step ->
+                val heading = step * (360.0 / MARKERS_PER_RING)
+                add(
+                    MarkerState(
+                        id = "tilt-ring${ringIndex + 1}-${heading.toInt()}",
+                        position = Spherical.computeOffset(center, distance, heading),
+                        icon = ColorDefaultIcon(fillColor = color),
+                        onClick = { it.animate(MarkerAnimation.Bounce) },
+                    ),
+                )
+            }
+        }
+    }

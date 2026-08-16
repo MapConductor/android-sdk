@@ -51,9 +51,15 @@ import com.mapconductor.mapbox.rememberMapboxMapViewState
 import com.mapconductor.maplibre.MapLibreDesign
 import com.mapconductor.maplibre.MapLibreViewState
 import com.mapconductor.maplibre.rememberMapLibreMapViewState
+import com.mapconductor.mappls.MapplsDesign
+import com.mapconductor.mappls.MapplsViewState
+import com.mapconductor.mappls.rememberMapplsMapViewState
 import com.mapconductor.maptiler.MapTilerDesign
 import com.mapconductor.maptiler.MapTilerViewState
 import com.mapconductor.maptiler.rememberMapTilerMapViewState
+import com.mapconductor.openmobilemaps.OpenMobileMapsDesign
+import com.mapconductor.openmobilemaps.OpenMobileMapsViewState
+import com.mapconductor.openmobilemaps.rememberOpenMobileMapsMapViewState
 import com.mapconductor.tomtom.TomTomMapDesign
 import com.mapconductor.tomtom.TomTomMapViewState
 import com.mapconductor.tomtom.rememberTomTomMapViewState
@@ -212,6 +218,38 @@ fun longdoViewItem(initCameraPosition: MapCameraPositionInterface): IconItem<Lon
 }
 
 @Composable
+fun openMobileMapsViewItem(initCameraPosition: MapCameraPositionInterface): IconItem<OpenMobileMapsViewState> {
+    val openMobileMapsState =
+        rememberOpenMobileMapsMapViewState(
+            mapDesign = OpenMobileMapsDesign.OpenStreetMap,
+            cameraPosition = initCameraPosition,
+        )
+    return IconItem(
+        key = "openmobilemaps",
+        label = "Open Mobile Maps",
+        lightIconResId = R.drawable.openmobilemaps_logo,
+        darkIconResId = R.drawable.openmobilemaps_logo,
+        value = openMobileMapsState,
+    )
+}
+
+@Composable
+fun mapplsViewItem(initCameraPosition: MapCameraPositionInterface): IconItem<MapplsViewState> {
+    val mapplsState =
+        rememberMapplsMapViewState(
+            mapDesign = MapplsDesign.Default,
+            cameraPosition = initCameraPosition,
+        )
+    return IconItem(
+        key = "mappls",
+        label = "Mappls",
+        lightIconResId = R.drawable.mappls_logo,
+        darkIconResId = R.drawable.mappls_logo,
+        value = mapplsState,
+    )
+}
+
+@Composable
 fun DefaultMapViewItems(initCameraPosition: MapCameraPositionInterface): List<IconItem<out MapViewState<out Any>>> =
     listOf(
         mapLibreViewItem(initCameraPosition),
@@ -223,6 +261,8 @@ fun DefaultMapViewItems(initCameraPosition: MapCameraPositionInterface): List<Ic
         tomtomViewItem(initCameraPosition),
         maptilerViewItem(initCameraPosition),
         longdoViewItem(initCameraPosition),
+        openMobileMapsViewItem(initCameraPosition),
+        mapplsViewItem(initCameraPosition),
     )
 
 @Composable
@@ -233,14 +273,14 @@ fun DemoMapPageScaffold(
     onMapViewStateChanged: (MapViewStateInterface<*>) -> Unit = {},
     content: @Composable (BoxScope.(PaddingValues) -> Unit) = {},
 ) {
-    // `--es provider <key>` が指定されていれば、そのプロバイダで開始する（UI テスト用）。
-    // 一致しなければ [initSelect] のまま。
+    // 開始時のプロバイダは [SelectedProviderStore] が覚えているもの、無ければ [initSelect]。
+    //
+    // `--es provider <key>` の指定もここでは見ない。起動時に store へ入れてあるので、
+    // **ユーザーが選び直せば上書きされる**。ここで起動引数を直接見ると、指定が
+    // 常時の上書きになってページを移るたびに元へ戻ってしまう。
     val requestedIndex =
         remember(menuItems) {
-            com.mapconductor.example.MainActivity.providerExtra
-                ?.let { key -> menuItems.indexOfFirst { it.key.equals(key, ignoreCase = true) } }
-                ?.takeIf { it >= 0 }
-                ?: initSelect
+            SelectedProviderStore.indexIn(menuItems, initSelect)
         }
     var selectedIndex by rememberSaveable { mutableIntStateOf(requestedIndex) }
     LaunchedEffect(selectedIndex) {
@@ -293,6 +333,8 @@ fun DemoMapPageScaffold(
                             selectedIndex = selectedIndex,
                             onSelect = { index, _ ->
                                 selectedIndex = index
+                                // 次のページへ引き継ぐ
+                                SelectedProviderStore.remember(menuItems.elementAt(index).key)
                             },
                         )
                     }

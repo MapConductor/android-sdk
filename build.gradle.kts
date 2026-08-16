@@ -15,6 +15,13 @@ buildscript {
         mavenLocal()
         google()
         mavenCentral()
+        maven {
+            // Mappls services plugin（example-app が .a.conf / .a.olf を読み込むのに使う）
+            url = uri("https://maven.mappls.com/repository/mappls/")
+        }
+    }
+    dependencies {
+        classpath("com.mappls.services:mappls-services:1.0.1")
     }
 }
 
@@ -53,6 +60,9 @@ val modules: List<String> =
         .split(",")
         .map { it.trim() }
         .filter { it.isNotEmpty() }
+
+// 公開 API サーフェスのスナップショット（apiDump / apiCheck）。
+apply(from = "gradle/api-surface.gradle.kts")
 
 tasks.register("allLintChecks") {
     group = "verification"

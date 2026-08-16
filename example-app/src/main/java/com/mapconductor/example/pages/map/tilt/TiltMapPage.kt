@@ -26,6 +26,8 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import com.mapconductor.compose.circle.Circle
+import com.mapconductor.compose.marker.Marker
 import com.mapconductor.example.MapViewContainer
 import com.mapconductor.example.ui.DefaultMapViewItems
 import com.mapconductor.example.ui.DemoMapPageScaffold
@@ -53,7 +55,14 @@ fun TiltMapPage(onToggleSidebar: () -> Unit = {}) {
         mapViewState?.let {
             MapViewContainer(
                 state = mapViewState,
-            )
+            ) {
+                viewModel.anchorCircleStates.forEach { circleState ->
+                    Circle(circleState)
+                }
+                viewModel.markerStates.forEach { markerState ->
+                    Marker(markerState)
+                }
+            }
         }
 
         // Message Card
