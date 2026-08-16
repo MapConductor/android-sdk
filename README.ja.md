@@ -112,11 +112,11 @@ dependencies {
 各マッププロバイダーは、それぞれ独自のAPIキー、アクセストークン、Gradleの設定、またはAndroidマニフェストの設定が必要な場合があります。
 
 使用するプロバイダーのセットアップガイドを確認してください。
-- [Google Maps Android APIのセットアップ](https://docs-android.mapconductor.com/setup/google-maps/)
-- [MapBoxのセットアップ](https://docs-android.mapconductor.com/setup/mapbox/)
-- [HEREのセットアップ](https://docs-android.mapconductor.com/setup/here-maps/)
-- [ArcGISのセットアップ](https://docs-android.mapconductor.com/setup/arcgis/)
-- [MapLibreのセットアップ](https://docs-android.mapconductor.com/setup/maplibre/)
+- [Google Maps Android APIのセットアップ](https://mapconductor.com/setup/android/google-maps/)
+- [MapBoxのセットアップ](https://mapconductor.com/setup/android/mapbox/)
+- [HEREのセットアップ](https://mapconductor.com/setup/android/here/)
+- [ArcGISのセットアップ](https://mapconductor.com/setup/android/arcgis/)
+- [MapLibreのセットアップ](https://mapconductor.com/setup/android/maplibre/)
 
 ---
 
@@ -354,7 +354,7 @@ MapConductorは、以下のような方に役立ちます:
 
 ドキュメントは以下で利用できます:
 
-https://docs-android.mapconductor.com/ja/
+https://mapconductor.com/ja/
 
 ドキュメントには以下が含まれます:
 

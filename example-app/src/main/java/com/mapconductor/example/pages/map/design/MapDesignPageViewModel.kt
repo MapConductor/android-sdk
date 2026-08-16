@@ -254,7 +254,9 @@ class MapDesignPageViewModel :
             MapDesignOption(label = "OpenStreetMap", design = MapTilerDesign.OpenStreetMap),
         )
 
-    // Mappls のスタイルはアカウント紐付き。ここでは全アカウント共通の 2 つだけ出す
+    // Mappls の使えるタイルは契約で決まる。ここでは全アカウント共通の 2 つだけ出す。
+    // MapplsDesign.StandardNight / GreyDay は追加料金の有料オプションで、このリポジトリの
+    // サンプルは追加料金を払っていないため候補に出さない（契約済みのアプリは指定できる）。
     private val mapplsDesigns =
         listOf(
             MapDesignOption(label = "Default", design = MapplsDesign.Default),

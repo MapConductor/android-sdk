@@ -112,11 +112,11 @@ dependencies {
 Each map provider may require its own API key, access token, Gradle setup, or Android manifest configuration. 
 
 Please check the setup guide for the provider you are using.
-- [Setup for Google Maps Android API](https://docs-android.mapconductor.com/setup/google-maps/)
-- [Setup for MapBox](https://docs-android.mapconductor.com/setup/mapbox/)
-- [Setup for HERE](https://docs-android.mapconductor.com/setup/here-maps/)
-- [Setup for ArcGIS](https://docs-android.mapconductor.com/setup/arcgis/)
-- [Setup for MapLibre](https://docs-android.mapconductor.com/setup/maplibre/)
+- [Setup for Google Maps Android API](https://mapconductor.com/setup/android/google-maps/)
+- [Setup for MapBox](https://mapconductor.com/setup/android/mapbox/)
+- [Setup for HERE](https://mapconductor.com/setup/android/here/)
+- [Setup for ArcGIS](https://mapconductor.com/setup/android/arcgis/)
+- [Setup for MapLibre](https://mapconductor.com/setup/android/maplibre/)
 
 ---
 
@@ -354,7 +354,7 @@ It is especially helpful when you want your application code to describe what sh
 
 Documentation is available at:
 
-https://docs-android.mapconductor.com/
+https://mapconductor.com/
 
 The documentation includes:
 

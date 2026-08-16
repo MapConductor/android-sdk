@@ -40,3 +40,27 @@
 [submodule "android-for-longdo"]
 	path = android-for-longdo
 	url = git@github.com:MapConductor/android-for-longdo.git
+[submodule "android-kml"]
+	path = android-kml
+	url = git@github.com:MapConductor/android-kml.git
+[submodule "android-for-openmobilemaps"]
+	path = android-for-openmobilemaps
+	url = git@github.com:MapConductor/android-for-openmobilemaps.git
+[submodule "android-for-template"]
+	path = android-for-template
+	url = git@github.com:MapConductor/android-for-template.git
+[submodule "mapconductor-bom"]
+	path = mapconductor-bom
+	url = git@github.com:MapConductor/mapconductor-bom.git
+[submodule "android-for-mappls"]
+	path = android-for-mappls
+	url = git@github.com:MapConductor/android-for-mappls.git
+[submodule "android-icons-jp"]
+	path = android-icons-jp
+	url = git@github.com:MapConductor/android-icons-jp.git
+[submodule "android-icons-us"]
+	path = android-icons-us
+	url = git@github.com:MapConductor/android-icons-us.git
+[submodule "android-icons-weather"]
+	path = android-icons-weather
+	url = git@github.com:MapConductor/android-icons-weather.git
