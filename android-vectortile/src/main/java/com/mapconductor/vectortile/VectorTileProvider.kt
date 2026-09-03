@@ -38,6 +38,19 @@ class VectorTileProvider private constructor(
     /** Where rasterisation actually happens, after any fallback. */
     val renderMode: RenderMode = if (gpu != null) RenderMode.GPU else RenderMode.CPU
 
+    private val gpuRenderCount = java.util.concurrent.atomic.AtomicLong()
+    private val gpuFallbackCount = java.util.concurrent.atomic.AtomicLong()
+
+    /**
+     * Tiles actually drawn by the GPU, and tiles that fell back to the CPU.
+     *
+     * Worth exposing rather than keeping internal: [renderMode] only says a GL
+     * context was obtained, and a path that quietly falls back on every tile
+     * looks exactly like a working one from the outside.
+     */
+    val gpuRenders: Long get() = gpuRenderCount.get()
+    val gpuFallbacks: Long get() = gpuFallbackCount.get()
+
     /**
      * Identifies the style for disk cache keys. Content-addressed, so a
      * restyle misses rather than needing explicit invalidation.
@@ -256,7 +269,16 @@ class VectorTileProvider private constructor(
         val png = if (gpu != null) {
             // The GL thread serialises drawing already, so the CPU-side
             // semaphore would only add queueing on top of it.
-            runCatching { renderOnGpu(request, tiles) }.getOrNull()
+            val drawn = try {
+                renderOnGpu(request, tiles)
+            } catch (error: Throwable) {
+                // Logged, not swallowed: a silent catch here is what made a
+                // GPU path that fell back on every single tile look healthy.
+                Log.w(TAG, "GPU render failed; falling back to the CPU", error)
+                null
+            }
+            if (drawn != null) gpuRenderCount.incrementAndGet() else gpuFallbackCount.incrementAndGet()
+            drawn
                 ?: run {
                     // A GPU failure must not lose the tile; the CPU can always
                     // draw it.

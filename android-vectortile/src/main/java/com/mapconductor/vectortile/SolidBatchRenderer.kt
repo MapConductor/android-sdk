@@ -19,11 +19,14 @@ internal class SolidBatchRenderer : Closeable {
 
     private var program = 0
     private var positionAttribute = 0
-    private var colorUniform = 0
+    private var colorAttribute = 0
     private var extentUniform = 0
     private var vertexBuffer = 0
 
-    private companion object {
+    companion object {
+        /** Floats per vertex: x, y, r, g, b, a. */
+        const val VERTEX_STRIDE = 6
+
         // Positions arrive in tile units (0..extent) and are mapped to clip
         // space here, so the CPU never has to rescale the geometry.
         //
@@ -34,27 +37,36 @@ internal class SolidBatchRenderer : Closeable {
         // come out the right way up — without an extra CPU flip per tile.
         const val VERTEX_SHADER = """
             attribute vec2 aPosition;
+            attribute vec4 aColor;
             uniform float uExtent;
+            varying vec4 vColor;
             void main() {
                 vec2 unit = aPosition / uExtent;
                 gl_Position = vec4(unit.x * 2.0 - 1.0, unit.y * 2.0 - 1.0, 0.0, 1.0);
+                vColor = aColor;
             }
         """
 
         const val FRAGMENT_SHADER = """
             precision mediump float;
-            uniform vec4 uColor;
-            void main() { gl_FragColor = uColor; }
+            varying vec4 vColor;
+            void main() { gl_FragColor = vColor; }
         """
     }
 
-    /** One draw call: a colour and a run of triangle vertices. */
-    data class Batch(val color: FloatArray, val vertexOffset: Int, val vertexCount: Int)
+    /**
+     * One draw call: a run of triangle vertices.
+     *
+     * No colour here — it lives on the vertices, because a style layer may
+     * paint each feature differently and a single colour per draw call gets
+     * those wrong.
+     */
+    data class Batch(val vertexOffset: Int, val vertexCount: Int)
 
     fun initialise() {
         program = link(VERTEX_SHADER, FRAGMENT_SHADER)
         positionAttribute = GLES20.glGetAttribLocation(program, "aPosition")
-        colorUniform = GLES20.glGetUniformLocation(program, "uColor")
+        colorAttribute = GLES20.glGetAttribLocation(program, "aColor")
         extentUniform = GLES20.glGetUniformLocation(program, "uExtent")
 
         val ids = IntArray(1)
@@ -99,15 +111,20 @@ internal class SolidBatchRenderer : Closeable {
         )
 
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vertexBuffer)
+        val stride = VERTEX_STRIDE * 4
         GLES20.glEnableVertexAttribArray(positionAttribute)
-        GLES20.glVertexAttribPointer(positionAttribute, 2, GLES20.GL_FLOAT, false, 8, 0)
+        GLES20.glVertexAttribPointer(positionAttribute, 2, GLES20.GL_FLOAT, false, stride, 0)
+        GLES20.glEnableVertexAttribArray(colorAttribute)
+        GLES20.glVertexAttribPointer(colorAttribute, 4, GLES20.GL_FLOAT, false, stride, 8)
 
+        // Batches stay one draw call each to preserve painter's order, even
+        // though they no longer carry state to set.
         for (batch in batches) {
-            GLES20.glUniform4fv(colorUniform, 1, batch.color, 0)
             GLES20.glDrawArrays(GLES20.GL_TRIANGLES, batch.vertexOffset, batch.vertexCount)
         }
 
         GLES20.glDisableVertexAttribArray(positionAttribute)
+        GLES20.glDisableVertexAttribArray(colorAttribute)
     }
 
     private fun link(vertexSource: String, fragmentSource: String): Int {

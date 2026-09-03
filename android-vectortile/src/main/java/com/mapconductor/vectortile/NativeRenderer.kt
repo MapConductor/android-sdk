@@ -79,9 +79,14 @@ internal object NativeRenderer {
  * [6]              batch count B
  * [7..13]          timings ms: copy-in, decode, tessellate,
  *                  filter-compile, fill, line
- * [13 .. 13+B*6]   per batch: r, g, b, a, firstVertex, vertexCount
- * [13+B*6 ..]      interleaved x, y vertex positions
+ * [13 .. 13+B*2]   per batch: firstVertex, vertexCount
+ * [13+B*2 ..]      vertices: x, y, r, g, b, a
  * ```
+ *
+ * Colour is per vertex, not per batch: a style layer may paint each feature
+ * differently — the MapLibre demo style gives every country its own fill —
+ * and one colour per draw call disagreed with the CPU renderer on 37% of a
+ * tile.
  */
 internal class TessellatedTile(packed: FloatArray) {
     val extent: Float = packed[0]
@@ -99,17 +104,17 @@ internal class TessellatedTile(packed: FloatArray) {
         var cursor = 13
         batches = (0 until batchCount).map {
             val batch = SolidBatchRenderer.Batch(
-                color = floatArrayOf(
-                    packed[cursor], packed[cursor + 1], packed[cursor + 2], packed[cursor + 3],
-                ),
-                vertexOffset = packed[cursor + 4].toInt(),
-                vertexCount = packed[cursor + 5].toInt(),
+                vertexOffset = packed[cursor].toInt(),
+                vertexCount = packed[cursor + 1].toInt(),
             )
-            cursor += 6
+            cursor += 2
             batch
         }
         vertices = packed.copyOfRange(cursor, packed.size)
     }
 
-    val triangleCount: Int get() = vertices.size / 6
+    val triangleCount: Int get() = vertices.size / (SolidBatchRenderer.VERTEX_STRIDE * 3)
+
+    /** JSON array of reasons the style may not render as intended. */
+    external fun nativeDiagnostics(handle: Long): String
 }
