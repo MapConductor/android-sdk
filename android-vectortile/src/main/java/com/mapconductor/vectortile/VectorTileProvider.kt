@@ -1,5 +1,6 @@
 package com.mapconductor.vectortile
 
+import android.util.Log
 import android.util.LruCache
 import com.mapconductor.core.tileserver.TileProviderInterface
 import com.mapconductor.core.tileserver.TileRequest
@@ -44,6 +45,7 @@ class VectorTileProvider private constructor(
     private var closed = false
 
     companion object {
+        private const val TAG = "VectorTileProvider"
         const val DEFAULT_TILE_SIZE: Int = 512
 
         /**
@@ -116,14 +118,31 @@ class VectorTileProvider private constructor(
 
         val plan = JSONArray(renderer.plan(request.z, request.x, request.y))
         val tiles = ArrayList<ByteArray?>(plan.length())
+
+        // Fetch and rasterise are timed separately: when a tile is slow, the
+        // answer is almost always one or the other, and guessing wastes time.
+        val fetchStarted = System.nanoTime()
         for (i in 0 until plan.length()) {
             tiles.add(sourceTile(plan.getJSONObject(i).getString("url")))
         }
+        val fetchMs = (System.nanoTime() - fetchStarted) / 1_000_000
         if (closed) return null
 
-        return runCatching {
+        val renderStarted = System.nanoTime()
+        val png = runCatching {
             renderer.render(request.z, request.x, request.y, tileSize, tiles)
         }.getOrNull()
+        val renderMs = (System.nanoTime() - renderStarted) / 1_000_000
+
+        if (Log.isLoggable(TAG, Log.DEBUG)) {
+            Log.d(
+                TAG,
+                "tile ${request.z}/${request.x}/${request.y} " +
+                    "sources=${plan.length()} fetch=${fetchMs}ms " +
+                    "render=${renderMs}ms bytes=${png?.size ?: 0}",
+            )
+        }
+        return png
     }
 
     private fun sourceTile(url: String): ByteArray? {

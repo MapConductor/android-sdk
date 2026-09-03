@@ -40,6 +40,23 @@ configurations.configureEach {
     }
 }
 
+// TomTom Orbis Maps SDK 2.4.x は OkHttp 4.x でビルドされていて、**OkHttp 5.x では
+// 衛星（ラスタ）スタイルからベクタスタイルへ戻したときに地図が地色一色になる**。
+// `loadStyle` は `onSuccess()` を返しレイヤーも 137 枚読めるのに、タイルが一切描かれない。
+// 例外も HTTP エラーも出ない無音の失敗なので、症状からは絶対に辿り着けない。
+//
+// ArcGIS Maps SDK for Kotlin 300.1.0 が okhttp 5.3.2 を引き込み、Gradle の
+// 「高いほうが勝つ」解決で TomTom の 4.12.0 が 5.3.2 へ引き上げられていた。
+// Pixel 5a / map-display 2.4.2 で両方向を確認済み:
+//   - ArcGIS 無し + okhttp 5.3.2 を強制 → 再現する
+//   - ArcGIS 有り + okhttp 4.12.0 に固定 → 直る
+// ベクタ→ベクタ（Standard ⇄ Driving）は 5.x でも壊れない。ラスタ→ベクタだけ。
+configurations.configureEach {
+    resolutionStrategy {
+        force("com.squareup.okhttp3:okhttp:4.12.0")
+    }
+}
+
 // secrets.properties（無ければ local.defaults.properties）を manifest placeholder として読む。
 // 値は使うだけで、ログにも BuildConfig にも出さない。
 val secretPlaceholders: Map<String, Any> =
@@ -249,6 +266,7 @@ dependencies {
     implementation(project(":android-for-mappls"))
     debugImplementation(project(":android-marker-clustering"))
     debugImplementation(project(":android-heatmap"))
+    debugImplementation(project(":android-vectortile"))
     debugImplementation(project(":android-geojson-layer"))
     debugImplementation(project(":android-kml"))
 

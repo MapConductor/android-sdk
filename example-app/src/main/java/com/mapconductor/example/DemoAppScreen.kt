@@ -17,6 +17,7 @@ import com.mapconductor.example.pages.geojson.layer.GeoJSONLayerMapPage
 import com.mapconductor.example.pages.groundimage.GroundImageMapPage
 import com.mapconductor.example.pages.groundimage.GroundImageResources
 import com.mapconductor.example.pages.heatmaplayer.HeatmapLayerPage
+import com.mapconductor.example.pages.vectortile.VectorTilePage
 import com.mapconductor.example.pages.infobubble.MultipleBubblesPage
 import com.mapconductor.example.pages.infobubble.RichContentBubblePage
 import com.mapconductor.example.pages.infobubble.SimpleTextBubblePage
@@ -152,6 +153,10 @@ fun DemoAppScreen(initPage: String = "map") {
             SidebarSection(
                 title = "Heatmap Layer",
                 items = listOf(SidebarItem(id = "heatmap-overlay", title = "Heatmap Overlay")),
+            ),
+            SidebarSection(
+                title = "Vector Tile Layer",
+                items = listOf(SidebarItem(id = "vector-tile", title = "MapLibre Style")),
             ),
             SidebarSection(
                 title = "GeoJSON",
@@ -318,6 +323,11 @@ fun DemoAppScreen(initPage: String = "map") {
                     }
                     "heatmap-overlay" -> {
                         HeatmapLayerPage(
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
+                    }
+                    "vector-tile" -> {
+                        VectorTilePage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
