@@ -2,6 +2,7 @@ package com.mapconductor.example.pages.vectortile
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import com.mapconductor.core.OnMapLoadedHandler
 import com.mapconductor.core.map.MapViewStateInterface
 import com.mapconductor.example.MapViewContainer
@@ -17,6 +18,7 @@ fun VectorTileMapComponent(
     onMapLoaded: OnMapLoadedHandler? = null,
     onDiagnostics: (List<String>) -> Unit = {},
 ) {
+    val diskCacheDir = LocalContext.current.cacheDir.resolve("vectortile")
     mapViewState?.let { state ->
         MapViewContainer(
             modifier = modifier,
@@ -30,6 +32,7 @@ fun VectorTileMapComponent(
                     styleJson = styleJson,
                     tileSize = tileSize,
                     opacity = opacity,
+                    diskCacheDir = diskCacheDir,
                     onDiagnostics = onDiagnostics,
                 )
             }

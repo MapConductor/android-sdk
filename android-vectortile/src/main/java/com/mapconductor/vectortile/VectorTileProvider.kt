@@ -5,6 +5,7 @@ import android.util.LruCache
 import com.mapconductor.core.tileserver.TileProviderInterface
 import com.mapconductor.core.tileserver.TileRequest
 import java.io.Closeable
+import java.io.File
 import java.net.HttpURLConnection
 import java.net.URL
 import java.util.concurrent.Semaphore
@@ -28,7 +29,16 @@ class VectorTileProvider private constructor(
     private val headers: Map<String, String>,
     private val fetchTile: (String) -> ByteArray?,
     cacheBytes: Int,
+    private val diskCache: TileDiskCache?,
+    styleJson: String,
 ) : TileProviderInterface, Closeable {
+
+    /**
+     * Identifies the style for disk cache keys. Content-addressed, so a
+     * restyle misses rather than needing explicit invalidation.
+     */
+    @Volatile
+    private var styleKey: String = TileDiskCache.digest(styleJson)
 
     /**
      * Source tiles keyed by URL.
@@ -72,6 +82,9 @@ class VectorTileProvider private constructor(
         /** Source tile cache budget, in bytes. */
         const val DEFAULT_CACHE_BYTES: Int = 16 * 1024 * 1024
 
+        /** Rendered tile disk cache budget, in bytes. */
+        const val DEFAULT_DISK_CACHE_BYTES: Long = 64L * 1024 * 1024
+
         /**
          * @param styleJson a MapLibre style document
          * @param headers sent with every source tile request
@@ -85,6 +98,8 @@ class VectorTileProvider private constructor(
             tileSize: Int = DEFAULT_TILE_SIZE,
             headers: Map<String, String> = emptyMap(),
             cacheBytes: Int = DEFAULT_CACHE_BYTES,
+            diskCacheDir: File? = null,
+            diskCacheBytes: Long = DEFAULT_DISK_CACHE_BYTES,
             fetchTile: ((String) -> ByteArray?)? = null,
         ): VectorTileProvider {
             val renderer = VectorTileRenderer.create(styleJson)
@@ -94,6 +109,8 @@ class VectorTileProvider private constructor(
                 headers = headers,
                 fetchTile = fetchTile ?: { url -> httpGet(url, headers) },
                 cacheBytes = cacheBytes,
+                diskCache = diskCacheDir?.let { TileDiskCache(it, diskCacheBytes) },
+                styleJson = styleJson,
             )
         }
 
@@ -154,10 +171,34 @@ class VectorTileProvider private constructor(
      */
     fun setStyle(styleJson: String) {
         renderer.setStyle(styleJson)
+        // Rendered tiles are keyed by style, so the old ones simply stop being
+        // found; there is nothing to invalidate.
+        styleKey = TileDiskCache.digest(styleJson)
     }
 
     override fun renderTile(request: TileRequest): ByteArray? {
         if (closed) return null
+
+        val cacheKey = diskCache?.let {
+            TileDiskCache.digest(
+                styleKey,
+                "$tileSize",
+                "${request.z}/${request.x}/${request.y}",
+            )
+        }
+        if (cacheKey != null) {
+            val hit = diskCache.get(cacheKey)
+            if (hit != null) {
+                if (Log.isLoggable(TAG, Log.DEBUG)) {
+                    Log.d(
+                        TAG,
+                        "tile ${request.z}/${request.x}/${request.y} disk-hit " +
+                            "bytes=${hit.size}",
+                    )
+                }
+                return hit
+            }
+        }
 
         val plan = JSONArray(renderer.plan(request.z, request.x, request.y))
         val tiles = ArrayList<ByteArray?>(plan.length())
@@ -190,6 +231,7 @@ class VectorTileProvider private constructor(
                     "render=${renderMs}ms bytes=${png?.size ?: 0}",
             )
         }
+        if (cacheKey != null && png != null) diskCache.put(cacheKey, png)
         return png
     }
 
