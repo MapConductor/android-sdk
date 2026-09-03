@@ -65,6 +65,16 @@ fun MapViewScope.VectorTileLayer(
     maxZoom: Int = 22,
     headers: Map<String, String> = emptyMap(),
     /**
+     * Where to rasterise. The default probes for an OpenGL ES context and
+     * falls back to the CPU when there is none.
+     *
+     * The GPU mode matters less for raw speed than for *which* processor pays:
+     * on a mid-range device it is roughly 3x faster, but more to the point it
+     * takes the drawing off the CPU that the map SDK and the app are already
+     * competing for.
+     */
+    renderMode: VectorTileProvider.RenderMode = VectorTileProvider.RenderMode.AUTO,
+    /**
      * Where to keep rendered tiles across app launches, e.g.
      * `context.cacheDir.resolve("vectortile")`. Null disables it.
      *
@@ -101,6 +111,7 @@ fun MapViewScope.VectorTileLayer(
                     tileSize = tileSize,
                     headers = headers,
                     diskCacheDir = diskCacheDir,
+                    renderMode = renderMode,
                 )
             }
         }

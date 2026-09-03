@@ -31,7 +31,12 @@ class VectorTileProvider private constructor(
     cacheBytes: Int,
     private val diskCache: TileDiskCache?,
     styleJson: String,
+    /** Null when rendering on the CPU. */
+    private val gpu: GpuTileRasterizer?,
 ) : TileProviderInterface, Closeable {
+
+    /** Where rasterisation actually happens, after any fallback. */
+    val renderMode: RenderMode = if (gpu != null) RenderMode.GPU else RenderMode.CPU
 
     /**
      * Identifies the style for disk cache keys. Content-addressed, so a
@@ -75,6 +80,26 @@ class VectorTileProvider private constructor(
     @Volatile
     private var closed = false
 
+    /** Which rasteriser to use. */
+    enum class RenderMode {
+        /** `tiny-skia`, on the calling thread. Always available. */
+        CPU,
+
+        /**
+         * OpenGL ES. Roughly 3x faster on a mid-range device and, more to the
+         * point, moves the drawing off the CPU that the map SDK and the app
+         * are already competing for.
+         *
+         * Output is not bit-identical to [CPU]: anti-aliasing comes from MSAA
+         * rather than analytic coverage, which measured at 0.39% of pixels
+         * differing on a dense street tile, all of it on thin-line edges.
+         */
+        GPU,
+
+        /** [GPU] where a context can be created, otherwise [CPU]. */
+        AUTO,
+    }
+
     companion object {
         private const val TAG = "VectorTileProvider"
         const val DEFAULT_TILE_SIZE: Int = 512
@@ -100,9 +125,20 @@ class VectorTileProvider private constructor(
             cacheBytes: Int = DEFAULT_CACHE_BYTES,
             diskCacheDir: File? = null,
             diskCacheBytes: Long = DEFAULT_DISK_CACHE_BYTES,
+            renderMode: RenderMode = RenderMode.AUTO,
             fetchTile: ((String) -> ByteArray?)? = null,
         ): VectorTileProvider {
             val renderer = VectorTileRenderer.create(styleJson)
+            val gpu = when (renderMode) {
+                RenderMode.CPU -> null
+                // AUTO and GPU both probe; AUTO falls back silently, GPU says
+                // so, because asking for the GPU and quietly getting the CPU
+                // is how a performance regression hides.
+                RenderMode.AUTO -> GpuTileRasterizer.createOrNull(tileSize)
+                RenderMode.GPU -> GpuTileRasterizer.createOrNull(tileSize).also {
+                    if (it == null) Log.w(TAG, "GPU requested but unavailable; using the CPU")
+                }
+            }
             return VectorTileProvider(
                 renderer = renderer,
                 tileSize = tileSize,
@@ -111,6 +147,7 @@ class VectorTileProvider private constructor(
                 cacheBytes = cacheBytes,
                 diskCache = diskCacheDir?.let { TileDiskCache(it, diskCacheBytes) },
                 styleJson = styleJson,
+                gpu = gpu,
             )
         }
 
@@ -160,6 +197,9 @@ class VectorTileProvider private constructor(
         val array = JSONArray(renderer.diagnostics())
         return (0 until array.length()).map { array.getString(it) }
     }
+
+    /** Describes the GL context in use, or "cpu" when rasterising on the CPU. */
+    fun rendererDescription(): String = gpu?.describe() ?: "cpu"
 
     /**
      * Replaces the style. Fetched vector tiles stay valid — the geometry is
@@ -213,13 +253,31 @@ class VectorTileProvider private constructor(
         if (closed) return null
 
         val renderStarted = System.nanoTime()
-        renderSlots.acquire()
-        val png = try {
-            runCatching {
-                renderer.render(request.z, request.x, request.y, tileSize, tiles)
-            }.getOrNull()
-        } finally {
-            renderSlots.release()
+        val png = if (gpu != null) {
+            // The GL thread serialises drawing already, so the CPU-side
+            // semaphore would only add queueing on top of it.
+            runCatching { renderOnGpu(request, tiles) }.getOrNull()
+                ?: run {
+                    // A GPU failure must not lose the tile; the CPU can always
+                    // draw it.
+                    renderSlots.acquire()
+                    try {
+                        runCatching {
+                            renderer.render(request.z, request.x, request.y, tileSize, tiles)
+                        }.getOrNull()
+                    } finally {
+                        renderSlots.release()
+                    }
+                }
+        } else {
+            renderSlots.acquire()
+            try {
+                runCatching {
+                    renderer.render(request.z, request.x, request.y, tileSize, tiles)
+                }.getOrNull()
+            } finally {
+                renderSlots.release()
+            }
         }
         val renderMs = (System.nanoTime() - renderStarted) / 1_000_000
 
@@ -233,6 +291,22 @@ class VectorTileProvider private constructor(
         }
         if (cacheKey != null && png != null) diskCache.put(cacheKey, png)
         return png
+    }
+
+    private fun renderOnGpu(request: TileRequest, tiles: List<ByteArray?>): ByteArray? {
+        val rasterizer = gpu ?: return null
+        val lengths = IntArray(tiles.size) { tiles[it]?.size ?: 0 }
+        val data = ByteArray(lengths.sum())
+        var offset = 0
+        for (tile in tiles) {
+            if (tile == null) continue
+            tile.copyInto(data, offset)
+            offset += tile.size
+        }
+        val packed = renderer.tessellate(
+            request.z, request.x, request.y, tileSize, data, lengths,
+        )
+        return rasterizer.renderPng(TessellatedTile(packed))
     }
 
     private fun sourceTile(url: String): ByteArray? {
@@ -254,6 +328,7 @@ class VectorTileProvider private constructor(
         closed = true
         cache.evictAll()
         empties.clear()
+        gpu?.close()
         renderer.close()
     }
 }

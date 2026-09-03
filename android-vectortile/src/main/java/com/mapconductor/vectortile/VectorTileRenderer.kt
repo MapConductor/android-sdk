@@ -72,6 +72,20 @@ class VectorTileRenderer private constructor(handle: Long) : Closeable {
         NativeRenderer.nativeSetStyle(requireHandle(), styleJson)
     }
 
+    /**
+     * Triangulates `z/x/y` for the GPU renderer. See `TessellatedTile` for the
+     * packed layout.
+     */
+    internal fun tessellate(
+        z: Int,
+        x: Int,
+        y: Int,
+        tileSize: Int,
+        data: ByteArray,
+        lengths: IntArray,
+    ): FloatArray =
+        NativeRenderer.nativeTessellate(requireHandle(), z, x, y, tileSize, data, lengths)
+
     /** JSON array of layer `type` values in this style that will not be drawn. */
     fun unsupportedLayerTypes(): String =
         NativeRenderer.nativeUnsupportedLayerTypes(requireHandle())
