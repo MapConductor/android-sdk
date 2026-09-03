@@ -96,8 +96,8 @@ internal class TessellatedTile(packed: FloatArray) {
     val vertices: FloatArray
 
     /** Milliseconds spent inside the native call, by phase. */
-    val decodeMs: Float = packed[8]
-    val tessellateMs: Float = packed[9]
+    val decodeMs: Float = packed[7]
+    val tessellateMs: Float = packed[8]
 
     init {
         val batchCount = packed[6].toInt()
