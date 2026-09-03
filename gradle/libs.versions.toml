@@ -38,6 +38,9 @@ mapplsSdk = "9.0.3"
 materialVersion = "1.14.0"
 coroutines = "1.9.0"
 ui = "1.11.4"
+# material3 は compose-ui とは別のバージョン系列。composeLibs（ui 系）を流用すると
+# 存在しない material3:1.7.8 を要求してクラスパスごと解決に失敗する。
+material3 = "1.4.0"
 
 [libraries]
 # Open Mobile Maps (https://github.com/openmobilemaps/maps-core) — MPL 2.0
@@ -47,7 +50,7 @@ androidx-core = { module = "androidx.test:core", version.ref = "core" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 androidx-runner = { module = "androidx.test:runner", version.ref = "runner" }
-androidx-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "composeLibs" }
+androidx-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
 androidx-material-icons-core = { group = "androidx.compose.material", name = "material-icons-core" }
 androidx-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
 

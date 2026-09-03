@@ -3,9 +3,12 @@ package com.mapconductor.simplemapapp
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -21,6 +24,7 @@ import com.mapconductor.compose.info.InfoBubble
 import com.mapconductor.compose.marker.Marker
 import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoRectBounds
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.geojson.GeoJSONFeature
@@ -69,13 +73,14 @@ class MainActivity : ComponentActivity() {
         // via onNewIntent and setIntent keeps this in step.
         setContent {
             MapConductorSDKTheme {
-                var picked by remember { mutableStateOf(DocDemo.bySlug(intent?.getStringExtra("demo"))) }
+//                var picked by remember { mutableStateOf(DocDemo.bySlug(intent?.getStringExtra("demo"))) }
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    val inner = Modifier.padding(innerPadding)
-                    when (val demo = picked) {
-                        null -> DocDemoLauncher(inner) { picked = it }
-                        else -> DocDemoScreen(demo, inner)
-                    }
+                    MapScreen(modifier = Modifier.padding(innerPadding))
+//                    val inner = Modifier.padding(innerPadding)
+//                    when (val demo = picked) {
+//                        null -> DocDemoLauncher(inner) { picked = it }
+//                        else -> DocDemoScreen(demo, inner)
+//                    }
                 }
             }
         }
@@ -87,6 +92,8 @@ class MainActivity : ComponentActivity() {
         recreate()
     }
 }
+
+
 
 val HND_AIR_PORT = GeoPoint.fromLatLong(35.548852, 139.784086)
 val SFO_AIR_PORT = GeoPoint.fromLatLong(37.615223, -122.389979)

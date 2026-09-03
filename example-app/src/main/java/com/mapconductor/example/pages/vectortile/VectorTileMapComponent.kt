@@ -12,6 +12,7 @@ fun VectorTileMapComponent(
     mapViewState: MapViewStateInterface<*>?,
     styleJson: String?,
     opacity: Float,
+    tileSize: Int = 512,
     modifier: Modifier = Modifier,
     onMapLoaded: OnMapLoadedHandler? = null,
     onDiagnostics: (List<String>) -> Unit = {},
@@ -27,6 +28,7 @@ fun VectorTileMapComponent(
             if (styleJson != null) {
                 VectorTileLayer(
                     styleJson = styleJson,
+                    tileSize = tileSize,
                     opacity = opacity,
                     onDiagnostics = onDiagnostics,
                 )

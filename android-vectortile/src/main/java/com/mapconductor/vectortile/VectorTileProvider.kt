@@ -7,6 +7,7 @@ import com.mapconductor.core.tileserver.TileRequest
 import java.io.Closeable
 import java.net.HttpURLConnection
 import java.net.URL
+import java.util.concurrent.Semaphore
 import org.json.JSONArray
 
 /**
@@ -26,7 +27,7 @@ class VectorTileProvider private constructor(
     private val tileSize: Int,
     private val headers: Map<String, String>,
     private val fetchTile: (String) -> ByteArray?,
-    cacheEntries: Int,
+    cacheBytes: Int,
 ) : TileProviderInterface, Closeable {
 
     /**
@@ -36,7 +37,27 @@ class VectorTileProvider private constructor(
      * same source tile — always, once overzoom kicks in, where one magnified
      * ancestor serves 16 targets — and a map asks for a whole viewport at once.
      */
-    private val cache = LruCache<String, ByteArray>(cacheEntries)
+    private val cache =
+        object : LruCache<String, ByteArray>(cacheBytes) {
+            // Sized in bytes, not entries. Counting entries is the default and
+            // it is wrong here: a basemap tile is 150-300 KB, so a few hundred
+            // entries is tens of megabytes, and the native allocator aborts the
+            // host process when it runs out — `catch_unwind` cannot save it.
+            override fun sizeOf(key: String, value: ByteArray): Int = value.size
+        }
+
+    /**
+     * Caps concurrent rasterisation.
+     *
+     * The tile server will happily run eight requests at once, but each render
+     * holds a decoded tile and a full pixmap, and on a mid-range device eight
+     * at a time both exhausts memory and thrashes the CPU — measured render
+     * times climbed from 235 ms to 1790 ms purely from contention.
+     */
+    private val renderSlots = Semaphore(
+        maxOf(1, Runtime.getRuntime().availableProcessors() / 2),
+        true,
+    )
 
     /** URLs known to hold nothing, so a missing tile is not re-requested. */
     private val empties = java.util.Collections.synchronizedSet(HashSet<String>())
@@ -47,6 +68,9 @@ class VectorTileProvider private constructor(
     companion object {
         private const val TAG = "VectorTileProvider"
         const val DEFAULT_TILE_SIZE: Int = 512
+
+        /** Source tile cache budget, in bytes. */
+        const val DEFAULT_CACHE_BYTES: Int = 16 * 1024 * 1024
 
         /**
          * @param styleJson a MapLibre style document
@@ -60,7 +84,7 @@ class VectorTileProvider private constructor(
             styleJson: String,
             tileSize: Int = DEFAULT_TILE_SIZE,
             headers: Map<String, String> = emptyMap(),
-            cacheEntries: Int = 256,
+            cacheBytes: Int = DEFAULT_CACHE_BYTES,
             fetchTile: ((String) -> ByteArray?)? = null,
         ): VectorTileProvider {
             val renderer = VectorTileRenderer.create(styleJson)
@@ -69,28 +93,47 @@ class VectorTileProvider private constructor(
                 tileSize = tileSize,
                 headers = headers,
                 fetchTile = fetchTile ?: { url -> httpGet(url, headers) },
-                cacheEntries = cacheEntries,
+                cacheBytes = cacheBytes,
             )
         }
 
         private fun httpGet(url: String, headers: Map<String, String>): ByteArray? {
             val connection = URL(url).openConnection() as HttpURLConnection
+            var reuse = false
             return try {
                 connection.requestMethod = "GET"
                 connection.connectTimeout = 15_000
                 connection.readTimeout = 15_000
+                // Tiles are gzipped on the wire by most servers; the client
+                // undoes that transparently when the header is left to it.
                 headers.forEach(connection::setRequestProperty)
-                when (connection.responseCode) {
+                when (val status = connection.responseCode) {
                     // A missing tile is normal at the edge of a source's coverage.
-                    HttpURLConnection.HTTP_NOT_FOUND, HttpURLConnection.HTTP_NO_CONTENT -> null
-                    in 200..299 -> connection.inputStream.use { it.readBytes() }
-                        .takeIf { it.isNotEmpty() }
-                    else -> throw java.io.IOException(
-                        "tile fetch failed: ${connection.responseCode} $url",
-                    )
+                    HttpURLConnection.HTTP_NOT_FOUND, HttpURLConnection.HTTP_NO_CONTENT -> {
+                        connection.errorStream?.use { it.readBytes() }
+                        reuse = true
+                        null
+                    }
+                    in 200..299 -> {
+                        val bytes = connection.inputStream.use { it.readBytes() }
+                        // Draining the body to completion is what lets the
+                        // socket go back to the pool.
+                        reuse = true
+                        bytes.takeIf { it.isNotEmpty() }
+                    }
+                    else -> {
+                        connection.errorStream?.use { it.readBytes() }
+                        reuse = true
+                        throw java.io.IOException("tile fetch failed: $status $url")
+                    }
                 }
             } finally {
-                connection.disconnect()
+                // `disconnect()` tears the socket down instead of returning it
+                // to the keep-alive pool. With a viewport's worth of tiles
+                // going to one host, that means a fresh TLS handshake per
+                // tile — so it is only used when the connection is already
+                // unusable.
+                if (!reuse) connection.disconnect()
             }
         }
     }
@@ -129,9 +172,14 @@ class VectorTileProvider private constructor(
         if (closed) return null
 
         val renderStarted = System.nanoTime()
-        val png = runCatching {
-            renderer.render(request.z, request.x, request.y, tileSize, tiles)
-        }.getOrNull()
+        renderSlots.acquire()
+        val png = try {
+            runCatching {
+                renderer.render(request.z, request.x, request.y, tileSize, tiles)
+            }.getOrNull()
+        } finally {
+            renderSlots.release()
+        }
         val renderMs = (System.nanoTime() - renderStarted) / 1_000_000
 
         if (Log.isLoggable(TAG, Log.DEBUG)) {

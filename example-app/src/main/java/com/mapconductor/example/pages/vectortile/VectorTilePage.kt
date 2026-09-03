@@ -7,12 +7,16 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Row
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -43,6 +47,10 @@ fun VectorTilePage(onToggleSidebar: () -> Unit = {}) {
     var failure by remember { mutableStateOf<String?>(null) }
     var diagnostics by remember { mutableStateOf<List<String>>(emptyList()) }
     var opacity by remember { mutableFloatStateOf(1.0f) }
+    // 256 quarters the pixels per tile but needs four times as many tiles for
+    // the same screen — and four times the source fetches. Which wins is not
+    // predictable, so it is switchable and measured.
+    var tileSize by remember { mutableIntStateOf(512) }
     var mapViewState by remember { mutableStateOf<com.mapconductor.core.map.MapViewStateInterface<*>?>(null) }
 
     // Central Tokyo: the OSMF Shortbread service has street-level detail here,
@@ -73,6 +81,7 @@ fun VectorTilePage(onToggleSidebar: () -> Unit = {}) {
                 mapViewState = mapViewState,
                 styleJson = styleJson,
                 opacity = opacity,
+                tileSize = tileSize,
                 modifier = Modifier.fillMaxSize(),
                 onDiagnostics = { diagnostics = it },
             )
@@ -86,6 +95,16 @@ fun VectorTilePage(onToggleSidebar: () -> Unit = {}) {
                 .padding(12.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                listOf(256, 512).forEach { size ->
+                    FilterChip(
+                        selected = tileSize == size,
+                        onClick = { tileSize = size },
+                        label = { Text("${size}px", fontSize = 12.sp) },
+                        colors = FilterChipDefaults.filterChipColors(),
+                    )
+                }
+            }
             Text("Opacity ${"%.2f".format(opacity)}", fontSize = 12.sp)
             Slider(value = opacity, onValueChange = { opacity = it }, valueRange = 0f..1f)
             // Undrawn layer types and unusable sources are worth showing: the
