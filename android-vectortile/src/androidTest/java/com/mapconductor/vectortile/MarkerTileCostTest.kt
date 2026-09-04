@@ -349,4 +349,97 @@ class MarkerTileCostTest {
         icon.recycle()
     }
 
+    /**
+     * Markers land where their coordinates say they do.
+     *
+     * The draw rounds its destination to whole pixels, which is worth 20x but
+     * would be worth nothing if it put the markers somewhere else. This pins
+     * the placement independently of the timing work.
+     */
+    @Test
+    fun markersLandWhereTheirCoordinatesSay() {
+        val z = 12
+        val tileX = 3638
+        val tileY = 1612
+
+        // Positions are derived from the tile rather than written down, so the
+        // test cannot drift a marker into the neighbouring tile — which is
+        // exactly what hand-computed coordinates did on the first attempt.
+        val worldTilesForPlacement = 1 shl z
+        fun atFraction(fx: Double, fy: Double): GeoPoint {
+            val worldX = tileX + fx
+            val worldY = tileY + fy
+            val longitude = worldX / worldTilesForPlacement * 360.0 - 180.0
+            val n = Math.PI * (1.0 - 2.0 * worldY / worldTilesForPlacement)
+            val latitude = Math.toDegrees(kotlin.math.atan(kotlin.math.sinh(n)))
+            return GeoPoint(latitude, longitude)
+        }
+        val positions = listOf(
+            atFraction(0.25, 0.25),
+            atFraction(0.50, 0.60),
+            atFraction(0.75, 0.40),
+        )
+        val manager = MarkerManager.defaultManager<Unit>(minMarkerCount = 1)
+        positions.forEach { position ->
+            manager.registerEntity(
+                MarkerEntity(
+                    marker = null,
+                    state = MarkerState(position = position),
+                    visible = true,
+                    isRendered = true,
+                    tiling = true,
+                ),
+            )
+        }
+
+        val bytes = checkNotNull(renderer(manager).renderTile(TileRequest(x = tileX, y = tileY, z = z)))
+        val tile = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+        val worldTiles = 1 shl z
+
+        fun tilePixel(position: GeoPoint): Pair<Int, Int> {
+            val worldX = (position.longitude + 180.0) / 360.0 * worldTiles
+            val latRad = Math.toRadians(position.latitude)
+            val worldY = (
+                1.0 - kotlin.math.ln(
+                    kotlin.math.tan(latRad) + 1.0 / kotlin.math.cos(latRad),
+                ) / Math.PI
+            ) / 2.0 * worldTiles
+            return Math.round((worldX - tileX) * tile.width).toInt() to
+                Math.round((worldY - tileY) * tile.height).toInt()
+        }
+
+        /** Is anything drawn within `radius` px of (x, y)? */
+        fun painted(x: Int, y: Int, radius: Int): Boolean {
+            for (dy in -radius..radius) {
+                for (dx in -radius..radius) {
+                    val px = x + dx
+                    val py = y + dy
+                    if (px !in 0 until tile.width || py !in 0 until tile.height) continue
+                    if (tile.getPixel(px, py) ushr 24 != 0) return true
+                }
+            }
+            return false
+        }
+
+        for (position in positions) {
+            val (x, y) = tilePixel(position)
+            println("MARKERTILE_PLACE tile=${tile.width}x${tile.height} pos=$position -> $x,$y painted=${painted(x, y, 6)}")
+            // The default pin is anchored near its tip, so the icon body sits
+            // above the coordinate; a small box around it is the honest test.
+            org.junit.Assert.assertTrue(
+                "nothing drawn at $position -> $x,$y (tile ${tile.width})",
+                painted(x, y, radius = 6),
+            )
+        }
+
+        // Somewhere no marker is: the tile is not simply filled in.
+        val (firstX, firstY) = tilePixel(positions[0])
+        val emptyX = (firstX + tile.width / 3) % tile.width
+        val emptyY = (firstY + tile.height / 3) % tile.height
+        org.junit.Assert.assertFalse(
+            "unexpected paint at $emptyX,$emptyY",
+            painted(emptyX, emptyY, radius = 2),
+        )
+        tile.recycle()
+    }
 }
