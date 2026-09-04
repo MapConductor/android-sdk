@@ -71,4 +71,8 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+    // The marker tile cost benchmark measures android-sdk-core's renderer
+    // against this module's Rust PNG encoder, so the test source set needs
+    // core on its compile classpath directly.
+    androidTestImplementation(project(":android-sdk-core"))
 }
