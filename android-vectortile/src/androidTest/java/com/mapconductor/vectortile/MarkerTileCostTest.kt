@@ -101,16 +101,21 @@ class MarkerTileCostTest {
 
                 // Re-encode the tile the renderer actually produced, so the
                 // encoder comparison runs on real marker-tile content rather
-                // than on noise — a mistake already made once in this project.
+                // than on generated content. Synthetic tiles mislead badly
+                // here: hard-edged icons on transparency made Paeth filtering
+                // look 7x better than Sub, and on real anti-aliased icons it
+                // was the same size and 50% slower.
                 val decoded = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
                     .copy(Bitmap.Config.ARGB_8888, false)
 
                 val compressSamples = ArrayList<Double>(5)
+                var compressBytes = 0
                 repeat(5) {
                     val stream = java.io.ByteArrayOutputStream(bytes.size)
                     val started = System.nanoTime()
                     decoded.compress(Bitmap.CompressFormat.PNG, 100, stream)
                     compressSamples.add((System.nanoTime() - started) / 1_000_000.0)
+                    compressBytes = stream.size()
                 }
 
                 val buffer = ByteBuffer
@@ -130,12 +135,14 @@ class MarkerTileCostTest {
 
                 val compressMs = median(compressSamples)
                 val rustMs = median(rustSamples)
+                // No encode share here: the renderer no longer calls
+                // Bitmap.compress, so dividing one by the other would compare a
+                // path that runs against one that does not.
                 println(
-                    "MARKERTILE n=%d z=%d render=%.1fms png=%d compress=%.1fms rust=%.1fms rustBytes=%d encodeShare=%.0f%%"
+                    "MARKERTILE n=%d z=%d render=%.1fms png=%d | reencode compress=%.1fms/%dB rust=%.1fms/%dB"
                         .format(
                             markerCount, z, renderMs, bytes.size,
-                            compressMs, rustMs, rustBytes,
-                            compressMs / renderMs * 100,
+                            compressMs, compressBytes, rustMs, rustBytes,
                         ),
                 )
                 decoded.recycle()
