@@ -75,4 +75,7 @@ dependencies {
     // against this module's Rust PNG encoder, so the test source set needs
     // core on its compile classpath directly.
     androidTestImplementation(project(":android-sdk-core"))
+    // The street tree benchmark builds its own MarkerIconInterface, whose
+    // members are Compose geometry types.
+    androidTestImplementation(libs.androidx.ui)
 }

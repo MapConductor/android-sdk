@@ -24,6 +24,7 @@ import com.mapconductor.example.pages.infobubble.SimpleTextBubblePage
 import com.mapconductor.example.pages.infobubble.StyledInfoBubblePage
 import com.mapconductor.example.pages.kml.KMLMapPage
 import com.mapconductor.example.pages.map.basic.StoreMapPage
+import com.mapconductor.example.pages.map.camerarestriction.CameraRestrictionMapPage
 import com.mapconductor.example.pages.map.camerasync.CameraSyncPage
 import com.mapconductor.example.pages.map.design.MapDesignMapPage
 import com.mapconductor.example.pages.map.fitbounds.FitBoundsMapPage
@@ -36,6 +37,7 @@ import com.mapconductor.example.pages.marker.animation.AnimationMapPage
 import com.mapconductor.example.pages.marker.icons.MarkerBasicPage
 import com.mapconductor.example.pages.marker.postoffice.PostOfficePage
 import com.mapconductor.example.pages.marker.postofficecluster.MarkerClusterMapPage as PostOfficeClusterMapPage
+import com.mapconductor.example.pages.marker.streettree.StreetTreePage
 import com.mapconductor.example.pages.polygon.basic.PolygonMapPage
 import com.mapconductor.example.pages.polygon.click.PolygonClickPage
 import com.mapconductor.example.pages.polygon.geodesic.PolygonGeodesicPage
@@ -118,6 +120,7 @@ fun DemoAppScreen(initPage: String = "map") {
                         SidebarItem(id = "marker-animation", title = "Marker Animation"),
                         SidebarItem(id = "marker-postoffice", title = "Bunch of Markers"),
                         SidebarItem(id = "marker-postoffice-cluster", title = "Marker Clustering"),
+                        SidebarItem(id = "marker-streettree", title = "Street Trees"),
                     ),
             ),
             SidebarSection(
@@ -203,7 +206,7 @@ fun DemoAppScreen(initPage: String = "map") {
                         )
                     }
                     "camera-restriction" -> {
-                        com.mapconductor.example.pages.map.camerarestriction.CameraRestrictionMapPage(
+                        CameraRestrictionMapPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
@@ -266,6 +269,11 @@ fun DemoAppScreen(initPage: String = "map") {
                     "marker-postoffice-cluster" -> {
                         PostOfficeClusterMapPage(
                             postOfficeIcon = postOfficeIcon,
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
+                    }
+                    "marker-streettree" -> {
+                        StreetTreePage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
