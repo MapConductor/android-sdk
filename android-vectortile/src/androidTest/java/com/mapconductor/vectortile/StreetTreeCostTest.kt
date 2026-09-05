@@ -82,24 +82,57 @@ class StreetTreeCostTest {
 
     private class Trees(val manager: MarkerManager<Unit>, val count: Int, val species: Int)
 
-    private fun loadTrees(iconPx: Int): Trees {
+    private fun loadTrees(
+        iconPx: Int,
+        minMarkerCount: Int = 1,
+        keepEvery: Int = 1,
+    ): Trees {
         val bytes = InstrumentationRegistry.getInstrumentation().context.assets
             .open("tokyo-trees.bin").use { it.readBytes() }
         val buffer = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN)
 
-        val speciesCount = buffer.int
-        repeat(speciesCount) {
+        // The magic is checked, not skipped. Read past it and the header
+        // becomes a species count of over a billion, and the icon palette
+        // allocates until the process aborts — which is what happened, twice,
+        // after the asset gained its attribute columns.
+        val magic = ByteArray(5)
+        buffer.get(magic)
+        check(String(magic, Charsets.US_ASCII) == "TREE\u0002") {
+            "unexpected street tree asset format"
+        }
+
+        // The length has to be read into a local first: buffer.short advances
+        // the position itself, so reading it inside position(position() + ...)
+        // captures the offset from before the read and loses two bytes a name.
+        fun skipName() {
             val length = buffer.short.toInt()
             buffer.position(buffer.position() + length)
         }
+
+        fun skipTable() = repeat(buffer.int) { skipName() }
+
+        val speciesCount = buffer.int
+        repeat(speciesCount) { skipName() }
+        skipTable() // wards
+        skipTable() // roads
         val icons = speciesIcons(speciesCount, iconPx)
 
         val treeCount = buffer.int
-        val manager = MarkerManager.defaultManager<Unit>(minMarkerCount = 1)
-        repeat(treeCount) {
+        val manager = MarkerManager.defaultManager<Unit>(minMarkerCount = minMarkerCount)
+        var kept = 0
+        repeat(treeCount) { index ->
+            // Every field is read even when the tree is skipped: the record is
+            // fixed width, and leaving four of them unread walks the buffer
+            // ten bytes off per tree until the coordinates are noise.
             val lat = buffer.float.toDouble()
             val lon = buffer.float.toDouble()
             val species = buffer.short.toInt() and 0xFFFF
+            buffer.float // height
+            buffer.short // girth
+            buffer.short // ward
+            buffer.short // road
+            if (index % keepEvery != 0) return@repeat
+            kept++
             manager.registerEntity(
                 MarkerEntity(
                     marker = null,
@@ -110,7 +143,7 @@ class StreetTreeCostTest {
                 ),
             )
         }
-        return Trees(manager, treeCount, speciesCount)
+        return Trees(manager, kept, speciesCount)
     }
 
     private fun median(values: List<Double>): Double = values.sorted()[values.size / 2]
@@ -130,6 +163,17 @@ class StreetTreeCostTest {
         trees: Trees,
         declutterPx: Int,
     ) {
+        // One renderer for the sweep. Each zoom asks for a different tile and
+        // the cache is keyed by z/x/y, so it never answers from cache — and a
+        // renderer per round kept a tile-sized bitmap and its own pool alive
+        // until native allocation failed inside Canvas::create_canvas.
+        val renderer =
+            MarkerTileRenderer(
+                markerManager = trees.manager,
+                tileSize = tileSize,
+                cacheSizeBytes = 8 * 1024 * 1024,
+                declutterPx = declutterPx,
+            )
 
         // Tiles covering Tokyo from "the whole city on one tile" down to a
         // street-level view, so the cost can be seen against tile density.
@@ -139,20 +183,10 @@ class StreetTreeCostTest {
             Triple(12, 3637, 1612),
             Triple(14, 14551, 6451),
         )) {
-            var bytes: ByteArray? = null
-            val samples = (0 until 3).map {
-                // A fresh renderer each round: its cache would answer every
-                // call after the first.
-                val renderer = MarkerTileRenderer(
-                    markerManager = trees.manager,
-                    tileSize = tileSize,
-                    cacheSizeBytes = 8 * 1024 * 1024,
-                    declutterPx = declutterPx,
-                )
-                val started = System.nanoTime()
-                bytes = renderer.renderTile(TileRequest(x = x, y = y, z = z))
-                (System.nanoTime() - started) / 1_000_000.0
-            }
+            val started = System.nanoTime()
+            val bytes = renderer.renderTile(TileRequest(x = x, y = y, z = z))
+            val elapsed = (System.nanoTime() - started) / 1_000_000.0
+
             val png = bytes
             if (png == null) {
                 println("TREES z=%d EMPTY".format(z))
@@ -161,7 +195,7 @@ class StreetTreeCostTest {
             val decoded = BitmapFactory.decodeByteArray(png, 0, png.size)
             println(
                 "TREES declutter=%d z=%d render=%.0fms png=%dKB tile=%dpx".format(
-                    declutterPx, z, median(samples), png.size / 1024, decoded.width,
+                    declutterPx, z, elapsed, png.size / 1024, decoded.width,
                 ),
             )
             decoded.recycle()
