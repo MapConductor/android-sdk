@@ -127,9 +127,9 @@ class MarkerTileCostTest {
                 repeat(5) {
                     buffer.rewind()
                     val started = System.nanoTime()
-                    rustBytes = NativeRenderer.nativeEncodePng(
-                        buffer, decoded.width, decoded.height,
-                    ).size
+                    rustBytes = com.mapconductor.core.tileserver.TilePngEncoder.encode(
+                        buffer, decoded.width, decoded.height, premultiplied = true,
+                    )?.size ?: 0
                     rustSamples.add((System.nanoTime() - started) / 1_000_000.0)
                 }
 

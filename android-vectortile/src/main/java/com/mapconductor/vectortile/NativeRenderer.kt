@@ -56,14 +56,6 @@ internal object NativeRenderer {
         lengths: IntArray,
     ): FloatArray
 
-    /**
-     * Encodes a straight-alpha RGBA8 **direct** buffer as PNG, in Rust.
-     *
-     * Zero-copy: the GL readback buffer's pointer crosses JNI as-is. On a
-     * Pixel 5a this is 7.6 ms against 47.9 ms for `Bitmap.compress`, which is
-     * the difference between the GPU path being worth it and not.
-     */
-    external fun nativeEncodePng(buffer: java.nio.ByteBuffer, width: Int, height: Int): ByteArray
 }
 
 /**

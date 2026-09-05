@@ -1,5 +1,6 @@
 package com.mapconductor.vectortile
 
+import com.mapconductor.core.tileserver.TilePngEncoder
 import android.util.Log
 import java.io.Closeable
 import java.nio.ByteBuffer
@@ -122,7 +123,10 @@ internal class GpuTileRasterizer(private val tileSize: Int) : Closeable {
         batch.draw(tile.batches, tile.extent)
         context.readPixels(buffer)
         buffer.rewind()
-        return NativeRenderer.nativeEncodePng(buffer, tileSize, tileSize)
+        // The core's encoder, not this module's: one copy of it per app.
+        // glReadPixels leaves straight alpha here — the blend keeps destination
+        // alpha saturated — so there is nothing to un-premultiply.
+        return TilePngEncoder.encode(buffer, tileSize, tileSize, premultiplied = false)
     }
 
     override fun close() {
