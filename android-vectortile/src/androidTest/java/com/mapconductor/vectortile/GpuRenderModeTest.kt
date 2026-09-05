@@ -1,13 +1,9 @@
 package com.mapconductor.vectortile
 
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.mapconductor.core.tileserver.TileRequest
 import com.mapconductor.core.tileserver.TileServerRegistry
-import java.net.HttpURLConnection
-import java.net.URL
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -15,6 +11,10 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import java.net.HttpURLConnection
+import java.net.URL
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 
 /**
  * Covers the GPU rendering mode as a *module* feature rather than an
@@ -23,7 +23,6 @@ import org.junit.runner.RunWith
  */
 @RunWith(AndroidJUnit4::class)
 class GpuRenderModeTest {
-
     private lateinit var styleJson: String
     private lateinit var tileBytes: ByteArray
     private val routeId = "vectortile-gpu-test"
@@ -42,16 +41,18 @@ class GpuRenderModeTest {
         providers.forEach { it.close() }
     }
 
-    private fun provider(mode: VectorTileProvider.RenderMode, tileSize: Int = 512) =
-        VectorTileProvider.create(
+    private fun provider(
+        mode: VectorTileProvider.RenderMode,
+        tileSize: Int = 512,
+    ) = VectorTileProvider
+        .create(
             styleJson = styleJson,
             tileSize = tileSize,
             renderMode = mode,
             fetchTile = { tileBytes },
         ).also { providers.add(it) }
 
-    private fun decode(png: ByteArray): Bitmap =
-        BitmapFactory.decodeByteArray(png, 0, png.size)!!
+    private fun decode(png: ByteArray): Bitmap = BitmapFactory.decodeByteArray(png, 0, png.size)!!
 
     @Test
     fun gpuModeIsAvailableAndReportsItself() {
@@ -84,10 +85,16 @@ class GpuRenderModeTest {
 
     @Test
     fun gpuAndCpuAgreeOnWhatTheTileLooksLike() {
-        val gpu = decode(provider(VectorTileProvider.RenderMode.GPU)
-            .renderTile(TileRequest(x = 0, y = 0, z = 0))!!)
-        val cpu = decode(provider(VectorTileProvider.RenderMode.CPU)
-            .renderTile(TileRequest(x = 0, y = 0, z = 0))!!)
+        val gpu =
+            decode(
+                provider(VectorTileProvider.RenderMode.GPU)
+                    .renderTile(TileRequest(x = 0, y = 0, z = 0))!!,
+            )
+        val cpu =
+            decode(
+                provider(VectorTileProvider.RenderMode.CPU)
+                    .renderTile(TileRequest(x = 0, y = 0, z = 0))!!,
+            )
         assertEquals(cpu.width, gpu.width)
 
         // Compared as 8x8 block averages, not pixel by pixel. The two
@@ -151,22 +158,24 @@ class GpuRenderModeTest {
         server.register(routeId, subject)
 
         val template = server.urlTemplate(routeId, 512)
-        val urls = listOf(0 to 0, 1 to 0, 0 to 1, 1 to 1).map { (x, y) ->
-            template.replace("{z}", "1").replace("{x}", "$x").replace("{y}", "$y")
-        }
+        val urls =
+            listOf(0 to 0, 1 to 0, 0 to 1, 1 to 1).map { (x, y) ->
+                template.replace("{z}", "1").replace("{x}", "$x").replace("{y}", "$y")
+            }
 
-        val results = urls.map { url ->
-            Thread {
-                val connection = URL(url).openConnection() as HttpURLConnection
-                try {
-                    check(connection.responseCode == 200) { "status ${connection.responseCode}" }
-                    val bytes = connection.inputStream.use { it.readBytes() }
-                    check(bytes.size > 1_000) { "tiny tile: ${bytes.size}" }
-                } finally {
-                    connection.disconnect()
+        val results =
+            urls.map { url ->
+                Thread {
+                    val connection = URL(url).openConnection() as HttpURLConnection
+                    try {
+                        check(connection.responseCode == 200) { "status ${connection.responseCode}" }
+                        val bytes = connection.inputStream.use { it.readBytes() }
+                        check(bytes.size > 1_000) { "tiny tile: ${bytes.size}" }
+                    } finally {
+                        connection.disconnect()
+                    }
                 }
             }
-        }
         results.forEach { it.start() }
         results.forEach { it.join(30_000) }
         results.forEach { assertTrue("a request thread never finished", !it.isAlive) }
@@ -174,11 +183,12 @@ class GpuRenderModeTest {
 
     @Test
     fun aClosedGpuProviderStopsCleanly() {
-        val subject = VectorTileProvider.create(
-            styleJson = styleJson,
-            renderMode = VectorTileProvider.RenderMode.GPU,
-            fetchTile = { tileBytes },
-        )
+        val subject =
+            VectorTileProvider.create(
+                styleJson = styleJson,
+                renderMode = VectorTileProvider.RenderMode.GPU,
+                fetchTile = { tileBytes },
+            )
         assertNotNull(subject.renderTile(TileRequest(x = 0, y = 0, z = 0)))
         subject.close()
         subject.close()
@@ -189,13 +199,16 @@ class GpuRenderModeTest {
     fun reportsRelativeCostOfBothModes() {
         val gpu = provider(VectorTileProvider.RenderMode.GPU)
         val cpu = provider(VectorTileProvider.RenderMode.CPU)
+
         fun median(subject: VectorTileProvider): Double {
             repeat(2) { subject.renderTile(TileRequest(x = 0, y = 0, z = 0)) }
-            val samples = (1..7).map {
-                val started = System.nanoTime()
-                subject.renderTile(TileRequest(x = 0, y = 0, z = 0))
-                (System.nanoTime() - started) / 1_000_000.0
-            }.sorted()
+            val samples =
+                (1..7)
+                    .map {
+                        val started = System.nanoTime()
+                        subject.renderTile(TileRequest(x = 0, y = 0, z = 0))
+                        (System.nanoTime() - started) / 1_000_000.0
+                    }.sorted()
             return samples[samples.size / 2]
         }
         println("MODE_COST gpu=%.1fms cpu=%.1fms".format(median(gpu), median(cpu)))

@@ -1,10 +1,5 @@
 package com.mapconductor.streettree
 
-import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.unit.Dp
@@ -14,6 +9,11 @@ import com.mapconductor.core.marker.BitmapIcon
 import com.mapconductor.core.marker.MarkerIconInterface
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 

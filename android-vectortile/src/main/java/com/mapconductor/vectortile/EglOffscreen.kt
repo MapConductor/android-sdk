@@ -1,5 +1,8 @@
 package com.mapconductor.vectortile
 
+import java.io.Closeable
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
 import android.opengl.EGL14
 import android.opengl.EGLConfig
 import android.opengl.EGLContext
@@ -7,9 +10,6 @@ import android.opengl.EGLDisplay
 import android.opengl.EGLSurface
 import android.opengl.GLES20
 import android.opengl.GLES30
-import java.io.Closeable
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
 
 /**
  * A headless OpenGL ES context rendering into an off-screen framebuffer.
@@ -29,7 +29,6 @@ internal class EglOffscreen private constructor(
     /** 3 when an ES3 context was obtained, otherwise 2. */
     val esVersion: Int,
 ) : Closeable {
-
     private var framebuffer = 0
     private var colorTexture = 0
     private var depthBuffer = 0
@@ -62,23 +61,25 @@ internal class EglOffscreen private constructor(
                     if (clientVersion == 3) EGLExt.EGL_OPENGL_ES3_BIT else EGL14.EGL_OPENGL_ES2_BIT
                 val config = chooseConfig(display, renderable) ?: continue
 
-                val context = EGL14.eglCreateContext(
-                    display,
-                    config,
-                    EGL14.EGL_NO_CONTEXT,
-                    intArrayOf(EGL14.EGL_CONTEXT_CLIENT_VERSION, clientVersion, EGL14.EGL_NONE),
-                    0,
-                )
+                val context =
+                    EGL14.eglCreateContext(
+                        display,
+                        config,
+                        EGL14.EGL_NO_CONTEXT,
+                        intArrayOf(EGL14.EGL_CONTEXT_CLIENT_VERSION, clientVersion, EGL14.EGL_NONE),
+                        0,
+                    )
                 if (context == EGL14.EGL_NO_CONTEXT) continue
 
                 // A minimal pbuffer: nothing is drawn to it, but a context
                 // needs a current surface before any GL call is legal.
-                val surface = EGL14.eglCreatePbufferSurface(
-                    display,
-                    config,
-                    intArrayOf(EGL14.EGL_WIDTH, 1, EGL14.EGL_HEIGHT, 1, EGL14.EGL_NONE),
-                    0,
-                )
+                val surface =
+                    EGL14.eglCreatePbufferSurface(
+                        display,
+                        config,
+                        intArrayOf(EGL14.EGL_WIDTH, 1, EGL14.EGL_HEIGHT, 1, EGL14.EGL_NONE),
+                        0,
+                    )
                 if (surface == EGL14.EGL_NO_SURFACE) {
                     EGL14.eglDestroyContext(display, context)
                     continue
@@ -91,16 +92,20 @@ internal class EglOffscreen private constructor(
             error("could not create an ES3 or ES2 context")
         }
 
-        private fun chooseConfig(display: EGLDisplay, renderableType: Int): EGLConfig? {
-            val attributes = intArrayOf(
-                EGL14.EGL_SURFACE_TYPE, EGL14.EGL_PBUFFER_BIT,
-                EGL14.EGL_RENDERABLE_TYPE, renderableType,
-                EGL14.EGL_RED_SIZE, 8,
-                EGL14.EGL_GREEN_SIZE, 8,
-                EGL14.EGL_BLUE_SIZE, 8,
-                EGL14.EGL_ALPHA_SIZE, 8,
-                EGL14.EGL_NONE,
-            )
+        private fun chooseConfig(
+            display: EGLDisplay,
+            renderableType: Int,
+        ): EGLConfig? {
+            val attributes =
+                intArrayOf(
+                    EGL14.EGL_SURFACE_TYPE, EGL14.EGL_PBUFFER_BIT,
+                    EGL14.EGL_RENDERABLE_TYPE, renderableType,
+                    EGL14.EGL_RED_SIZE, 8,
+                    EGL14.EGL_GREEN_SIZE, 8,
+                    EGL14.EGL_BLUE_SIZE, 8,
+                    EGL14.EGL_ALPHA_SIZE, 8,
+                    EGL14.EGL_NONE,
+                )
             val configs = arrayOfNulls<EGLConfig>(1)
             val count = IntArray(1)
             if (!EGL14.eglChooseConfig(display, attributes, 0, configs, 0, 1, count, 0)) return null
@@ -121,7 +126,10 @@ internal class EglOffscreen private constructor(
      *   without anti-aliasing, and MSAA is the cheap way to get it on a GPU;
      *   it is silently dropped when unsupported.
      */
-    fun prepare(size: Int, requestedSamples: Int = 4) {
+    fun prepare(
+        size: Int,
+        requestedSamples: Int = 4,
+    ) {
         if (size == width && size == height && requestedSamples == samples) return
         releaseFramebuffers()
 
@@ -212,9 +220,10 @@ internal class EglOffscreen private constructor(
      */
     fun readPixels(into: ByteBuffer? = null): ByteBuffer {
         resolve()
-        val buffer = into ?: ByteBuffer
-            .allocateDirect(width * height * 4)
-            .order(ByteOrder.nativeOrder())
+        val buffer =
+            into ?: ByteBuffer
+                .allocateDirect(width * height * 4)
+                .order(ByteOrder.nativeOrder())
         buffer.rewind()
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, framebuffer)
         GLES20.glReadPixels(

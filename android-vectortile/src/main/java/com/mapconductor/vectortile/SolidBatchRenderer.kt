@@ -1,10 +1,10 @@
 package com.mapconductor.vectortile
 
-import android.opengl.GLES20
 import java.io.Closeable
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer
+import android.opengl.GLES20
 
 /**
  * Draws batches of solid-coloured triangles in tile-local coordinates.
@@ -16,7 +16,6 @@ import java.nio.FloatBuffer
  * establish whether the GPU path is worth pursuing.
  */
 internal class SolidBatchRenderer : Closeable {
-
     private var program = 0
     private var positionAttribute = 0
     private var colorAttribute = 0
@@ -61,7 +60,10 @@ internal class SolidBatchRenderer : Closeable {
      * paint each feature differently and a single colour per draw call gets
      * those wrong.
      */
-    data class Batch(val vertexOffset: Int, val vertexCount: Int)
+    data class Batch(
+        val vertexOffset: Int,
+        val vertexCount: Int,
+    )
 
     fun initialise() {
         program = link(VERTEX_SHADER, FRAGMENT_SHADER)
@@ -76,10 +78,11 @@ internal class SolidBatchRenderer : Closeable {
 
     /** Uploads all geometry for a tile in one go. */
     fun upload(vertices: FloatArray) {
-        val buffer: FloatBuffer = ByteBuffer
-            .allocateDirect(vertices.size * 4)
-            .order(ByteOrder.nativeOrder())
-            .asFloatBuffer()
+        val buffer: FloatBuffer =
+            ByteBuffer
+                .allocateDirect(vertices.size * 4)
+                .order(ByteOrder.nativeOrder())
+                .asFloatBuffer()
         buffer.put(vertices).rewind()
 
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vertexBuffer)
@@ -88,12 +91,20 @@ internal class SolidBatchRenderer : Closeable {
         )
     }
 
-    fun clear(r: Float, g: Float, b: Float, a: Float) {
+    fun clear(
+        r: Float,
+        g: Float,
+        b: Float,
+        a: Float,
+    ) {
         GLES20.glClearColor(r, g, b, a)
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
     }
 
-    fun draw(batches: List<Batch>, extent: Float) {
+    fun draw(
+        batches: List<Batch>,
+        extent: Float,
+    ) {
         GLES20.glUseProgram(program)
         GLES20.glUniform1f(extentUniform, extent)
 
@@ -127,7 +138,10 @@ internal class SolidBatchRenderer : Closeable {
         GLES20.glDisableVertexAttribArray(colorAttribute)
     }
 
-    private fun link(vertexSource: String, fragmentSource: String): Int {
+    private fun link(
+        vertexSource: String,
+        fragmentSource: String,
+    ): Int {
         val vertex = compile(GLES20.GL_VERTEX_SHADER, vertexSource)
         val fragment = compile(GLES20.GL_FRAGMENT_SHADER, fragmentSource)
         val id = GLES20.glCreateProgram()
@@ -144,7 +158,10 @@ internal class SolidBatchRenderer : Closeable {
         return id
     }
 
-    private fun compile(type: Int, source: String): Int {
+    private fun compile(
+        type: Int,
+        source: String,
+    ): Int {
         val id = GLES20.glCreateShader(type)
         GLES20.glShaderSource(id, source)
         GLES20.glCompileShader(id)

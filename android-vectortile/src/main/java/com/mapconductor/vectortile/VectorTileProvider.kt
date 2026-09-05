@@ -1,15 +1,15 @@
 package com.mapconductor.vectortile
 
-import android.util.Log
-import android.util.LruCache
 import com.mapconductor.core.tileserver.TileProviderInterface
 import com.mapconductor.core.tileserver.TileRequest
+import org.json.JSONArray
 import java.io.Closeable
 import java.io.File
 import java.net.HttpURLConnection
 import java.net.URL
 import java.util.concurrent.Semaphore
-import org.json.JSONArray
+import android.util.Log
+import android.util.LruCache
 
 /**
  * Renders a MapLibre vector style to raster tiles, for map backends that cannot
@@ -33,13 +33,17 @@ class VectorTileProvider private constructor(
     styleJson: String,
     /** Null when rendering on the CPU. */
     private val gpu: GpuTileRasterizer?,
-) : TileProviderInterface, Closeable {
-
+) : TileProviderInterface,
+    Closeable {
     /** Where rasterisation actually happens, after any fallback. */
     val renderMode: RenderMode = if (gpu != null) RenderMode.GPU else RenderMode.CPU
 
-    private val gpuRenderCount = java.util.concurrent.atomic.AtomicLong()
-    private val gpuFallbackCount = java.util.concurrent.atomic.AtomicLong()
+    private val gpuRenderCount =
+        java.util.concurrent.atomic
+            .AtomicLong()
+    private val gpuFallbackCount =
+        java.util.concurrent.atomic
+            .AtomicLong()
 
     /**
      * Tiles actually drawn by the GPU, and tiles that fell back to the CPU.
@@ -71,7 +75,10 @@ class VectorTileProvider private constructor(
             // it is wrong here: a basemap tile is 150-300 KB, so a few hundred
             // entries is tens of megabytes, and the native allocator aborts the
             // host process when it runs out — `catch_unwind` cannot save it.
-            override fun sizeOf(key: String, value: ByteArray): Int = value.size
+            override fun sizeOf(
+                key: String,
+                value: ByteArray,
+            ): Int = value.size
         }
 
     /**
@@ -82,10 +89,11 @@ class VectorTileProvider private constructor(
      * at a time both exhausts memory and thrashes the CPU — measured render
      * times climbed from 235 ms to 1790 ms purely from contention.
      */
-    private val renderSlots = Semaphore(
-        maxOf(1, Runtime.getRuntime().availableProcessors() / 2),
-        true,
-    )
+    private val renderSlots =
+        Semaphore(
+            maxOf(1, Runtime.getRuntime().availableProcessors() / 2),
+            true,
+        )
 
     /** URLs known to hold nothing, so a missing tile is not re-requested. */
     private val empties = java.util.Collections.synchronizedSet(HashSet<String>())
@@ -142,16 +150,18 @@ class VectorTileProvider private constructor(
             fetchTile: ((String) -> ByteArray?)? = null,
         ): VectorTileProvider {
             val renderer = VectorTileRenderer.create(styleJson)
-            val gpu = when (renderMode) {
-                RenderMode.CPU -> null
-                // AUTO and GPU both probe; AUTO falls back silently, GPU says
-                // so, because asking for the GPU and quietly getting the CPU
-                // is how a performance regression hides.
-                RenderMode.AUTO -> GpuTileRasterizer.createOrNull(tileSize)
-                RenderMode.GPU -> GpuTileRasterizer.createOrNull(tileSize).also {
-                    if (it == null) Log.w(TAG, "GPU requested but unavailable; using the CPU")
+            val gpu =
+                when (renderMode) {
+                    RenderMode.CPU -> null
+                    // AUTO and GPU both probe; AUTO falls back silently, GPU says
+                    // so, because asking for the GPU and quietly getting the CPU
+                    // is how a performance regression hides.
+                    RenderMode.AUTO -> GpuTileRasterizer.createOrNull(tileSize)
+                    RenderMode.GPU ->
+                        GpuTileRasterizer.createOrNull(tileSize).also {
+                            if (it == null) Log.w(TAG, "GPU requested but unavailable; using the CPU")
+                        }
                 }
-            }
             return VectorTileProvider(
                 renderer = renderer,
                 tileSize = tileSize,
@@ -164,7 +174,10 @@ class VectorTileProvider private constructor(
             )
         }
 
-        private fun httpGet(url: String, headers: Map<String, String>): ByteArray? {
+        private fun httpGet(
+            url: String,
+            headers: Map<String, String>,
+        ): ByteArray? {
             val connection = URL(url).openConnection() as HttpURLConnection
             var reuse = false
             return try {
@@ -232,13 +245,14 @@ class VectorTileProvider private constructor(
     override fun renderTile(request: TileRequest): ByteArray? {
         if (closed) return null
 
-        val cacheKey = diskCache?.let {
-            TileDiskCache.digest(
-                styleKey,
-                "$tileSize",
-                "${request.z}/${request.x}/${request.y}",
-            )
-        }
+        val cacheKey =
+            diskCache?.let {
+                TileDiskCache.digest(
+                    styleKey,
+                    "$tileSize",
+                    "${request.z}/${request.x}/${request.y}",
+                )
+            }
         if (cacheKey != null) {
             val hit = diskCache.get(cacheKey)
             if (hit != null) {
@@ -266,41 +280,43 @@ class VectorTileProvider private constructor(
         if (closed) return null
 
         val renderStarted = System.nanoTime()
-        val png = if (gpu != null) {
-            // The GL thread serialises drawing already, so the CPU-side
-            // semaphore would only add queueing on top of it.
-            val drawn = try {
-                renderOnGpu(request, tiles)
-            } catch (error: Throwable) {
-                // Logged, not swallowed: a silent catch here is what made a
-                // GPU path that fell back on every single tile look healthy.
-                Log.w(TAG, "GPU render failed; falling back to the CPU", error)
-                null
-            }
-            if (drawn != null) gpuRenderCount.incrementAndGet() else gpuFallbackCount.incrementAndGet()
-            drawn
-                ?: run {
-                    // A GPU failure must not lose the tile; the CPU can always
-                    // draw it.
-                    renderSlots.acquire()
+        val png =
+            if (gpu != null) {
+                // The GL thread serialises drawing already, so the CPU-side
+                // semaphore would only add queueing on top of it.
+                val drawn =
                     try {
-                        runCatching {
-                            renderer.render(request.z, request.x, request.y, tileSize, tiles)
-                        }.getOrNull()
-                    } finally {
-                        renderSlots.release()
+                        renderOnGpu(request, tiles)
+                    } catch (error: Throwable) {
+                        // Logged, not swallowed: a silent catch here is what made a
+                        // GPU path that fell back on every single tile look healthy.
+                        Log.w(TAG, "GPU render failed; falling back to the CPU", error)
+                        null
                     }
+                if (drawn != null) gpuRenderCount.incrementAndGet() else gpuFallbackCount.incrementAndGet()
+                drawn
+                    ?: run {
+                        // A GPU failure must not lose the tile; the CPU can always
+                        // draw it.
+                        renderSlots.acquire()
+                        try {
+                            runCatching {
+                                renderer.render(request.z, request.x, request.y, tileSize, tiles)
+                            }.getOrNull()
+                        } finally {
+                            renderSlots.release()
+                        }
+                    }
+            } else {
+                renderSlots.acquire()
+                try {
+                    runCatching {
+                        renderer.render(request.z, request.x, request.y, tileSize, tiles)
+                    }.getOrNull()
+                } finally {
+                    renderSlots.release()
                 }
-        } else {
-            renderSlots.acquire()
-            try {
-                runCatching {
-                    renderer.render(request.z, request.x, request.y, tileSize, tiles)
-                }.getOrNull()
-            } finally {
-                renderSlots.release()
             }
-        }
         val renderMs = (System.nanoTime() - renderStarted) / 1_000_000
 
         if (Log.isLoggable(TAG, Log.DEBUG)) {
@@ -315,7 +331,10 @@ class VectorTileProvider private constructor(
         return png
     }
 
-    private fun renderOnGpu(request: TileRequest, tiles: List<ByteArray?>): ByteArray? {
+    private fun renderOnGpu(
+        request: TileRequest,
+        tiles: List<ByteArray?>,
+    ): ByteArray? {
         val rasterizer = gpu ?: return null
         val lengths = IntArray(tiles.size) { tiles[it]?.size ?: 0 }
         val data = ByteArray(lengths.sum())
@@ -325,9 +344,10 @@ class VectorTileProvider private constructor(
             tile.copyInto(data, offset)
             offset += tile.size
         }
-        val packed = renderer.tessellate(
-            request.z, request.x, request.y, tileSize, data, lengths,
-        )
+        val packed =
+            renderer.tessellate(
+                request.z, request.x, request.y, tileSize, data, lengths,
+            )
         return rasterizer.renderPng(TessellatedTile(packed))
     }
 

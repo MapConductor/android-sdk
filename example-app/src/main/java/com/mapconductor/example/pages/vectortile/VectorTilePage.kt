@@ -4,10 +4,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Slider
@@ -42,7 +42,10 @@ import kotlinx.coroutines.withContext
  * raster layer whose tiles were rendered on the device.
  */
 @Composable
-fun VectorTilePage(onToggleSidebar: () -> Unit = {}) {
+fun VectorTilePage(
+    modifier: Modifier = Modifier,
+    onToggleSidebar: () -> Unit = {},
+) {
     var styleJson by remember { mutableStateOf<String?>(null) }
     var failure by remember { mutableStateOf<String?>(null) }
     var diagnostics by remember { mutableStateOf<List<String>>(emptyList()) }
@@ -55,15 +58,16 @@ fun VectorTilePage(onToggleSidebar: () -> Unit = {}) {
 
     // Central Tokyo: the OSMF Shortbread service has street-level detail here,
     // so the layer is obviously doing something at the default zoom.
-    val initCameraPosition = remember {
-        MapCameraPosition(
-            position = GeoPoint.fromLatLong(latitude = 35.68049, longitude = 139.76669),
-            zoom = 12.0,
-            bearing = 0.0,
-            tilt = 0.0,
-            paddings = null,
-        )
-    }
+    val initCameraPosition =
+        remember {
+            MapCameraPosition(
+                position = GeoPoint.fromLatLong(latitude = 35.68049, longitude = 139.76669),
+                zoom = 12.0,
+                bearing = 0.0,
+                tilt = 0.0,
+                paddings = null,
+            )
+        }
 
     LaunchedEffect(Unit) {
         runCatching { withContext(Dispatchers.IO) { VectorTileStyleLoader.load() } }
@@ -76,23 +80,24 @@ fun VectorTilePage(onToggleSidebar: () -> Unit = {}) {
             menuItems = DefaultMapViewItems(initCameraPosition),
             onToggleSidebar = onToggleSidebar,
             onMapViewStateChanged = { mapViewState = it },
-        ) {
+        ) { paddings ->
             VectorTileMapComponent(
                 mapViewState = mapViewState,
                 styleJson = styleJson,
                 opacity = opacity,
                 tileSize = tileSize,
-                modifier = Modifier.fillMaxSize(),
+                modifier = modifier.fillMaxSize().padding(paddings),
                 onDiagnostics = { diagnostics = it },
             )
         }
 
         Column(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-                .background(Color(0xCCFFFFFF))
-                .padding(12.dp),
+            modifier =
+                Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .background(Color(0xCCFFFFFF))
+                    .padding(12.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

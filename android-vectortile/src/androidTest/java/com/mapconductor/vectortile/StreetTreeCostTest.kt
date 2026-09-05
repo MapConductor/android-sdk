@@ -1,10 +1,5 @@
 package com.mapconductor.vectortile
 
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.unit.Dp
@@ -19,10 +14,15 @@ import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.MarkerTileRenderer
 import com.mapconductor.core.tileserver.TileRequest
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
 import org.junit.Test
 import org.junit.runner.RunWith
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
 
 /**
  * Tokyo's street trees: 144,183 of them, 407 species, inside a box roughly
@@ -36,12 +36,13 @@ import org.junit.runner.RunWith
  */
 @RunWith(AndroidJUnit4::class)
 class StreetTreeCostTest {
-
     private val tileSize = 512
 
     /** A small coloured dot per species, of the size a tree marker would use. */
-    private class DotIcon(private val bitmap: Bitmap, private val sizePx: Float) :
-        MarkerIconInterface {
+    private class DotIcon(
+        private val bitmap: Bitmap,
+        private val sizePx: Float,
+    ) : MarkerIconInterface {
         override val scale: Float = 1.0f
         override val anchor: Offset = Offset(0.5f, 0.5f)
         override val iconSize: Dp = sizePx.dp
@@ -50,16 +51,20 @@ class StreetTreeCostTest {
 
         // A pre-baked bitmap, so nothing is rasterised per marker: the point of
         // the measurement is the drawing, not icon generation.
-        private val icon = BitmapIcon(
-            bitmap = bitmap,
-            size = Size(sizePx, sizePx),
-            anchor = anchor,
-        )
+        private val icon =
+            BitmapIcon(
+                bitmap = bitmap,
+                size = Size(sizePx, sizePx),
+                anchor = anchor,
+            )
 
         override fun toBitmapIcon(): BitmapIcon = icon
     }
 
-    private fun speciesIcons(count: Int, sizePx: Int): List<DotIcon> {
+    private fun speciesIcons(
+        count: Int,
+        sizePx: Int,
+    ): List<DotIcon> {
         val paint = Paint(Paint.ANTI_ALIAS_FLAG)
         return (0 until count).map { index ->
             // Golden-angle hue rotation, so neighbouring species indices do not
@@ -80,15 +85,23 @@ class StreetTreeCostTest {
         }
     }
 
-    private class Trees(val manager: MarkerManager<Unit>, val count: Int, val species: Int)
+    private class Trees(
+        val manager: MarkerManager<Unit>,
+        val count: Int,
+        val species: Int,
+    )
 
     private fun loadTrees(
         iconPx: Int,
         minMarkerCount: Int = 1,
         keepEvery: Int = 1,
     ): Trees {
-        val bytes = InstrumentationRegistry.getInstrumentation().context.assets
-            .open("tokyo-trees.bin").use { it.readBytes() }
+        val bytes =
+            InstrumentationRegistry
+                .getInstrumentation()
+                .context.assets
+                .open("tokyo-trees.bin")
+                .use { it.readBytes() }
         val buffer = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN)
 
         // The magic is checked, not skipped. Read past it and the header

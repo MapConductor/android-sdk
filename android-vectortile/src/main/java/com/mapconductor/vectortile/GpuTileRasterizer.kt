@@ -1,13 +1,13 @@
 package com.mapconductor.vectortile
 
 import com.mapconductor.core.tileserver.TilePngEncoder
-import android.util.Log
 import java.io.Closeable
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.util.concurrent.Callable
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.Executors
+import android.util.Log
 
 /**
  * Rasterises triangulated tiles on the GPU.
@@ -22,11 +22,13 @@ import java.util.concurrent.Executors
  * Creating the context is the expensive part (~15 ms), so it is created once
  * on first use and kept.
  */
-internal class GpuTileRasterizer(private val tileSize: Int) : Closeable {
-
-    private val thread = Executors.newSingleThreadExecutor { runnable ->
-        Thread(runnable, "vectortile-gl").apply { isDaemon = true }
-    }
+internal class GpuTileRasterizer(
+    private val tileSize: Int,
+) : Closeable {
+    private val thread =
+        Executors.newSingleThreadExecutor { runnable ->
+            Thread(runnable, "vectortile-gl").apply { isDaemon = true }
+        }
 
     private var egl: EglOffscreen? = null
     private var renderer: SolidBatchRenderer? = null
@@ -48,12 +50,13 @@ internal class GpuTileRasterizer(private val tileSize: Int) : Closeable {
          */
         fun createOrNull(tileSize: Int): GpuTileRasterizer? {
             val candidate = GpuTileRasterizer(tileSize)
-            val ready = try {
-                candidate.thread.submit(Callable { candidate.initialise() }).get()
-            } catch (error: Exception) {
-                Log.w(TAG, "no GL context available", error)
-                false
-            }
+            val ready =
+                try {
+                    candidate.thread.submit(Callable { candidate.initialise() }).get()
+                } catch (error: Exception) {
+                    Log.w(TAG, "no GL context available", error)
+                    false
+                }
             if (ready) return candidate
             candidate.close()
             return null
@@ -61,31 +64,37 @@ internal class GpuTileRasterizer(private val tileSize: Int) : Closeable {
     }
 
     /** Runs on the GL thread. */
-    private fun initialise(): Boolean = try {
-        val context = EglOffscreen.create()
-        context.prepare(tileSize)
-        val batch = SolidBatchRenderer()
-        batch.initialise()
-        egl = context
-        renderer = batch
-        pixels = ByteBuffer
-            .allocateDirect(tileSize * tileSize * 4)
-            .order(ByteOrder.nativeOrder())
-        true
-    } catch (error: Throwable) {
-        Log.w(TAG, "GL initialisation failed", error)
-        false
-    }
+    private fun initialise(): Boolean =
+        try {
+            val context = EglOffscreen.create()
+            context.prepare(tileSize)
+            val batch = SolidBatchRenderer()
+            batch.initialise()
+            egl = context
+            renderer = batch
+            pixels =
+                ByteBuffer
+                    .allocateDirect(tileSize * tileSize * 4)
+                    .order(ByteOrder.nativeOrder())
+            true
+        } catch (error: Throwable) {
+            Log.w(TAG, "GL initialisation failed", error)
+            false
+        }
 
     /** Describes the context in use, for diagnostics. */
-    fun describe(): String = try {
-        thread.submit(Callable {
-            val context = egl
-            if (context == null) "unavailable" else "ES${context.esVersion} MSAA x${context.activeSamples}"
-        }).get()
-    } catch (error: Exception) {
-        "unavailable"
-    }
+    fun describe(): String =
+        try {
+            thread
+                .submit(
+                    Callable {
+                        val context = egl
+                        if (context == null) "unavailable" else "ES${context.esVersion} MSAA x${context.activeSamples}"
+                    },
+                ).get()
+        } catch (error: Exception) {
+            "unavailable"
+        }
 
     /**
      * Draws [tile] and returns PNG bytes, or null if the GPU path failed.
@@ -133,12 +142,13 @@ internal class GpuTileRasterizer(private val tileSize: Int) : Closeable {
         if (closed) return
         closed = true
         try {
-            thread.submit {
-                renderer?.close()
-                egl?.close()
-                renderer = null
-                egl = null
-            }.get()
+            thread
+                .submit {
+                    renderer?.close()
+                    egl?.close()
+                    renderer = null
+                    egl = null
+                }.get()
         } catch (_: Exception) {
             // Already gone; nothing useful to do while tearing down.
         }

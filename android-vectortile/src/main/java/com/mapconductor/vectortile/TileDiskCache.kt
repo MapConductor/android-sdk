@@ -1,9 +1,9 @@
 package com.mapconductor.vectortile
 
-import android.util.Log
 import java.io.File
 import java.security.MessageDigest
 import java.util.concurrent.atomic.AtomicLong
+import android.util.Log
 
 /**
  * Stores rendered PNG tiles on disk, keyed by style and coordinates.
@@ -55,7 +55,10 @@ internal class TileDiskCache(
         }
     }
 
-    fun put(key: String, bytes: ByteArray) {
+    fun put(
+        key: String,
+        bytes: ByteArray,
+    ) {
         try {
             if (!directory.isDirectory && !directory.mkdirs()) return
             // Write-then-rename: two threads rendering the same tile must not

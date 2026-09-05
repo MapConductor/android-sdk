@@ -6,6 +6,8 @@ import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewStateInterface
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.MarkerTilingOptions
+import com.mapconductor.maplibre.MapLibreDesign
+import com.mapconductor.maplibre.MapLibreViewStateInterface
 import com.mapconductor.streettree.StreetTree
 import com.mapconductor.streettree.StreetTreeDataLoader
 import com.mapconductor.streettree.StreetTreeIcons
@@ -89,6 +91,28 @@ class StreetTreeViewModel(
 
     fun onMapViewChanged(mapViewState: MapViewStateInterface<*>) {
         _mapViewState.value = mapViewState
+        applyTreeStyle(mapViewState)
+    }
+
+    /**
+     * Swaps in a basemap stripped down to what a tree map needs: land, water,
+     * the major roads and the place names. The default style draws 51
+     * transportation line layers, and at this density they compete with the
+     * trees for every pixel — the map ends up being about the roads.
+     *
+     * Cast because the design type is provider-specific by construction: a
+     * MapLibre design carries a style URL, a Google one carries a map type id.
+     * The page runs on whatever backend is selected, so it only reaches for
+     * this when it is on MapLibre.
+     */
+    private fun applyTreeStyle(mapViewState: MapViewStateInterface<*>) {
+        @Suppress("UNCHECKED_CAST")
+        val state = mapViewState as? MapLibreViewStateInterface ?: return
+        state.mapDesignType =
+            MapLibreDesign(
+                id = "street-tree",
+                styleJsonURL = "asset://street-tree-style.json",
+            )
     }
 
     fun onMapLoaded(mapViewState: MapViewStateInterface<*>) {

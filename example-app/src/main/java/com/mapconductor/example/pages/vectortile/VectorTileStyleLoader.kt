@@ -1,8 +1,8 @@
 package com.mapconductor.example.pages.vectortile
 
+import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
-import org.json.JSONObject
 
 /**
  * Fetches a Shortbread-schema style and repoints it at the OSMF tile service.

@@ -13,8 +13,9 @@ import java.util.concurrent.atomic.AtomicLong
  *
  * Instances hold a native allocation; call [close] when done.
  */
-class VectorTileRenderer private constructor(handle: Long) : Closeable {
-
+class VectorTileRenderer private constructor(
+    handle: Long,
+) : Closeable {
     private val handle = AtomicLong(handle)
 
     companion object {
@@ -22,8 +23,7 @@ class VectorTileRenderer private constructor(handle: Long) : Closeable {
 
         /** @throws IllegalArgumentException if the style cannot be parsed. */
         @JvmStatic
-        fun create(styleJson: String): VectorTileRenderer =
-            VectorTileRenderer(NativeRenderer.nativeNew(styleJson))
+        fun create(styleJson: String): VectorTileRenderer = VectorTileRenderer(NativeRenderer.nativeNew(styleJson))
     }
 
     private fun requireHandle(): Long {
@@ -36,7 +36,11 @@ class VectorTileRenderer private constructor(handle: Long) : Closeable {
      * Source tiles needed to draw `z/x/y`, as JSON. Fetch them in order and
      * pass the bytes to [render] positionally.
      */
-    fun plan(z: Int, x: Int, y: Int): String = NativeRenderer.nativePlan(requireHandle(), z, x, y)
+    fun plan(
+        z: Int,
+        x: Int,
+        y: Int,
+    ): String = NativeRenderer.nativePlan(requireHandle(), z, x, y)
 
     /**
      * Rasterises `z/x/y` to PNG bytes.
@@ -83,12 +87,10 @@ class VectorTileRenderer private constructor(handle: Long) : Closeable {
         tileSize: Int,
         data: ByteArray,
         lengths: IntArray,
-    ): FloatArray =
-        NativeRenderer.nativeTessellate(requireHandle(), z, x, y, tileSize, data, lengths)
+    ): FloatArray = NativeRenderer.nativeTessellate(requireHandle(), z, x, y, tileSize, data, lengths)
 
     /** JSON array of layer `type` values in this style that will not be drawn. */
-    fun unsupportedLayerTypes(): String =
-        NativeRenderer.nativeUnsupportedLayerTypes(requireHandle())
+    fun unsupportedLayerTypes(): String = NativeRenderer.nativeUnsupportedLayerTypes(requireHandle())
 
     /**
      * Reasons the current style may not render as intended, as a JSON array of

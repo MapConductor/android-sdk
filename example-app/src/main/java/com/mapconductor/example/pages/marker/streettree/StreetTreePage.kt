@@ -14,8 +14,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mapconductor.example.ui.DefaultMapViewItems
 import com.mapconductor.example.ui.DemoMapPageScaffold
-import com.mapconductor.utils.LoadingDialog
 import com.mapconductor.streettree.StreetTreeDataLoader
+import com.mapconductor.utils.LoadingDialog
 
 /**
  * 144,183 street trees, one colour per species, drawn as raster tiles.
@@ -38,8 +38,7 @@ fun StreetTreePage(
             factory =
                 object : ViewModelProvider.Factory {
                     @Suppress("UNCHECKED_CAST")
-                    override fun <T : ViewModel> create(modelClass: Class<T>): T =
-                        StreetTreeViewModel(dataLoader) as T
+                    override fun <T : ViewModel> create(modelClass: Class<T>): T = StreetTreeViewModel(dataLoader) as T
                 },
         )
 

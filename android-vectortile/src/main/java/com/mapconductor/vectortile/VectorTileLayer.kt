@@ -7,13 +7,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import java.io.File
 import com.mapconductor.compose.MapViewScope
 import com.mapconductor.compose.raster.RasterLayer
 import com.mapconductor.core.raster.RasterLayerSource
 import com.mapconductor.core.raster.RasterLayerState
 import com.mapconductor.core.raster.TileScheme
 import com.mapconductor.core.tileserver.TileServerRegistry
+import java.io.File
 import java.util.UUID
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -104,43 +104,47 @@ fun MapViewScope.VectorTileLayer(
     }
 
     LaunchedEffect(groupId, styleJson, tileSize) {
-        val created = withContext(Dispatchers.Default) {
-            runCatching {
-                VectorTileProvider.create(
-                    styleJson = styleJson,
-                    tileSize = tileSize,
-                    headers = headers,
-                    diskCacheDir = diskCacheDir,
-                    renderMode = renderMode,
-                )
+        val created =
+            withContext(Dispatchers.Default) {
+                runCatching {
+                    VectorTileProvider.create(
+                        styleJson = styleJson,
+                        tileSize = tileSize,
+                        headers = headers,
+                        diskCacheDir = diskCacheDir,
+                        renderMode = renderMode,
+                    )
+                }
             }
-        }
-        created.onSuccess {
-            tileServer.register(groupId, it)
-            provider = it
-            onDiagnostics?.invoke(it.diagnostics())
-        }.onFailure {
-            failure = it.message
-            onDiagnostics?.invoke(listOf("style could not be loaded: ${it.message}"))
-        }
+        created
+            .onSuccess {
+                tileServer.register(groupId, it)
+                provider = it
+                onDiagnostics?.invoke(it.diagnostics())
+            }.onFailure {
+                failure = it.message
+                onDiagnostics?.invoke(listOf("style could not be loaded: ${it.message}"))
+            }
     }
 
     val current = provider ?: return
     if (failure != null) return
 
-    val state = remember(groupId, tileSize) {
-        RasterLayerState(
-            id = groupId,
-            source = RasterLayerSource.UrlTemplate(
-                template = tileServer.urlTemplate(groupId, tileSize),
-                tileSize = tileSize,
-                maxZoom = maxZoom,
-                scheme = TileScheme.XYZ,
-            ),
-            opacity = opacity.coerceIn(0.0f, 1.0f),
-            visible = visible,
-        )
-    }
+    val state =
+        remember(groupId, tileSize) {
+            RasterLayerState(
+                id = groupId,
+                source =
+                    RasterLayerSource.UrlTemplate(
+                        template = tileServer.urlTemplate(groupId, tileSize),
+                        tileSize = tileSize,
+                        maxZoom = maxZoom,
+                        scheme = TileScheme.XYZ,
+                    ),
+                opacity = opacity.coerceIn(0.0f, 1.0f),
+                visible = visible,
+            )
+        }
 
     LaunchedEffect(opacity, visible) {
         state.opacity = opacity.coerceIn(0.0f, 1.0f)

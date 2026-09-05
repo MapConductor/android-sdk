@@ -3,7 +3,6 @@ package com.mapconductor.vectortile
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.mapconductor.core.tileserver.TileRequest
-import java.io.File
 import org.junit.After
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
@@ -13,6 +12,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import java.io.File
 
 /**
  * The disk cache exists to survive process death: within a session the map SDK
@@ -22,7 +22,6 @@ import org.junit.runner.RunWith
  */
 @RunWith(AndroidJUnit4::class)
 class TileDiskCacheTest {
-
     private lateinit var directory: File
     private lateinit var styleJson: String
     private lateinit var tileBytes: ByteArray
@@ -41,12 +40,16 @@ class TileDiskCacheTest {
         directory.deleteRecursively()
     }
 
-    private fun provider(fetches: IntArray) = VectorTileProvider.create(
-        styleJson = styleJson,
-        tileSize = 256,
-        diskCacheDir = directory,
-        fetchTile = { fetches[0]++; tileBytes },
-    )
+    private fun provider(fetches: IntArray) =
+        VectorTileProvider.create(
+            styleJson = styleJson,
+            tileSize = 256,
+            diskCacheDir = directory,
+            fetchTile = {
+                fetches[0]++
+                tileBytes
+            },
+        )
 
     @Test
     fun aSecondProviderServesFromDiskWithoutFetchingOrRendering() {

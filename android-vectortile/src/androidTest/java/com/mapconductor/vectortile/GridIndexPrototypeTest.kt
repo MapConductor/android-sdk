@@ -2,11 +2,11 @@ package com.mapconductor.vectortile
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import org.junit.Test
+import org.junit.runner.RunWith
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.util.Arrays
-import org.junit.Test
-import org.junit.runner.RunWith
 
 /**
  * A flat grid index against the hex-cell-plus-kd-tree one the SDK ships.
@@ -22,17 +22,23 @@ import org.junit.runner.RunWith
  */
 @RunWith(AndroidJUnit4::class)
 class GridIndexPrototypeTest {
-
     /**
      * Positions only. What is being compared is the index, not the marker
      * objects around it — and 144k MarkerState objects are what makes the hex
      * index run out of memory in the first place.
      */
-    private class Positions(val lat: DoubleArray, val lon: DoubleArray)
+    private class Positions(
+        val lat: DoubleArray,
+        val lon: DoubleArray,
+    )
 
     private fun loadPositions(): Positions {
-        val bytes = InstrumentationRegistry.getInstrumentation().context.assets
-            .open("tokyo-trees.bin").use { it.readBytes() }
+        val bytes =
+            InstrumentationRegistry
+                .getInstrumentation()
+                .context.assets
+                .open("tokyo-trees.bin")
+                .use { it.readBytes() }
         val buffer = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN)
         val magic = ByteArray(5)
         buffer.get(magic)

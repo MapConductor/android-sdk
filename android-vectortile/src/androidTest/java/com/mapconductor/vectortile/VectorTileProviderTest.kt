@@ -1,12 +1,9 @@
 package com.mapconductor.vectortile
 
-import android.graphics.BitmapFactory
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.mapconductor.core.tileserver.TileRequest
 import com.mapconductor.core.tileserver.TileServerRegistry
-import java.net.HttpURLConnection
-import java.net.URL
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -14,6 +11,9 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import java.net.HttpURLConnection
+import java.net.URL
+import android.graphics.BitmapFactory
 
 /**
  * Exercises the path a map backend actually takes: provider ->
@@ -24,7 +24,6 @@ import org.junit.runner.RunWith
  */
 @RunWith(AndroidJUnit4::class)
 class VectorTileProviderTest {
-
     private lateinit var styleJson: String
     private lateinit var tileBytes: ByteArray
     private var provider: VectorTileProvider? = null
@@ -35,12 +34,13 @@ class VectorTileProviderTest {
         val assets = InstrumentationRegistry.getInstrumentation().context.assets
         styleJson = assets.open("demo-style.json").use { it.readBytes().decodeToString() }
         tileBytes = assets.open("tile-0-0-0.pbf").use { it.readBytes() }
-        provider = VectorTileProvider.create(
-            styleJson = styleJson,
-            tileSize = 512,
-            // Serve the bundled tile for whatever the plan asks for.
-            fetchTile = { tileBytes },
-        )
+        provider =
+            VectorTileProvider.create(
+                styleJson = styleJson,
+                tileSize = 512,
+                // Serve the bundled tile for whatever the plan asks for.
+                fetchTile = { tileBytes },
+            )
     }
 
     @After
@@ -57,18 +57,20 @@ class VectorTileProviderTest {
         val template = server.urlTemplate(routeId, 512)
         assertTrue("unexpected template: $template", template.contains("/tiles/$routeId/512/"))
 
-        val url = template
-            .replace("{z}", "0")
-            .replace("{x}", "0")
-            .replace("{y}", "0")
+        val url =
+            template
+                .replace("{z}", "0")
+                .replace("{x}", "0")
+                .replace("{y}", "0")
 
         val connection = URL(url).openConnection() as HttpURLConnection
-        val png = try {
-            assertEquals(200, connection.responseCode)
-            connection.inputStream.use { it.readBytes() }
-        } finally {
-            connection.disconnect()
-        }
+        val png =
+            try {
+                assertEquals(200, connection.responseCode)
+                connection.inputStream.use { it.readBytes() }
+            } finally {
+                connection.disconnect()
+            }
 
         assertTrue("expected a real PNG, got ${png.size} bytes", png.size > 10_000)
         val bitmap = BitmapFactory.decodeByteArray(png, 0, png.size)
@@ -94,18 +96,24 @@ class VectorTileProviderTest {
     @Test
     fun reportsStyleDiagnostics() {
         val messages = provider!!.diagnostics()
-        assertTrue("expected symbol to be reported, got $messages",
-            messages.any { it.contains("symbol") })
+        assertTrue(
+            "expected symbol to be reported, got $messages",
+            messages.any { it.contains("symbol") },
+        )
     }
 
     @Test
     fun restylingChangesOutputWithoutRefetching() {
         var fetches = 0
-        val subject = VectorTileProvider.create(
-            styleJson = styleJson,
-            tileSize = 256,
-            fetchTile = { fetches += 1; tileBytes },
-        )
+        val subject =
+            VectorTileProvider.create(
+                styleJson = styleJson,
+                tileSize = 256,
+                fetchTile = {
+                    fetches += 1
+                    tileBytes
+                },
+            )
         subject.use {
             val before = it.renderTile(TileRequest(x = 0, y = 0, z = 0))!!
             val afterFirstRender = fetches
