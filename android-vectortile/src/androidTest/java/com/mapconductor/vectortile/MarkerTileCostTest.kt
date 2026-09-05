@@ -449,4 +449,57 @@ class MarkerTileCostTest {
         )
         tile.recycle()
     }
+    /**
+     * Stacked duplicates render the same as one marker.
+     *
+     * The renderer drops markers that agree exactly on rectangle and icon, on
+     * the grounds that all but the last are invisible. This is that claim,
+     * stated as a test rather than as a comment.
+     */
+    @Test
+    fun stackedDuplicatesLookLikeOne() {
+        val z = 12
+        val tileX = 3638
+        val tileY = 1612
+        val worldTiles = 1 shl z
+
+        fun atFraction(fx: Double, fy: Double): GeoPoint {
+            val longitude = (tileX + fx) / worldTiles * 360.0 - 180.0
+            val n = Math.PI * (1.0 - 2.0 * (tileY + fy) / worldTiles)
+            return GeoPoint(Math.toDegrees(kotlin.math.atan(kotlin.math.sinh(n))), longitude)
+        }
+
+        fun tile(copies: Int): IntArray {
+            val manager = MarkerManager.defaultManager<Unit>(minMarkerCount = 1)
+            repeat(copies) {
+                manager.registerEntity(
+                    MarkerEntity(
+                        marker = null,
+                        // A fresh state each time: the same position, but not
+                        // the same object, so the manager keeps all of them.
+                        state = MarkerState(position = atFraction(0.5, 0.5)),
+                        visible = true,
+                        isRendered = true,
+                        tiling = true,
+                    ),
+                )
+            }
+            val bytes = checkNotNull(
+                renderer(manager).renderTile(TileRequest(x = tileX, y = tileY, z = z)),
+            )
+            val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+            val pixels = IntArray(bitmap.width * bitmap.height)
+            bitmap.getPixels(pixels, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height)
+            bitmap.recycle()
+            return pixels
+        }
+
+        val one = tile(1)
+        val many = tile(50)
+        org.junit.Assert.assertEquals(one.size, many.size)
+        var differing = 0
+        for (index in one.indices) if (one[index] != many[index]) differing++
+        org.junit.Assert.assertEquals("50 stacked copies differ in $differing pixels", 0, differing)
+    }
+
 }
