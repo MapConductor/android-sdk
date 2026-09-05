@@ -171,6 +171,96 @@ class StreetTreeCostTest {
         measure(trees, declutterPx = 14)
     }
 
+    /**
+     * Where a tile's milliseconds actually go: query, encode, and the rest.
+     *
+     * The sweep above gives one number a tile, which is enough to see a change
+     * and useless for deciding what to change. The first cut of this test
+     * measured `Bitmap.compress` and called it the encode cost — 140 ms a tile,
+     * a third of the total — when the renderer tries the Rust encoder first and
+     * only falls back to compress if the native library is missing. Both are
+     * measured here for that reason: the fallback's cost is worth knowing, but
+     * it is not what the renderer pays.
+     */
+    @Test
+    fun tileCostBreakdown() {
+        val trees = loadTrees(iconPx = 14)
+        val renderer =
+            MarkerTileRenderer(
+                markerManager = trees.manager,
+                tileSize = tileSize,
+                cacheSizeBytes = 8 * 1024 * 1024,
+                declutterPx = 14,
+            )
+        for ((z, x, y) in listOf(Triple(9, 454, 201), Triple(11, 1818, 806), Triple(12, 3637, 1612))) {
+            val n = 1 shl z
+
+            fun lon(px: Int) = px.toDouble() / n * 360.0 - 180.0
+
+            fun lat(px: Int): Double {
+                val t = Math.PI * (1 - 2.0 * px / n)
+                return Math.toDegrees(Math.atan(Math.sinh(t)))
+            }
+            val bounds =
+                com.mapconductor.core.features.GeoRectBounds(
+                    southWest =
+                        com.mapconductor.core.features.GeoPoint
+                            .fromLatLong(lat(y + 1), lon(x)),
+                    northEast =
+                        com.mapconductor.core.features.GeoPoint
+                            .fromLatLong(lat(y), lon(x + 1)),
+                )
+
+            var candidates = 0
+            val query =
+                (0 until 5)
+                    .map {
+                        val t0 = System.nanoTime()
+                        candidates = trees.manager.findMarkersInBounds(bounds).size
+                        (System.nanoTime() - t0) / 1_000_000.0
+                    }.sorted()[2]
+
+            val t1 = System.nanoTime()
+            val png = renderer.renderTile(TileRequest(x = x, y = y, z = z))!!
+            val total = (System.nanoTime() - t1) / 1_000_000.0
+
+            val decoded = BitmapFactory.decodeByteArray(png, 0, png.size)
+            val compress =
+                (0 until 3)
+                    .map {
+                        val t2 = System.nanoTime()
+                        java.io.ByteArrayOutputStream().use {
+                            decoded.compress(Bitmap.CompressFormat.PNG, 100, it)
+                        }
+                        (System.nanoTime() - t2) / 1_000_000.0
+                    }.sorted()[1]
+
+            // What the renderer actually pays: it tries Rust first and only
+            // falls back to compress if the native library is missing.
+            var rustBytes = 0
+            val rust =
+                (0 until 3)
+                    .map {
+                        val t3 = System.nanoTime()
+                        rustBytes = com.mapconductor.core.tileserver.TilePngEncoder
+                            .encode(decoded)
+                            ?.size ?: -1
+                        (System.nanoTime() - t3) / 1_000_000.0
+                    }.sorted()[1]
+
+            println(
+                (
+                    "BREAKDOWN z=%d tile=%dpx candidates=%d total=%.0fms query=%.1fms " +
+                        "rust=%.0fms(%dB) compress=%.0fms rest=%.0fms"
+                ).format(
+                    z, decoded.width, candidates, total, query, rust, rustBytes, compress,
+                    total - query - rust,
+                ),
+            )
+            decoded.recycle()
+        }
+    }
+
     /** Reports per-tile cost across zooms, with and without decluttering. */
     private fun measure(
         trees: Trees,
