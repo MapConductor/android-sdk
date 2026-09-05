@@ -123,6 +123,7 @@ androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime
 androidx-runtime = { group = "androidx.compose.runtime", name = "runtime", version.ref = "composeLibs" }
 material = { group = "com.google.android.material", name = "material", version.ref = "materialVersion" }
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
+kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines" }
 androidx-compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics", version.ref = "composeLibs" }
 androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "composeLibs" }
 androidx-compose-ui-unit = { group = "androidx.compose.ui", name = "ui-unit", version.ref = "composeLibs" }
