@@ -211,6 +211,12 @@ class StreetTreeCostTest {
                             .fromLatLong(lat(y), lon(x + 1)),
                 )
 
+            // What a full bounds query costs, for reference. It is not
+            // necessarily what the renderer pays: when decluttering is on and
+            // the index's cells are fine enough, the renderer asks for one
+            // marker per cell instead and never reads the rest. Subtracting
+            // this from the total used to give a "rest" column, which went
+            // negative the moment that became true.
             var candidates = 0
             val query =
                 (0 until 5)
@@ -219,6 +225,18 @@ class StreetTreeCostTest {
                         candidates = trees.manager.findMarkersInBounds(bounds).size
                         (System.nanoTime() - t0) / 1_000_000.0
                     }.sorted()[2]
+
+            // A neighbouring tile first, untimed and never measured.
+            //
+            // The renderer learns the largest icon extent it has had to draw
+            // and widens its query padding to match, so the first tile any
+            // renderer produces runs query and prepare twice. Sharing one
+            // renderer across the zooms hid that: whichever tile went first
+            // paid for the rest, and a change that altered which markers the
+            // first tile saw moved a 500 ms retry onto a later zoom and read
+            // as a regression there. Warming on a neighbour costs one tile and
+            // makes each zoom's number its own.
+            renderer.renderTile(TileRequest(x = x + 1, y = y, z = z))
 
             val t1 = System.nanoTime()
             val png = renderer.renderTile(TileRequest(x = x, y = y, z = z))!!
@@ -250,11 +268,10 @@ class StreetTreeCostTest {
 
             println(
                 (
-                    "BREAKDOWN z=%d tile=%dpx candidates=%d total=%.0fms query=%.1fms " +
-                        "rust=%.0fms(%dB) compress=%.0fms rest=%.0fms"
+                    "BREAKDOWN z=%d tile=%dpx candidates=%d total=%.0fms scanQuery=%.1fms " +
+                        "rust=%.0fms(%dB) compress=%.0fms"
                 ).format(
                     z, decoded.width, candidates, total, query, rust, rustBytes, compress,
-                    total - query - rust,
                 ),
             )
             decoded.recycle()
