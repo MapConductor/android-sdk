@@ -33,7 +33,7 @@ class VectorTileRenderer private constructor(
          * 1: fills, lines, circles.
          * 2: labels.
          */
-        const val OUTPUT_VERSION: Int = 5
+        const val OUTPUT_VERSION: Int = 6
 
         /** @throws IllegalArgumentException if the style cannot be parsed. */
         @JvmStatic

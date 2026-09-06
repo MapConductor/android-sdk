@@ -122,6 +122,17 @@ class VectorTileProvider private constructor(
         java.util.concurrent.atomic
             .AtomicBoolean(false)
 
+    /**
+     * Fetches source tiles, several at a time.
+     *
+     * Sized for one tile's plan: the tile itself and the eight neighbours it
+     * needs for labels that cross an edge.
+     */
+    private val sourceFetchers =
+        java.util.concurrent.Executors.newFixedThreadPool(9) { runnable ->
+            Thread(runnable, "mc-tiles").apply { isDaemon = true }
+        }
+
     /** Glyph fetches queued or running, so the notify can wait for quiet. */
     private val glyphsInFlight =
         java.util.concurrent.atomic
@@ -289,8 +300,15 @@ class VectorTileProvider private constructor(
         private const val TAG = "VectorTileProvider"
         const val DEFAULT_TILE_SIZE: Int = 512
 
-        /** Source tile cache budget, in bytes. */
-        const val DEFAULT_CACHE_BYTES: Int = 16 * 1024 * 1024
+        /**
+         * Source tile cache budget, in bytes.
+         *
+         * Raised when tiles started fetching their neighbours: the working set
+         * for a screen went from the tiles on it to those plus the ring around
+         * them, and at low zoom a tile is most of a megabyte. Too small a
+         * cache here does not lose the picture, it re-fetches it.
+         */
+        const val DEFAULT_CACHE_BYTES: Int = 48 * 1024 * 1024
 
         /** Rendered tile disk cache budget, in bytes. */
         const val DEFAULT_DISK_CACHE_BYTES: Long = 64L * 1024 * 1024
@@ -491,12 +509,23 @@ class VectorTileProvider private constructor(
         // Fetch and rasterise are timed separately: when a tile is slow, the
         // answer is almost always one or the other, and guessing wastes time.
         val fetchStarted = System.nanoTime()
-        for (i in 0 until plan.length()) {
-            // Between source tiles as well as before them: a plan can name
-            // several, each its own round trip, and the map can give up
-            // partway through.
-            if (isCancelled()) return null
-            tiles.add(sourceTile(plan.getJSONObject(i).getString("url")))
+        // In parallel, because a plan is no longer one tile: the renderer also
+        // asks for the ring of neighbours so a label at the edge can be drawn
+        // whole, and nine round trips one after another is a second of waiting
+        // for what takes a fraction of it at once. Most are cache hits in
+        // steady use -- every tile is its neighbours' neighbour.
+        val urls =
+            (0 until plan.length()).map { plan.getJSONObject(it).getString("url") }
+        val pending =
+            urls.map { url ->
+                sourceFetchers.submit<ByteArray?> { if (closed) null else sourceTile(url) }
+            }
+        for (future in pending) {
+            if (isCancelled()) {
+                pending.forEach { it.cancel(false) }
+                return null
+            }
+            tiles.add(runCatching { future.get() }.getOrNull())
         }
         val fetchMs = (System.nanoTime() - fetchStarted) / 1_000_000
         if (closed) return null
@@ -777,6 +806,7 @@ class VectorTileProvider private constructor(
     /** Releases the native renderer. Safe to call more than once. */
     override fun close() {
         glyphFetchers.shutdownNow()
+        sourceFetchers.shutdownNow()
         if (closed) return
         closed = true
         cache.evictAll()
