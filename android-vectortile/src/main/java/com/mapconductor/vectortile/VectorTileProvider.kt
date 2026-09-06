@@ -62,6 +62,12 @@ class VectorTileProvider private constructor(
     @Volatile
     private var styleKey: String = TileDiskCache.digest(styleJson)
 
+    /** Glyph URLs already asked for, so concurrent tiles fetch each once. */
+    private val requestedGlyphs = java.util.Collections.synchronizedSet(HashSet<String>())
+
+    /** True when the style names no glyph source, so labels can never draw. */
+    private val glyphsUnavailable: Boolean = renderer.glyphsUrlTemplate() == null
+
     /**
      * Source tiles keyed by URL.
      *
@@ -250,6 +256,10 @@ class VectorTileProvider private constructor(
                 TileDiskCache.digest(
                     styleKey,
                     "$tileSize",
+                    // The renderer's own generation: a build that draws more
+                    // than the one that filled this cache must not serve its
+                    // tiles.
+                    "v${VectorTileRenderer.OUTPUT_VERSION}",
                     "${request.z}/${request.x}/${request.y}",
                 )
             }
@@ -278,6 +288,8 @@ class VectorTileProvider private constructor(
         }
         val fetchMs = (System.nanoTime() - fetchStarted) / 1_000_000
         if (closed) return null
+
+        fetchGlyphs(request, tiles)
 
         val renderStarted = System.nanoTime()
         val png =
@@ -331,6 +343,56 @@ class VectorTileProvider private constructor(
         return png
     }
 
+    /**
+     * Fetches the glyph ranges this tile's labels need, once each.
+     *
+     * A second round trip after the source tiles, because which ranges a tile
+     * needs depends on the text in it: asking up front means every range a
+     * font could have — 82 files for CJK, of which a tile of Tokyo uses four.
+     *
+     * Ranges are shared by every later tile, so this stops costing anything
+     * after the first few. Failures are dropped rather than raised: a missing
+     * range loses those characters from a label, and losing the whole tile
+     * over it would be worse.
+     */
+    private fun fetchGlyphs(
+        request: TileRequest,
+        tiles: List<ByteArray?>,
+    ) {
+        if (glyphsUnavailable) return
+        val needed =
+            runCatching { renderer.neededGlyphs(request.z, request.x, request.y, tiles) }
+                .getOrElse { emptyList() }
+        if (needed.isEmpty()) return
+
+        val started = System.nanoTime()
+        var added = 0
+        for (url in needed) {
+            if (closed) return
+            // Two tiles wanting the same range at once would otherwise both
+            // fetch it; the set is what makes it once.
+            if (!requestedGlyphs.add(url)) continue
+            val bytes = runCatching { fetchTile(url) }.getOrNull()
+            if (bytes == null || bytes.isEmpty()) {
+                // Leave it in the set: a range the server does not have will
+                // not appear on a retry either.
+                Log.w(TAG, "glyph range unavailable: $url")
+                continue
+            }
+            added += runCatching { renderer.addGlyphs(bytes) }.getOrElse {
+                Log.w(TAG, "glyph range would not parse: $url", it)
+                0
+            }
+        }
+        if (added > 0 && Log.isLoggable(TAG, Log.DEBUG)) {
+            Log.d(
+                TAG,
+                "glyphs +$added from ${needed.size} range(s) in " +
+                    "${(System.nanoTime() - started) / 1_000_000}ms",
+            )
+        }
+    }
+
     private fun renderOnGpu(
         request: TileRequest,
         tiles: List<ByteArray?>,
@@ -348,7 +410,21 @@ class VectorTileProvider private constructor(
             renderer.tessellate(
                 request.z, request.x, request.y, tileSize, data, lengths,
             )
-        return rasterizer.renderPng(TessellatedTile(packed))
+        // The tessellator produces fills and lines; labels come from a
+        // distance field per glyph and are drawn over the readback. Without
+        // this the GPU path lost every label a style asked for and said
+        // nothing about it.
+        val decorate: ((ByteArray) -> Unit)? =
+            if (glyphsUnavailable) {
+                null
+            } else {
+                { rgba ->
+                    runCatching {
+                        renderer.drawLabels(request.z, request.x, request.y, tileSize, rgba, tiles)
+                    }.onFailure { Log.w(TAG, "label pass failed on the GPU readback", it) }
+                }
+            }
+        return rasterizer.renderPng(TessellatedTile(packed), decorate)
     }
 
     private fun sourceTile(url: String): ByteArray? {

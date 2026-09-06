@@ -44,6 +44,46 @@ internal object NativeRenderer {
         lengths: IntArray,
     ): ByteArray
 
+    /** The style's `glyphs` URL template, or empty when it has none. */
+    external fun nativeGlyphsUrlTemplate(handle: Long): String
+
+    /**
+     * JSON array of glyph URLs this tile's labels need and the renderer does
+     * not have.
+     *
+     * Answered from the tile rather than the style: ranges follow the text, and
+     * a CJK font has 82 of them where a tile of Tokyo uses four.
+     */
+    external fun nativeNeededGlyphs(
+        handle: Long,
+        z: Int,
+        x: Int,
+        y: Int,
+        data: ByteArray,
+        lengths: IntArray,
+    ): String
+
+    /** Hands over one fetched range; returns how many glyphs it added. */
+    external fun nativeAddGlyphs(
+        handle: Long,
+        pbf: ByteArray,
+    ): Int
+
+    /**
+     * Draws this tile's labels onto an RGBA buffer, in place. Returns how many
+     * were placed.
+     */
+    external fun nativeDrawLabels(
+        handle: Long,
+        z: Int,
+        x: Int,
+        y: Int,
+        tileSize: Int,
+        rgba: ByteArray,
+        data: ByteArray,
+        lengths: IntArray,
+    ): Int
+
     /** JSON array of layer `type` values the renderer will not draw. */
     external fun nativeUnsupportedLayerTypes(handle: Long): String
 

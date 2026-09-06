@@ -102,10 +102,18 @@ internal class GpuTileRasterizer(
      * Encoding happens in Rust against the readback buffer directly: the
      * platform encoder costs more than the entire rest of the GPU path.
      */
-    fun renderPng(tile: TessellatedTile): ByteArray? {
+    /**
+     * @param decorate given the readback in RGBA, before it is encoded. Used
+     *   to draw labels, which the tessellator does not produce — the GL thread
+     *   owns the buffer, so anything touching it has to run here.
+     */
+    fun renderPng(
+        tile: TessellatedTile,
+        decorate: ((ByteArray) -> Unit)? = null,
+    ): ByteArray? {
         if (closed) return null
         return try {
-            thread.submit(Callable { drawOnGlThread(tile) }).get()
+            thread.submit(Callable { drawOnGlThread(tile, decorate) }).get()
         } catch (error: ExecutionException) {
             Log.w(TAG, "GPU render failed", error.cause ?: error)
             null
@@ -116,7 +124,10 @@ internal class GpuTileRasterizer(
     }
 
     /** Runs on the GL thread. */
-    private fun drawOnGlThread(tile: TessellatedTile): ByteArray? {
+    private fun drawOnGlThread(
+        tile: TessellatedTile,
+        decorate: ((ByteArray) -> Unit)?,
+    ): ByteArray? {
         val context = egl ?: return null
         val batch = renderer ?: return null
         val buffer = pixels ?: return null
@@ -132,6 +143,17 @@ internal class GpuTileRasterizer(
         batch.draw(tile.batches, tile.extent)
         context.readPixels(buffer)
         buffer.rewind()
+        if (decorate != null) {
+            // A copy out and back: the native side takes a byte[], and the
+            // direct buffer this reads into is not one. Only paid when the
+            // style has something to draw over the readback.
+            val pixels = ByteArray(buffer.remaining())
+            buffer.get(pixels)
+            buffer.rewind()
+            decorate(pixels)
+            buffer.put(pixels)
+            buffer.rewind()
+        }
         // The core's encoder, not this module's: one copy of it per app.
         // glReadPixels leaves straight alpha here — the blend keeps destination
         // alpha saturated — so there is nothing to un-premultiply.
