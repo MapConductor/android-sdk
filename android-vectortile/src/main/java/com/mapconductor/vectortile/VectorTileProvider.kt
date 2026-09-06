@@ -38,6 +38,14 @@ class VectorTileProvider private constructor(
     /** Where rasterisation actually happens, after any fallback. */
     val renderMode: RenderMode = if (gpu != null) RenderMode.GPU else RenderMode.CPU
 
+    /**
+     * Called when glyphs have arrived and the tiles drawn before them are
+     * missing labels. The layer refetches; nothing here can make the map do
+     * that on its own.
+     */
+    @Volatile
+    var onGlyphsLoaded: (() -> Unit)? = null
+
     private val gpuRenderCount =
         java.util.concurrent.atomic
             .AtomicLong()
@@ -62,8 +70,39 @@ class VectorTileProvider private constructor(
     @Volatile
     private var styleKey: String = TileDiskCache.digest(styleJson)
 
-    /** Glyph URLs already asked for, so concurrent tiles fetch each once. */
+    /** Glyph URLs already claimed, so concurrent tiles fetch each once. */
     private val requestedGlyphs = java.util.Collections.synchronizedSet(HashSet<String>())
+
+    /** Bumped when glyphs arrive, so tiles drawn before them stop being served. */
+    private val glyphGeneration =
+        java.util.concurrent.atomic
+            .AtomicInteger()
+
+    /** Set while a notification is already scheduled, so a burst sends one. */
+    private val glyphNotifyPending =
+        java.util.concurrent.atomic
+            .AtomicBoolean(false)
+
+    /**
+     * How long to let a burst of ranges settle before telling the layer.
+     *
+     * A viewport's worth arrives within a second or two of each other, and
+     * notifying per range would redraw every visible tile dozens of times to
+     * reach the same picture.
+     */
+    private val glyphNotifyQuietMs = 400L
+
+    /**
+     * Fetches glyph ranges off the tile threads.
+     *
+     * One range is a round trip of 0.4 to 1.3 seconds and a tile at low zoom
+     * wants dozens, so nothing waits on them: six at a time, and the tiles
+     * that were drawn without them are handed over when they land.
+     */
+    private val glyphFetchers =
+        java.util.concurrent.Executors.newFixedThreadPool(6) { runnable ->
+            Thread(runnable, "mc-glyphs").apply { isDaemon = true }
+        }
 
     /** True when the style names no glyph source, so labels can never draw. */
     private val glyphsUnavailable: Boolean = renderer.glyphsUrlTemplate() == null
@@ -260,6 +299,9 @@ class VectorTileProvider private constructor(
                     // than the one that filled this cache must not serve its
                     // tiles.
                     "v${VectorTileRenderer.OUTPUT_VERSION}",
+                    // Glyphs that arrived since a tile was drawn change what
+                    // it should look like.
+                    "g${glyphGeneration.get()}",
                     "${request.z}/${request.x}/${request.y}",
                 )
             }
@@ -289,7 +331,7 @@ class VectorTileProvider private constructor(
         val fetchMs = (System.nanoTime() - fetchStarted) / 1_000_000
         if (closed) return null
 
-        fetchGlyphs(request, tiles)
+        requestGlyphs(request, tiles)
 
         val renderStarted = System.nanoTime()
         val png =
@@ -344,52 +386,77 @@ class VectorTileProvider private constructor(
     }
 
     /**
-     * Fetches the glyph ranges this tile's labels need, once each.
+     * Starts fetching the glyph ranges this tile's labels need, and returns.
      *
-     * A second round trip after the source tiles, because which ranges a tile
-     * needs depends on the text in it: asking up front means every range a
-     * font could have — 82 files for CJK, of which a tile of Tokyo uses four.
-     *
-     * Ranges are shared by every later tile, so this stops costing anything
-     * after the first few. Failures are dropped rather than raised: a missing
-     * range loses those characters from a label, and losing the whole tile
-     * over it would be worse.
+     * Waiting was the obvious thing and the wrong one: a range is a 0.4 to 1.3
+     * second round trip, a tile at low zoom wants dozens, and the tile drew
+     * nothing until the last one landed — 13 seconds for 69 ranges, which is
+     * what "it stops when you zoom out" was. The tile is drawn with whatever
+     * glyphs are already in, exactly as MapLibre does it, and the ones that
+     * arrive later bring the labels with them through [onGlyphsLoaded].
      */
-    private fun fetchGlyphs(
+    private fun requestGlyphs(
         request: TileRequest,
         tiles: List<ByteArray?>,
     ) {
-        if (glyphsUnavailable) return
+        if (glyphsUnavailable || closed) return
         val needed =
             runCatching { renderer.neededGlyphs(request.z, request.x, request.y, tiles) }
                 .getOrElse { emptyList() }
         if (needed.isEmpty()) return
 
-        val started = System.nanoTime()
-        var added = 0
-        for (url in needed) {
-            if (closed) return
-            // Two tiles wanting the same range at once would otherwise both
-            // fetch it; the set is what makes it once.
-            if (!requestedGlyphs.add(url)) continue
-            val bytes = runCatching { fetchTile(url) }.getOrNull()
-            if (bytes == null || bytes.isEmpty()) {
-                // Leave it in the set: a range the server does not have will
-                // not appear on a retry either.
-                Log.w(TAG, "glyph range unavailable: $url")
-                continue
-            }
-            added += runCatching { renderer.addGlyphs(bytes) }.getOrElse {
-                Log.w(TAG, "glyph range would not parse: $url", it)
-                0
+        // Only the ranges nobody has claimed yet. Two tiles wanting the same
+        // range at once would otherwise both fetch it.
+        val mine = needed.filter { requestedGlyphs.add(it) }
+        if (mine.isEmpty()) return
+
+        for (url in mine) {
+            runCatching {
+                glyphFetchers.execute {
+                    if (closed) return@execute
+                    val bytes = runCatching { fetchTile(url) }.getOrNull()
+                    if (bytes == null || bytes.isEmpty()) {
+                        // Left in the claimed set: a range the server does not
+                        // have will not appear on a retry.
+                        Log.w(TAG, "glyph range unavailable: $url")
+                        return@execute
+                    }
+                    val added =
+                        runCatching { renderer.addGlyphs(bytes) }.getOrElse {
+                            Log.w(TAG, "glyph range would not parse: $url", it)
+                            0
+                        }
+                    if (added > 0) onGlyphsArrived()
+                }
             }
         }
-        if (added > 0 && Log.isLoggable(TAG, Log.DEBUG)) {
-            Log.d(
-                TAG,
-                "glyphs +$added from ${needed.size} range(s) in " +
-                    "${(System.nanoTime() - started) / 1_000_000}ms",
-            )
+    }
+
+    /**
+     * Tells the layer that tiles drawn before now are missing labels.
+     *
+     * Coalesced: a viewport's worth of ranges lands in a burst, and asking the
+     * map to refetch on each one would redraw everything dozens of times for
+     * the same result. The generation is what makes the already-rendered tiles
+     * stale — without it the caches would keep serving the unlabelled ones.
+     */
+    private fun onGlyphsArrived() {
+        glyphGeneration.incrementAndGet()
+        if (!glyphNotifyPending.compareAndSet(false, true)) return
+        glyphFetchers.execute {
+            try {
+                Thread.sleep(glyphNotifyQuietMs)
+            } catch (_: InterruptedException) {
+                return@execute
+            }
+            glyphNotifyPending.set(false)
+            if (closed) return@execute
+            cache.evictAll()
+            if (Log.isLoggable(TAG, Log.DEBUG)) {
+                Log.d(TAG, "glyph generation -> ${glyphGeneration.get()}; tiles hand over")
+            }
+            runCatching { onGlyphsLoaded?.invoke() }
+                .onFailure { Log.w(TAG, "glyph notification failed", it) }
         }
     }
 
@@ -442,6 +509,7 @@ class VectorTileProvider private constructor(
 
     /** Releases the native renderer. Safe to call more than once. */
     override fun close() {
+        glyphFetchers.shutdownNow()
         if (closed) return
         closed = true
         cache.evictAll()

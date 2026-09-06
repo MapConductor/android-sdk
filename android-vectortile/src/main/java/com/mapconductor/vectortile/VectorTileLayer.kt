@@ -4,6 +4,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -93,6 +95,9 @@ fun MapViewScope.VectorTileLayer(
     // Parsing a real basemap style is not free, so it happens once and off the
     // main thread; the layer simply does not mount until it is ready.
     var provider by remember { mutableStateOf<VectorTileProvider?>(null) }
+    // Bumped when glyphs land. The map only refetches a raster source whose
+    // URL changed, so the generation has to reach the template.
+    var glyphGeneration by remember { mutableIntStateOf(0) }
     var failure by remember { mutableStateOf<String?>(null) }
 
     DisposableEffect(groupId, tileSize) {
@@ -118,6 +123,10 @@ fun MapViewScope.VectorTileLayer(
             }
         created
             .onSuccess {
+                // Glyphs arrive after the tiles that need them: a range is a
+                // round trip and a tile at low zoom wants dozens, so tiles are
+                // drawn with whatever is loaded and refetched once more is.
+                it.onGlyphsLoaded = { glyphGeneration++ }
                 tileServer.register(groupId, it)
                 provider = it
                 onDiagnostics?.invoke(it.diagnostics())
@@ -130,30 +139,79 @@ fun MapViewScope.VectorTileLayer(
     val current = provider ?: return
     if (failure != null) return
 
-    val state =
+    /**
+     * The raster layers currently mounted: normally one, briefly two.
+     *
+     * Changing a raster layer's source URL is implemented as remove-then-add,
+     * so the layer vanishes for as long as the new source takes to fetch its
+     * first tiles — the flash after labels arrived. Adding the replacement
+     * alongside and dropping the old one a moment later hands over instead:
+     * the new tiles are opaque, so they cover the old ones as they land, and
+     * there is never a frame with nothing on it.
+     */
+    val mounted =
         remember(groupId, tileSize) {
-            RasterLayerState(
-                id = groupId,
-                source =
-                    RasterLayerSource.UrlTemplate(
-                        template = tileServer.urlTemplate(groupId, tileSize),
-                        tileSize = tileSize,
-                        maxZoom = maxZoom,
-                        scheme = TileScheme.XYZ,
-                    ),
-                opacity = opacity.coerceIn(0.0f, 1.0f),
-                visible = visible,
+            mutableStateListOf(
+                RasterLayerState(
+                    id = "$groupId-g0",
+                    source =
+                        RasterLayerSource.UrlTemplate(
+                            template = tileServer.urlTemplate(groupId, tileSize, "g0"),
+                            tileSize = tileSize,
+                            maxZoom = maxZoom,
+                            scheme = TileScheme.XYZ,
+                        ),
+                    opacity = opacity.coerceIn(0.0f, 1.0f),
+                    visible = visible,
+                ),
             )
         }
 
+    fun layerStateFor(generation: Int) =
+        RasterLayerState(
+            id = "$groupId-g$generation",
+            source =
+                RasterLayerSource.UrlTemplate(
+                    template = tileServer.urlTemplate(groupId, tileSize, "g$generation"),
+                    tileSize = tileSize,
+                    maxZoom = maxZoom,
+                    scheme = TileScheme.XYZ,
+                ),
+            opacity = opacity.coerceIn(0.0f, 1.0f),
+            visible = visible,
+        )
+
+    LaunchedEffect(glyphGeneration) {
+        if (glyphGeneration == 0) return@LaunchedEffect
+        mounted.add(layerStateFor(glyphGeneration))
+        // Long enough for the replacement's tiles to arrive. There is no
+        // per-source "loaded" signal to wait on, and holding the old layer a
+        // little too long only costs one extra layer for that moment.
+        kotlinx.coroutines.delay(HANDOVER_MS)
+        while (mounted.size > 1) {
+            mounted.removeAt(0)
+        }
+    }
+
     LaunchedEffect(opacity, visible) {
-        state.opacity = opacity.coerceIn(0.0f, 1.0f)
-        state.visible = visible
+        mounted.forEach {
+            it.opacity = opacity.coerceIn(0.0f, 1.0f)
+            it.visible = visible
+        }
     }
 
     // Referencing `current` keeps the provider alive for as long as the layer is
     // mounted, and makes the dependency explicit rather than incidental.
     LaunchedEffect(current) { }
 
-    RasterLayer(state = state)
+    mounted.forEach { RasterLayer(state = it) }
 }
+
+/**
+ * How long the layer being replaced stays up.
+ *
+ * No signal says a raster source has drawn its first tiles, so this is a
+ * window rather than a wait. Too short brings the flash back; too long leaves
+ * two layers stacked, which costs a moment of overdraw and nothing else.
+ */
+private const val HANDOVER_MS = 900L

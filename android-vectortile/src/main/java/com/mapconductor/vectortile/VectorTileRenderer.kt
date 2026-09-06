@@ -1,7 +1,7 @@
 package com.mapconductor.vectortile
 
-import java.io.Closeable
 import org.json.JSONArray
+import java.io.Closeable
 import java.util.concurrent.atomic.AtomicLong
 
 /**
@@ -56,12 +56,6 @@ class VectorTileRenderer private constructor(
         y: Int,
     ): String = NativeRenderer.nativePlan(requireHandle(), z, x, y)
 
-    /**
-     * Rasterises `z/x/y` to PNG bytes.
-     *
-     * @param tiles one entry per [plan] request, in the same order; null where
-     *   the fetch 404'd or came back empty.
-     */
     /** The style's `glyphs` URL template, or null when it has none. */
     fun glyphsUrlTemplate(): String? =
         NativeRenderer.nativeGlyphsUrlTemplate(requireHandle()).takeIf { it.isNotEmpty() }
@@ -112,6 +106,12 @@ class VectorTileRenderer private constructor(
         return NativeRenderer.nativeDrawLabels(requireHandle(), z, x, y, tileSize, rgba, data, lengths)
     }
 
+    /**
+     * Rasterises `z/x/y` to PNG bytes.
+     *
+     * @param tiles one entry per [plan] request, in the same order; null where
+     *   the fetch 404'd or came back empty.
+     */
     fun render(
         z: Int,
         x: Int,

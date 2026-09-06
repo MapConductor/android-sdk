@@ -101,8 +101,7 @@ internal class GpuTileRasterizer(
      *
      * Encoding happens in Rust against the readback buffer directly: the
      * platform encoder costs more than the entire rest of the GPU path.
-     */
-    /**
+     *
      * @param decorate given the readback in RGBA, before it is encoded. Used
      *   to draw labels, which the tessellator does not produce — the GL thread
      *   owns the buffer, so anything touching it has to run here.
