@@ -107,6 +107,19 @@ class VectorTileProvider private constructor(
      */
     private val glyphNotifyMaxWaitMs = 10_000L
 
+    /**
+     * Whether any tile has been drawn short of glyphs since the last handover.
+     *
+     * Panning turns up new labels, which fetch new ranges, which used to hand
+     * the whole viewport over again -- the generation reached 81 in half a
+     * minute of use, and each handover refetched and redrew everything on
+     * screen at roughly 0.6 to 0.9 seconds a tile. Most of those handovers
+     * changed nothing: the ranges had arrived before anything needed them.
+     */
+    private val provisionalSinceHandover =
+        java.util.concurrent.atomic
+            .AtomicBoolean(false)
+
     /** Glyph fetches queued or running, so the notify can wait for quiet. */
     private val glyphsInFlight =
         java.util.concurrent.atomic
@@ -310,23 +323,28 @@ class VectorTileProvider private constructor(
     override fun renderTile(request: TileRequest): ByteArray? {
         if (closed) return null
 
-        val cacheKey =
-            diskCache?.let {
-                TileDiskCache.digest(
-                    styleKey,
-                    "$tileSize",
-                    // The renderer's own generation: a build that draws more
-                    // than the one that filled this cache must not serve its
-                    // tiles.
-                    "v${VectorTileRenderer.OUTPUT_VERSION}",
-                    // Glyphs that arrived since a tile was drawn change what
-                    // it should look like.
-                    "g${glyphGeneration.get()}",
-                    "${request.z}/${request.x}/${request.y}",
-                )
-            }
-        if (cacheKey != null) {
-            val hit = diskCache.get(cacheKey)
+        // Two keys, because a rendered tile goes stale for one reason only:
+        // it was drawn while some of its glyphs were still on the way. A tile
+        // that had them all is finished, and no later arrival can change it,
+        // so it is stored under a key with no generation in it and survives
+        // every handover. Only the ones that were drawn short are tied to the
+        // generation they were drawn at, and only they are redrawn.
+        fun key(generation: String) =
+            TileDiskCache.digest(
+                styleKey,
+                "$tileSize",
+                // The renderer's own generation: a build that draws more
+                // than the one that filled this cache must not serve its
+                // tiles.
+                "v${VectorTileRenderer.OUTPUT_VERSION}",
+                generation,
+                "${request.z}/${request.x}/${request.y}",
+            )
+
+        val completeKey = diskCache?.let { key("complete") }
+        val provisionalKey = diskCache?.let { key("g${glyphGeneration.get()}") }
+        for (candidate in listOfNotNull(completeKey, provisionalKey)) {
+            val hit = diskCache?.get(candidate)
             if (hit != null) {
                 if (Log.isLoggable(TAG, Log.DEBUG)) {
                     Log.d(
@@ -351,7 +369,7 @@ class VectorTileProvider private constructor(
         val fetchMs = (System.nanoTime() - fetchStarted) / 1_000_000
         if (closed) return null
 
-        requestGlyphs(request, tiles)
+        val drawnShortOfGlyphs = requestGlyphs(request, tiles)
 
         val renderStarted = System.nanoTime()
         val png =
@@ -401,7 +419,11 @@ class VectorTileProvider private constructor(
                     "render=${renderMs}ms bytes=${png?.size ?: 0}",
             )
         }
-        if (cacheKey != null && png != null) diskCache.put(cacheKey, png)
+        if (drawnShortOfGlyphs) provisionalSinceHandover.set(true)
+        if (png != null) {
+            val store = if (drawnShortOfGlyphs) provisionalKey else completeKey
+            if (store != null) diskCache?.put(store, png)
+        }
         return png
     }
 
@@ -414,21 +436,25 @@ class VectorTileProvider private constructor(
      * what "it stops when you zoom out" was. The tile is drawn with whatever
      * glyphs are already in, exactly as MapLibre does it, and the ones that
      * arrive later bring the labels with them through [onGlyphsLoaded].
+     *
+     * Returns whether this tile is about to be drawn without glyphs it wants,
+     * which is what decides between the two cache keys and whether a handover
+     * is worth making.
      */
     private fun requestGlyphs(
         request: TileRequest,
         tiles: List<ByteArray?>,
-    ) {
-        if (glyphsUnavailable || closed) return
+    ): Boolean {
+        if (glyphsUnavailable || closed) return false
         val needed =
             runCatching { renderer.neededGlyphs(request.z, request.x, request.y, tiles) }
                 .getOrElse { emptyList() }
-        if (needed.isEmpty()) return
+        if (needed.isEmpty()) return false
 
         // Only the ranges nobody has claimed yet. Two tiles wanting the same
         // range at once would otherwise both fetch it.
         val mine = needed.filter { requestedGlyphs.add(it) }
-        if (mine.isEmpty()) return
+        if (mine.isEmpty()) return true
 
         for (url in mine) {
             glyphsInFlight.incrementAndGet()
@@ -457,6 +483,7 @@ class VectorTileProvider private constructor(
                 }
             if (queued.isFailure) glyphsInFlight.decrementAndGet()
         }
+        return true
     }
 
     /**
@@ -487,7 +514,20 @@ class VectorTileProvider private constructor(
                 }
                 glyphNotifyPending.set(false)
                 if (closed) return@Thread
-                cache.evictAll()
+                // Nothing to hand over to: every tile drawn since the last one
+                // had all the glyphs it wanted, so the picture on screen is
+                // already the finished picture. A handover here would refetch
+                // and redraw the viewport to arrive at the same pixels.
+                if (!provisionalSinceHandover.compareAndSet(true, false)) {
+                    if (Log.isLoggable(TAG, Log.DEBUG)) {
+                        Log.d(TAG, "glyphs arrived but no tile was waiting on them")
+                    }
+                    return@Thread
+                }
+                // The vector tiles are deliberately not dropped. Glyphs change
+                // what a tile is drawn *with*, not what it contains, and
+                // throwing them away made every handover refetch the viewport
+                // over the network before it could redraw it.
                 if (Log.isLoggable(TAG, Log.DEBUG)) {
                     Log.d(TAG, "glyph generation -> ${glyphGeneration.get()}; tiles hand over")
                 }
