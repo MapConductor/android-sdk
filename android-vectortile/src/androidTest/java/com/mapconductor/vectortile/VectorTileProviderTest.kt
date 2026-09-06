@@ -49,6 +49,33 @@ class VectorTileProviderTest {
         provider?.close()
     }
 
+    /**
+     * A map that has moved on closes the connection, and the tile it no longer
+     * wants must not be drawn: the render slots and the GL thread are shared,
+     * so a doomed tile is drawn *instead of* one that is still on screen.
+     */
+    @Test
+    fun givesUpOnATileTheMapNoLongerWants() {
+        val subject = provider!!
+        assertEquals(null, subject.renderTile(TileRequest(x = 0, y = 0, z = 0)) { true })
+
+        // Cancelled means not drawn, not merely not returned -- the same tile
+        // must still be renderable afterwards, from scratch rather than from a
+        // cache entry the cancelled call left behind.
+        assertNotNull(subject.renderTile(TileRequest(x = 0, y = 0, z = 0)) { false })
+    }
+
+    /** A cancellation that arrives after the work is done still returns it. */
+    @Test
+    fun keepsATileWhoseCancellationCameTooLate() {
+        val subject = provider!!
+        var calls = 0
+        // False for every checkpoint, true only afterwards.
+        val png = subject.renderTile(TileRequest(x = 0, y = 0, z = 0)) { calls++ > 100 }
+        assertNotNull(png)
+        assertTrue("no cancellation checkpoints were reached", calls > 0)
+    }
+
     @Test
     fun servesAPngThroughTheLocalTileServer() {
         val server = TileServerRegistry.get()
@@ -95,10 +122,37 @@ class VectorTileProviderTest {
 
     @Test
     fun reportsStyleDiagnostics() {
+        // Point labels are drawn now, so a style made of them has nothing to
+        // report. This test asserted the opposite -- that symbol layers were
+        // not drawn -- and went on passing after that stopped being true,
+        // because the message it looked for merely had to contain "symbol".
+        assertEquals(emptyList<String>(), provider!!.diagnostics())
+
+        provider!!.setStyle(
+            """
+            {
+              "version": 8,
+              "sources": { "src": { "type": "vector", "url": "mapbox://styles" } },
+              "layers": [
+                { "id": "hills", "type": "hillshade", "source": "src" },
+                { "id": "orphan", "type": "fill", "source": "missing", "source-layer": "x" }
+              ]
+            }
+            """.trimIndent(),
+        )
+
         val messages = provider!!.diagnostics()
         assertTrue(
-            "expected symbol to be reported, got $messages",
-            messages.any { it.contains("symbol") },
+            "expected the undrawable layer type to be reported, got $messages",
+            messages.any { it.contains("hillshade") },
+        )
+        assertTrue(
+            "expected the missing source to be reported, got $messages",
+            messages.any { it.contains("orphan") && it.contains("missing") },
+        )
+        assertTrue(
+            "expected the unfetchable source URL to be reported, got $messages",
+            messages.any { it.contains("mapbox:") },
         )
     }
 

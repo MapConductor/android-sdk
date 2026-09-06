@@ -320,7 +320,12 @@ class VectorTileProvider private constructor(
         styleKey = TileDiskCache.digest(styleJson)
     }
 
-    override fun renderTile(request: TileRequest): ByteArray? {
+    override fun renderTile(request: TileRequest): ByteArray? = renderTile(request) { false }
+
+    override fun renderTile(
+        request: TileRequest,
+        isCancelled: () -> Boolean,
+    ): ByteArray? {
         if (closed) return null
 
         // Two keys, because a rendered tile goes stale for one reason only:
@@ -364,12 +369,28 @@ class VectorTileProvider private constructor(
         // answer is almost always one or the other, and guessing wastes time.
         val fetchStarted = System.nanoTime()
         for (i in 0 until plan.length()) {
+            // Between source tiles as well as before them: a plan can name
+            // several, each its own round trip, and the map can give up
+            // partway through.
+            if (isCancelled()) return null
             tiles.add(sourceTile(plan.getJSONObject(i).getString("url")))
         }
         val fetchMs = (System.nanoTime() - fetchStarted) / 1_000_000
         if (closed) return null
 
         val drawnShortOfGlyphs = requestGlyphs(request, tiles)
+
+        // The last chance to bail. Past here the work is native and cannot be
+        // interrupted, and it is the part that takes hundreds of milliseconds
+        // -- a tile drawn for a viewport the map has left holds up the tiles
+        // it is waiting for, because the render slots and the GL thread are
+        // shared.
+        if (isCancelled()) {
+            if (Log.isLoggable(TAG, Log.DEBUG)) {
+                Log.d(TAG, "tile ${request.z}/${request.x}/${request.y} dropped before rendering")
+            }
+            return null
+        }
 
         val renderStarted = System.nanoTime()
         val png =
@@ -392,6 +413,10 @@ class VectorTileProvider private constructor(
                         // draw it.
                         renderSlots.acquire()
                         try {
+                            // Waiting for a slot is where a tile spends its
+                            // time when the map is busy, and the map can lose
+                            // interest while it waits.
+                            if (isCancelled()) return null
                             runCatching {
                                 renderer.render(request.z, request.x, request.y, tileSize, tiles)
                             }.getOrNull()
@@ -402,6 +427,7 @@ class VectorTileProvider private constructor(
             } else {
                 renderSlots.acquire()
                 try {
+                    if (isCancelled()) return null
                     runCatching {
                         renderer.render(request.z, request.x, request.y, tileSize, tiles)
                     }.getOrNull()
