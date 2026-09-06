@@ -93,6 +93,26 @@ class VectorTileProvider private constructor(
     private val glyphNotifyQuietMs = 400L
 
     /**
+     * How long to keep waiting while ranges are still in flight.
+     *
+     * The quiet window alone was not enough. Ranges do not arrive in one
+     * burst: six threads each take 0.4 to 1.3 seconds per range and a low
+     * zoom wants dozens, so arrivals are spread over many seconds and the
+     * 400ms window closed between them again and again. Every close was a
+     * handover, and a handover redraws every visible tile — that steady
+     * two-per-second replacement was the flicker. So the window is held open
+     * while any fetch is outstanding, and the whole viewport's labels appear
+     * in one go. The cap is there because a range that never answers must not
+     * hold the labels back forever.
+     */
+    private val glyphNotifyMaxWaitMs = 10_000L
+
+    /** Glyph fetches queued or running, so the notify can wait for quiet. */
+    private val glyphsInFlight =
+        java.util.concurrent.atomic
+            .AtomicInteger()
+
+    /**
      * Fetches glyph ranges off the tile threads.
      *
      * One range is a round trip of 0.4 to 1.3 seconds and a tile at low zoom
@@ -411,24 +431,31 @@ class VectorTileProvider private constructor(
         if (mine.isEmpty()) return
 
         for (url in mine) {
-            runCatching {
-                glyphFetchers.execute {
-                    if (closed) return@execute
-                    val bytes = runCatching { fetchTile(url) }.getOrNull()
-                    if (bytes == null || bytes.isEmpty()) {
-                        // Left in the claimed set: a range the server does not
-                        // have will not appear on a retry.
-                        Log.w(TAG, "glyph range unavailable: $url")
-                        return@execute
-                    }
-                    val added =
-                        runCatching { renderer.addGlyphs(bytes) }.getOrElse {
-                            Log.w(TAG, "glyph range would not parse: $url", it)
-                            0
+            glyphsInFlight.incrementAndGet()
+            val queued =
+                runCatching {
+                    glyphFetchers.execute {
+                        try {
+                            if (closed) return@execute
+                            val bytes = runCatching { fetchTile(url) }.getOrNull()
+                            if (bytes == null || bytes.isEmpty()) {
+                                // Left in the claimed set: a range the server
+                                // does not have will not appear on a retry.
+                                Log.w(TAG, "glyph range unavailable: $url")
+                                return@execute
+                            }
+                            val added =
+                                runCatching { renderer.addGlyphs(bytes) }.getOrElse {
+                                    Log.w(TAG, "glyph range would not parse: $url", it)
+                                    0
+                                }
+                            if (added > 0) onGlyphsArrived()
+                        } finally {
+                            glyphsInFlight.decrementAndGet()
                         }
-                    if (added > 0) onGlyphsArrived()
+                    }
                 }
-            }
+            if (queued.isFailure) glyphsInFlight.decrementAndGet()
         }
     }
 
@@ -443,21 +470,33 @@ class VectorTileProvider private constructor(
     private fun onGlyphsArrived() {
         glyphGeneration.incrementAndGet()
         if (!glyphNotifyPending.compareAndSet(false, true)) return
-        glyphFetchers.execute {
-            try {
-                Thread.sleep(glyphNotifyQuietMs)
-            } catch (_: InterruptedException) {
-                return@execute
+        // Its own thread: the fetch pool is six wide and a sleeper sitting in
+        // it is one fewer range in flight.
+        val waiter =
+            Thread {
+                val deadline = System.nanoTime() + glyphNotifyMaxWaitMs * 1_000_000L
+                try {
+                    Thread.sleep(glyphNotifyQuietMs)
+                    // Hold the window open while ranges are still coming.
+                    while (glyphsInFlight.get() > 0 && System.nanoTime() < deadline && !closed) {
+                        Thread.sleep(glyphNotifyQuietMs)
+                    }
+                } catch (_: InterruptedException) {
+                    glyphNotifyPending.set(false)
+                    return@Thread
+                }
+                glyphNotifyPending.set(false)
+                if (closed) return@Thread
+                cache.evictAll()
+                if (Log.isLoggable(TAG, Log.DEBUG)) {
+                    Log.d(TAG, "glyph generation -> ${glyphGeneration.get()}; tiles hand over")
+                }
+                runCatching { onGlyphsLoaded?.invoke() }
+                    .onFailure { Log.w(TAG, "glyph notification failed", it) }
             }
-            glyphNotifyPending.set(false)
-            if (closed) return@execute
-            cache.evictAll()
-            if (Log.isLoggable(TAG, Log.DEBUG)) {
-                Log.d(TAG, "glyph generation -> ${glyphGeneration.get()}; tiles hand over")
-            }
-            runCatching { onGlyphsLoaded?.invoke() }
-                .onFailure { Log.w(TAG, "glyph notification failed", it) }
-        }
+        waiter.isDaemon = true
+        waiter.name = "mc-glyph-notify"
+        waiter.start()
     }
 
     private fun renderOnGpu(

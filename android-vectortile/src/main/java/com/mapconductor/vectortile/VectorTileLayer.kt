@@ -163,6 +163,7 @@ fun MapViewScope.VectorTileLayer(
                         ),
                     opacity = opacity.coerceIn(0.0f, 1.0f),
                     visible = visible,
+                    zIndex = 0,
                 ),
             )
         }
@@ -179,6 +180,13 @@ fun MapViewScope.VectorTileLayer(
                 ),
             opacity = opacity.coerceIn(0.0f, 1.0f),
             visible = visible,
+            // Above the generation it replaces. The provider orders raster
+            // layers by zIndex and the order between equal ones is whatever
+            // the map iterates in — which put the old, unlabelled layer on top
+            // as often as not, and the map alternated between labelled and
+            // unlabelled for the length of the handover. That was the flicker:
+            // not a blank frame, the two versions taking turns.
+            zIndex = generation,
         )
 
     LaunchedEffect(glyphGeneration) {
