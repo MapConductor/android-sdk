@@ -785,9 +785,15 @@ class VectorTileProvider private constructor(
             buffer.clear()
             buffer.put(rgba)
             buffer.rewind()
-            // The label pass writes straight alpha, which is what PNG stores.
+            // Premultiplied, not straight. The label pass composites source-
+            // over into a transparent buffer, and that arithmetic leaves each
+            // channel scaled by its own alpha. Encoding it as straight alpha
+            // is what turned the style's white halo into a grey shadow: white
+            // at 0.8 was stored as the grey 204 and composited again by the
+            // map. On the old opaque single layer alpha was always one, so
+            // the two readings agreed and the bug had nowhere to show.
             com.mapconductor.core.tileserver.TilePngEncoder
-                .encode(buffer, resolution, resolution, premultiplied = false)
+                .encode(buffer, resolution, resolution, premultiplied = true)
         } finally {
             labelEncodeBuffers.offer(buffer)
         }
