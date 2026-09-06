@@ -125,13 +125,24 @@ class VectorTileProvider private constructor(
     /**
      * Fetches source tiles, several at a time.
      *
-     * Sized for one tile's plan: the tile itself and the eight neighbours it
-     * needs for labels that cross an edge.
+     * Sized for the whole worker pool, not for one tile: eight tiles render at
+     * once and each plan is nine fetches, and when this pool held nine threads
+     * the whole screen fetched through one tile's worth of bandwidth --
+     * measured concurrency across a cold screen was 1.2 with eight workers
+     * available. The threads spend their lives blocked on sockets, so they are
+     * cheap to hold.
      */
     private val sourceFetchers =
-        java.util.concurrent.Executors.newFixedThreadPool(9) { runnable ->
+        java.util.concurrent.Executors.newFixedThreadPool(32) { runnable ->
             Thread(runnable, "mc-tiles").apply { isDaemon = true }
         }
+
+    /**
+     * Source fetches under way, so the nine tiles that all want the same
+     * neighbour share one download instead of racing nine.
+     */
+    private val inFlight =
+        java.util.concurrent.ConcurrentHashMap<String, java.util.concurrent.CompletableFuture<ByteArray?>>()
 
     /** Glyph fetches queued or running, so the notify can wait for quiet. */
     private val glyphsInFlight =
@@ -785,6 +796,27 @@ class VectorTileProvider private constructor(
         cache.get(url)?.let { return it }
         if (empties.contains(url)) return null
 
+        // One download per URL, however many tiles want it. Every tile is its
+        // neighbours' neighbour, so on a cold screen the same source tile is
+        // asked for by up to nine renders at once.
+        val mine = java.util.concurrent.CompletableFuture<ByteArray?>()
+        val existing = inFlight.putIfAbsent(url, mine)
+        if (existing != null) {
+            return runCatching { existing.get() }.getOrNull()
+        }
+        try {
+            val bytes = fetchAndRemember(url)
+            mine.complete(bytes)
+            return bytes
+        } catch (error: Throwable) {
+            mine.complete(null)
+            throw error
+        } finally {
+            inFlight.remove(url)
+        }
+    }
+
+    private fun fetchAndRemember(url: String): ByteArray? {
         // A source that answers "no tile here" is remembered, because it will
         // answer the same way tomorrow. A source that fails to answer is not:
         // treating a dropped connection as an empty tile leaves a hole in the

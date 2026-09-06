@@ -159,6 +159,10 @@ internal class TessellatedTile(
     /** Milliseconds spent inside the native call, by phase. */
     val decodeMs: Float = packed[7]
     val tessellateMs: Float = packed[8]
+    val filterMs: Float = packed[9]
+    val fillMs: Float = packed[10]
+    val lineMs: Float = packed[11]
+    val featureLoopMs: Float = packed[12]
 
     init {
         val batchCount = packed[6].toInt()

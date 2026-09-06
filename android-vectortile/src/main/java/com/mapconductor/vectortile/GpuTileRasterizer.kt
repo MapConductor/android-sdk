@@ -12,12 +12,17 @@ import android.util.Log
 /**
  * Rasterises triangulated tiles on the GPU.
  *
- * **Everything runs on one dedicated thread**, because an EGL context belongs
+ * **The GL calls run on one dedicated thread**, because an EGL context belongs
  * to the thread that made it current. The tile server calls `renderTile` from
- * a pool of eight workers, so requests are marshalled onto this thread and the
- * caller blocks — which is also the right shape for the work: drawing a tile
- * takes about 2 ms, so serialising it costs nothing, and the GPU is a single
- * resource anyway.
+ * a pool of eight workers, so those calls are marshalled onto this thread and
+ * the caller blocks. That is the right shape for the drawing itself: it takes
+ * about 15 ms and the GPU is a single resource anyway.
+ *
+ * Everything after the readback is deliberately *not* on that thread. Labels
+ * are drawn on the CPU over the pixels and the PNG is encoded from them, and
+ * both used to run on the GL thread, where they serialised: measured on a
+ * Pixel 5a they are 30 to 130 ms a tile, so eight workers spent their time
+ * queueing behind one another for work that has nothing to do with the GPU.
  *
  * Creating the context is the expensive part (~15 ms), so it is created once
  * on first use and kept.
@@ -29,6 +34,9 @@ internal class GpuTileRasterizer(
         Executors.newSingleThreadExecutor { runnable ->
             Thread(runnable, "vectortile-gl").apply { isDaemon = true }
         }
+
+    /** Direct buffers for the encoder, one per worker that might be encoding. */
+    private val encodeBuffers = java.util.concurrent.ArrayBlockingQueue<ByteBuffer>(8)
 
     private var egl: EglOffscreen? = null
     private var renderer: SolidBatchRenderer? = null
@@ -111,22 +119,57 @@ internal class GpuTileRasterizer(
         decorate: ((ByteArray) -> Unit)? = null,
     ): ByteArray? {
         if (closed) return null
+        val rgba =
+            try {
+                thread.submit(Callable { drawOnGlThread(tile) }).get()
+            } catch (error: ExecutionException) {
+                Log.w(TAG, "GPU render failed", error.cause ?: error)
+                null
+            } catch (error: Exception) {
+                Log.w(TAG, "GPU render failed", error)
+                null
+            } ?: return null
+
+        val labelsStarted = System.nanoTime()
+        decorate?.invoke(rgba)
+        val labelMs = (System.nanoTime() - labelsStarted) / 1_000_000
+
+        val encodeStarted = System.nanoTime()
+        val png = encode(rgba)
+        if (Log.isLoggable(TAG, Log.DEBUG)) {
+            Log.d(
+                TAG,
+                "phases decode=${tile.decodeMs.toInt()}ms " +
+                    "tessellate=${tile.tessellateMs.toInt()}ms " +
+                    "(loop=${tile.featureLoopMs.toInt()} of which fills=${tile.fillMs.toInt()} " +
+                    "lines=${tile.lineMs.toInt()}; filters=${tile.filterMs.toInt()}) " +
+                    "labels=${labelMs}ms encode=${(System.nanoTime() - encodeStarted) / 1_000_000}ms",
+            )
+        }
+        return png
+    }
+
+    /**
+     * Encodes off the GL thread, through a borrowed direct buffer.
+     *
+     * The encoder needs a direct buffer and the pixels arrive as a byte array,
+     * so there is a copy either way; borrowing avoids a megabyte of fresh
+     * direct memory per tile.
+     */
+    private fun encode(rgba: ByteArray): ByteArray? {
+        val buffer = encodeBuffers.poll() ?: ByteBuffer.allocateDirect(tileSize * tileSize * 4)
         return try {
-            thread.submit(Callable { drawOnGlThread(tile, decorate) }).get()
-        } catch (error: ExecutionException) {
-            Log.w(TAG, "GPU render failed", error.cause ?: error)
-            null
-        } catch (error: Exception) {
-            Log.w(TAG, "GPU render failed", error)
-            null
+            buffer.clear()
+            buffer.put(rgba)
+            buffer.rewind()
+            TilePngEncoder.encode(buffer, tileSize, tileSize, premultiplied = false)
+        } finally {
+            encodeBuffers.offer(buffer)
         }
     }
 
     /** Runs on the GL thread. */
-    private fun drawOnGlThread(
-        tile: TessellatedTile,
-        decorate: ((ByteArray) -> Unit)?,
-    ): ByteArray? {
+    private fun drawOnGlThread(tile: TessellatedTile): ByteArray? {
         val context = egl ?: return null
         val batch = renderer ?: return null
         val buffer = pixels ?: return null
@@ -142,21 +185,13 @@ internal class GpuTileRasterizer(
         batch.draw(tile.batches, tile.extent)
         context.readPixels(buffer)
         buffer.rewind()
-        if (decorate != null) {
-            // A copy out and back: the native side takes a byte[], and the
-            // direct buffer this reads into is not one. Only paid when the
-            // style has something to draw over the readback.
-            val pixels = ByteArray(buffer.remaining())
-            buffer.get(pixels)
-            buffer.rewind()
-            decorate(pixels)
-            buffer.put(pixels)
-            buffer.rewind()
-        }
-        // The core's encoder, not this module's: one copy of it per app.
-        // glReadPixels leaves straight alpha here — the blend keeps destination
-        // alpha saturated — so there is nothing to un-premultiply.
-        return TilePngEncoder.encode(buffer, tileSize, tileSize, premultiplied = false)
+
+        // Copied out so the shared readback buffer is free for the next tile
+        // the moment this one leaves the GL thread.
+        val pixels = ByteArray(buffer.remaining())
+        buffer.get(pixels)
+        buffer.rewind()
+        return pixels
     }
 
     override fun close() {
