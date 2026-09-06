@@ -755,9 +755,19 @@ class VectorTileProvider private constructor(
         cache.get(url)?.let { return it }
         if (empties.contains(url)) return null
 
-        val bytes = runCatching { fetchTile(url) }.getOrNull()
+        // A source that answers "no tile here" is remembered, because it will
+        // answer the same way tomorrow. A source that fails to answer is not:
+        // treating a dropped connection as an empty tile leaves a hole in the
+        // map for as long as the app runs, and the hole is invisible from
+        // here -- the tile simply draws without that data.
+        val fetched = runCatching { fetchTile(url) }
+        val bytes = fetched.getOrNull()
         if (bytes == null) {
-            empties.add(url)
+            if (fetched.isSuccess) {
+                empties.add(url)
+            } else {
+                Log.w(TAG, "source tile failed; will try again: $url", fetched.exceptionOrNull())
+            }
             return null
         }
         cache.put(url, bytes)
