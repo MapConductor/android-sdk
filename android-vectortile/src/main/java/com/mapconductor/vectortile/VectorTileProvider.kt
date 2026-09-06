@@ -164,6 +164,7 @@ class VectorTileProvider private constructor(
     private val glyphsWarmed = java.util.concurrent.CountDownLatch(1)
 
     init {
+        Log.i(TAG, "rasterising on ${rendererDescription()}")
         val cache = glyphCache
         if (cache == null && !renderer.needsSprite()) {
             glyphsWarmed.countDown()
