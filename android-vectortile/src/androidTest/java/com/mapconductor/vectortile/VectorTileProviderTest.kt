@@ -65,6 +65,56 @@ class VectorTileProviderTest {
         assertNotNull(subject.renderTile(TileRequest(x = 0, y = 0, z = 0)) { false })
     }
 
+    /**
+     * The sprite is the one style asset whose location is known before a tile
+     * is drawn, so it goes through the renderer rather than through a tile's
+     * demands -- and the whole point of it is that icons draw at all.
+     */
+    @Test
+    fun takesASpriteSheetAndReportsWhenItStillNeedsOne() {
+        val subject =
+            VectorTileRenderer.create(
+                """
+                {
+                  "version": 8,
+                  "sprite": [{ "id": "basics", "url": "https://example.test/sprites/basics" }],
+                  "sources": {},
+                  "layers": []
+                }
+                """.trimIndent(),
+            )
+        subject.use {
+            assertEquals(
+                listOf(
+                    "https://example.test/sprites/basics.json",
+                    "https://example.test/sprites/basics.png",
+                ),
+                it.spriteUrls(1),
+            )
+            assertEquals(
+                listOf(
+                    "https://example.test/sprites/basics@2x.json",
+                    "https://example.test/sprites/basics@2x.png",
+                ),
+                it.spriteUrls(2),
+            )
+            assertTrue("the style names a sprite", it.needsSprite())
+
+            val sheet = android.graphics.Bitmap.createBitmap(8, 8, android.graphics.Bitmap.Config.ARGB_8888)
+            sheet.eraseColor(android.graphics.Color.BLACK)
+            val png = java.io.ByteArrayOutputStream()
+            sheet.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, png)
+
+            val icons =
+                it.addSprite(
+                    """{"icon-atm": {"x": 0, "y": 0, "width": 8, "height": 8, "pixelRatio": 1}}""",
+                    png.toByteArray(),
+                )
+            assertEquals(1, icons)
+            assertTrue("the sheet is in", !it.needsSprite())
+        }
+    }
+
     /** A cancellation that arrives after the work is done still returns it. */
     @Test
     fun keepsATileWhoseCancellationCameTooLate() {

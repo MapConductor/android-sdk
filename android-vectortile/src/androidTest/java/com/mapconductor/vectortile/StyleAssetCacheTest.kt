@@ -12,7 +12,7 @@ import org.junit.runner.RunWith
 import java.io.File
 
 @RunWith(AndroidJUnit4::class)
-class GlyphDiskCacheTest {
+class StyleAssetCacheTest {
     private lateinit var directory: File
 
     @Before
@@ -22,7 +22,7 @@ class GlyphDiskCacheTest {
         directory.mkdirs()
     }
 
-    private fun cache(budgetBytes: Long = 1L * 1024 * 1024) = GlyphDiskCache(directory, budgetBytes)
+    private fun cache(budgetBytes: Long = 1L * 1024 * 1024) = StyleAssetCache(directory, budgetBytes)
 
     @Test
     fun returnsWhatItWasGiven() {
@@ -47,7 +47,7 @@ class GlyphDiskCacheTest {
         stored.forEach { (url, bytes) -> subject.put(url, bytes) }
 
         val seen = mutableListOf<Byte>()
-        val loaded = GlyphDiskCache(directory, 1L * 1024 * 1024).warm { seen.add(it[0]) }
+        val loaded = StyleAssetCache(directory, 1L * 1024 * 1024).warm { seen.add(it[0]) }
 
         assertEquals(5, loaded)
         assertEquals(stored.map { it.second[0] }.toSet(), seen.toSet())
@@ -61,7 +61,7 @@ class GlyphDiskCacheTest {
 
         var seen = 0
         val loaded =
-            GlyphDiskCache(directory, 1L * 1024 * 1024).warm {
+            StyleAssetCache(directory, 1L * 1024 * 1024).warm {
                 seen++
                 if (seen == 2) throw IllegalStateException("range would not parse")
             }
@@ -78,7 +78,7 @@ class GlyphDiskCacheTest {
     @Test
     fun staysWithinItsBudget() {
         // Sweeps run every 16 writes, so 32 of these cross the budget twice.
-        val subject = GlyphDiskCache(directory, 64L * 1024)
+        val subject = StyleAssetCache(directory, 64L * 1024)
         repeat(32) { index ->
             subject.put("https://example.test/font/$index.pbf", ByteArray(8 * 1024) { index.toByte() })
         }

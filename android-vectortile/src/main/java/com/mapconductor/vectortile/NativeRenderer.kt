@@ -64,6 +64,19 @@ internal object NativeRenderer {
     ): String
 
     /** Hands over one fetched range; returns how many glyphs it added. */
+    external fun nativeSpriteUrls(
+        handle: Long,
+        pixelRatio: Int,
+    ): String
+
+    external fun nativeNeedsSprite(handle: Long): Int
+
+    external fun nativeAddSprite(
+        handle: Long,
+        indexJson: String,
+        png: ByteArray,
+    ): Int
+
     external fun nativeAddGlyphs(
         handle: Long,
         pbf: ByteArray,

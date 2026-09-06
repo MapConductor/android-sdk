@@ -33,7 +33,7 @@ class VectorTileRenderer private constructor(
          * 1: fills, lines, circles.
          * 2: labels.
          */
-        const val OUTPUT_VERSION: Int = 2
+        const val OUTPUT_VERSION: Int = 3
 
         /** @throws IllegalArgumentException if the style cannot be parsed. */
         @JvmStatic
@@ -83,6 +83,34 @@ class VectorTileRenderer private constructor(
      * tile. Returns how many glyphs it gained.
      */
     fun addGlyphs(pbf: ByteArray): Int = NativeRenderer.nativeAddGlyphs(requireHandle(), pbf)
+
+    /**
+     * The style's sprite pair — index then image — or an empty list when the
+     * style names no sprite.
+     *
+     * Unlike glyphs these are known from the style alone, so they can be
+     * fetched before a single tile has been drawn.
+     */
+    fun spriteUrls(pixelRatio: Int = 1): List<String> {
+        val urls = JSONArray(NativeRenderer.nativeSpriteUrls(requireHandle(), pixelRatio))
+        return (0 until urls.length()).map { urls.getString(it) }
+    }
+
+    /** Whether the style names a sprite the renderer has not been given. */
+    fun needsSprite(): Boolean = NativeRenderer.nativeNeedsSprite(requireHandle()) != 0
+
+    /**
+     * Hands over the fetched pair, and returns how many icons the sheet holds.
+     *
+     * One sheet covers a whole style, so this replaces rather than
+     * accumulates — a restyle brings its own.
+     *
+     * @throws IllegalArgumentException if the pair will not parse
+     */
+    fun addSprite(
+        indexJson: String,
+        png: ByteArray,
+    ): Int = NativeRenderer.nativeAddSprite(requireHandle(), indexJson, png)
 
     /**
      * Draws this tile's labels onto pixels something else rasterised.

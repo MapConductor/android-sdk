@@ -6,7 +6,8 @@ import java.util.concurrent.atomic.AtomicLong
 import android.util.Log
 
 /**
- * Keeps glyph ranges on disk so a launch does not start with a mute map.
+ * Keeps a style's fetched assets -- glyph ranges and the sprite sheet -- on
+ * disk, so a launch does not start with a mute map.
  *
  * The store the renderer draws from lives in memory, so every process start
  * began with no letters at all, and a tile drawn then has no place names on
@@ -20,13 +21,13 @@ import android.util.Log
  * reads them back in a few milliseconds and the first tile is drawn with its
  * labels already on it.
  *
- * Unlike [TileDiskCache] this is not content-addressed by anything the caller
- * has to reconstruct: a warm start does not know which URLs it wants until it
- * has drawn a tile, and by then it is too late. Every file is simply read back
- * and handed to the renderer, which takes the fontstack and range from inside
- * the PBF.
+ * Glyphs need [warm] because a warm start does not know which ranges it wants
+ * until it has drawn a tile, and by then it is too late: every file is read
+ * back and handed to the renderer, which takes the fontstack and range from
+ * inside the PBF. A sprite needs no such thing -- its two URLs come from the
+ * style -- so it is fetched through [get] by name like any other cache.
  */
-internal class GlyphDiskCache(
+internal class StyleAssetCache(
     private val directory: File,
     private val budgetBytes: Long,
 ) {

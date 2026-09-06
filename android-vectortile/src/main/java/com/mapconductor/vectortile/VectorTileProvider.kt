@@ -30,7 +30,8 @@ class VectorTileProvider private constructor(
     private val fetchTile: (String) -> ByteArray?,
     cacheBytes: Int,
     private val diskCache: TileDiskCache?,
-    private val glyphCache: GlyphDiskCache?,
+    private val glyphCache: StyleAssetCache?,
+    private val spriteCache: StyleAssetCache?,
     styleJson: String,
     /** Null when rendering on the CPU. */
     private val gpu: GpuTileRasterizer?,
@@ -153,19 +154,76 @@ class VectorTileProvider private constructor(
 
     init {
         val cache = glyphCache
-        if (cache == null || glyphsUnavailable) {
+        if (cache == null && !renderer.needsSprite()) {
             glyphsWarmed.countDown()
         } else {
             Thread({
                 val started = System.nanoTime()
-                val loaded = runCatching { cache.warm { renderer.addGlyphs(it) } }.getOrDefault(0)
+                val loaded =
+                    if (cache == null || glyphsUnavailable) {
+                        0
+                    } else {
+                        runCatching { cache.warm { renderer.addGlyphs(it) } }.getOrDefault(0)
+                    }
+                // The sprite is looked for here too, because unlike glyphs its
+                // URLs come from the style: a sheet that is already on disk can
+                // be in place before the first tile rather than after it.
+                val icons = runCatching { loadSpriteFromDisk() }.getOrDefault(0)
                 glyphsWarmed.countDown()
                 if (Log.isLoggable(TAG, Log.DEBUG)) {
                     val ms = (System.nanoTime() - started) / 1_000_000
-                    Log.d(TAG, "loaded $loaded glyph ranges from disk in ${ms}ms")
+                    Log.d(TAG, "loaded $loaded glyph ranges and $icons icons from disk in ${ms}ms")
                 }
-            }, "mc-glyph-warm").apply { isDaemon = true }.start()
+                // Only then the network, so a cold start does not hold the
+                // first tile behind two more round trips.
+                fetchSpriteIfMissing()
+            }, "mc-style-assets").apply { isDaemon = true }.start()
         }
+    }
+
+    /** The style's sprite pair, or null when it names none. */
+    private fun spriteUrls(): Pair<String, String>? {
+        val urls = runCatching { renderer.spriteUrls(1) }.getOrDefault(emptyList())
+        return if (urls.size == 2) urls[0] to urls[1] else null
+    }
+
+    /** Returns how many icons were loaded, 0 when the pair is not on disk. */
+    private fun loadSpriteFromDisk(): Int {
+        if (closed || !renderer.needsSprite()) return 0
+        val (indexUrl, imageUrl) = spriteUrls() ?: return 0
+        val index = spriteCache?.get(indexUrl) ?: return 0
+        val image = spriteCache.get(imageUrl) ?: return 0
+        return runCatching { renderer.addSprite(index.decodeToString(), image) }
+            .onFailure { Log.w(TAG, "cached sprite would not parse; refetching", it) }
+            .getOrDefault(0)
+    }
+
+    /**
+     * Fetches the sheet once, and hands the drawn tiles over when it lands.
+     *
+     * The same machinery as a glyph range, for the same reason: tiles drawn
+     * before the sheet arrived have holes where their icons belong.
+     */
+    private fun fetchSpriteIfMissing() {
+        if (closed || !renderer.needsSprite()) return
+        val (indexUrl, imageUrl) = spriteUrls() ?: return
+        val index = runCatching { fetchTile(indexUrl) }.getOrNull()
+        val image = runCatching { fetchTile(imageUrl) }.getOrNull()
+        if (index == null || image == null || index.isEmpty() || image.isEmpty()) {
+            Log.w(TAG, "sprite unavailable: $indexUrl")
+            return
+        }
+        val icons =
+            runCatching { renderer.addSprite(index.decodeToString(), image) }
+                .onFailure { Log.w(TAG, "sprite would not parse: $indexUrl", it) }
+                .getOrDefault(0)
+        if (icons <= 0) return
+        spriteCache?.put(indexUrl, index)
+        spriteCache?.put(imageUrl, image)
+        if (Log.isLoggable(TAG, Log.DEBUG)) {
+            Log.d(TAG, "sprite sheet in: $icons icons")
+        }
+        onGlyphsArrived()
     }
 
     /**
@@ -250,6 +308,14 @@ class VectorTileProvider private constructor(
         const val DEFAULT_GLYPH_CACHE_BYTES: Long = 32L * 1024 * 1024
 
         /**
+         * Sprite sheet disk cache budget, in bytes.
+         *
+         * A style has one sheet, and a large one is a few hundred kilobytes;
+         * the room is for the handful of styles an app switches between.
+         */
+        const val DEFAULT_SPRITE_CACHE_BYTES: Long = 4L * 1024 * 1024
+
+        /**
          * How long a tile waits for the stored ranges to be read back.
          *
          * Reading them is local and takes milliseconds; the limit is only so
@@ -298,7 +364,11 @@ class VectorTileProvider private constructor(
                 diskCache = diskCacheDir?.let { TileDiskCache(it, diskCacheBytes) },
                 glyphCache =
                     diskCacheDir?.let {
-                        GlyphDiskCache(File(it, "glyphs"), DEFAULT_GLYPH_CACHE_BYTES)
+                        StyleAssetCache(File(it, "glyphs"), DEFAULT_GLYPH_CACHE_BYTES)
+                    },
+                spriteCache =
+                    diskCacheDir?.let {
+                        StyleAssetCache(File(it, "sprites"), DEFAULT_SPRITE_CACHE_BYTES)
                     },
                 styleJson = styleJson,
                 gpu = gpu,
@@ -440,7 +510,9 @@ class VectorTileProvider private constructor(
             }
         }
 
-        val drawnShortOfGlyphs = requestGlyphs(request, tiles)
+        // Short of its sheet counts the same as short of its glyphs: the tile
+        // is missing ink it will have later.
+        val drawnShortOfGlyphs = requestGlyphs(request, tiles) || renderer.needsSprite()
 
         // The last chance to bail. Past here the work is native and cannot be
         // interrupted, and it is the part that takes hundreds of milliseconds
