@@ -33,7 +33,7 @@ class VectorTileRenderer private constructor(
          * 1: fills, lines, circles.
          * 2: labels.
          */
-        const val OUTPUT_VERSION: Int = 4
+        const val OUTPUT_VERSION: Int = 5
 
         /** @throws IllegalArgumentException if the style cannot be parsed. */
         @JvmStatic
@@ -94,6 +94,22 @@ class VectorTileRenderer private constructor(
     fun spriteUrls(pixelRatio: Int = 1): List<String> {
         val urls = JSONArray(NativeRenderer.nativeSpriteUrls(requireHandle(), pixelRatio))
         return (0 until urls.length()).map { urls.getString(it) }
+    }
+
+    /**
+     * Whether a tile at this zoom has to be rasterised on the CPU.
+     *
+     * The GPU path draws flat-coloured triangles; a patterned fill needs an
+     * image repeated across the polygon. Asked of the tile rather than of the
+     * style, because a style that paints prisons with a hatch says nothing
+     * about whether this tile has a prison in it.
+     */
+    fun needsCpu(
+        z: Int,
+        tiles: List<ByteArray?>,
+    ): Boolean {
+        val (data, lengths) = pack(tiles)
+        return NativeRenderer.nativeNeedsCpu(requireHandle(), z, data, lengths) != 0
     }
 
     /** Whether the style names a sprite the renderer has not been given. */

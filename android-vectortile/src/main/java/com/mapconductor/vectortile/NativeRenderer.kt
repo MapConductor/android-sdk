@@ -71,6 +71,13 @@ internal object NativeRenderer {
 
     external fun nativeNeedsSprite(handle: Long): Int
 
+    external fun nativeNeedsCpu(
+        handle: Long,
+        z: Int,
+        data: ByteArray,
+        lengths: IntArray,
+    ): Int
+
     external fun nativeAddSprite(
         handle: Long,
         indexJson: String,

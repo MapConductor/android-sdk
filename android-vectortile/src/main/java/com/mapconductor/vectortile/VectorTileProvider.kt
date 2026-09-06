@@ -527,8 +527,20 @@ class VectorTileProvider private constructor(
         }
 
         val renderStarted = System.nanoTime()
+        // A patterned fill needs an image repeated across the polygon, which
+        // the GPU path cannot draw, so those tiles take the slower road.
+        val onGpu =
+            gpu != null &&
+                runCatching { !renderer.needsCpu(request.z, tiles) }.getOrDefault(true)
+        if (gpu != null && !onGpu && Log.isLoggable(TAG, Log.DEBUG)) {
+            Log.d(
+                TAG,
+                "tile ${request.z}/${request.x}/${request.y} drawn on the CPU: " +
+                    "the style paints a pattern here",
+            )
+        }
         val png =
-            if (gpu != null) {
+            if (onGpu) {
                 // The GL thread serialises drawing already, so the CPU-side
                 // semaphore would only add queueing on top of it.
                 val drawn =
