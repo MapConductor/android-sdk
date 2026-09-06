@@ -162,9 +162,19 @@ class VectorTileRenderer private constructor(
         y: Int,
         tileSize: Int = DEFAULT_TILE_SIZE,
         tiles: List<ByteArray?>,
+        geometryOnly: Boolean = false,
     ): ByteArray {
         val (data, lengths) = pack(tiles)
-        return NativeRenderer.nativeRender(requireHandle(), z, x, y, tileSize, data, lengths)
+        return NativeRenderer.nativeRender(
+            requireHandle(),
+            z,
+            x,
+            y,
+            tileSize,
+            data,
+            lengths,
+            if (geometryOnly) 1 else 0,
+        )
     }
 
     /**

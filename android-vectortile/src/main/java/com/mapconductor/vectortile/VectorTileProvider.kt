@@ -478,6 +478,45 @@ class VectorTileProvider private constructor(
     override fun renderTile(
         request: TileRequest,
         isCancelled: () -> Boolean,
+    ): ByteArray? = renderTile(request, isCancelled, Content.FULL)
+
+    /** What one of this provider's routes serves. */
+    private enum class Content { FULL, GEOMETRY, LABELS }
+
+    /**
+     * The style's geometry alone: fills, lines, patterns, no labels.
+     *
+     * Serve this and [labelTiles] as two stacked raster layers and the user
+     * sees one map -- but the halves fail and refresh independently. Glyphs
+     * arriving refresh only the transparent overlay, so the ground never
+     * flashes; and the ground is drawn by the GPU while labels are drawn by
+     * the CPU, in parallel rather than in line.
+     */
+    val geometryTiles: TileProviderInterface =
+        object : TileProviderInterface {
+            override fun renderTile(request: TileRequest): ByteArray? = renderTile(request, { false }, Content.GEOMETRY)
+
+            override fun renderTile(
+                request: TileRequest,
+                isCancelled: () -> Boolean,
+            ): ByteArray? = renderTile(request, isCancelled, Content.GEOMETRY)
+        }
+
+    /** The labels and icons alone, on a transparent ground. */
+    val labelTiles: TileProviderInterface =
+        object : TileProviderInterface {
+            override fun renderTile(request: TileRequest): ByteArray? = renderTile(request, { false }, Content.LABELS)
+
+            override fun renderTile(
+                request: TileRequest,
+                isCancelled: () -> Boolean,
+            ): ByteArray? = renderTile(request, isCancelled, Content.LABELS)
+        }
+
+    private fun renderTile(
+        request: TileRequest,
+        isCancelled: () -> Boolean,
+        content: Content,
     ): ByteArray? {
         if (closed) return null
 
@@ -499,8 +538,21 @@ class VectorTileProvider private constructor(
                 "${request.z}/${request.x}/${request.y}",
             )
 
-        val completeKey = diskCache?.let { key("complete") }
-        val provisionalKey = diskCache?.let { key("g${glyphGeneration.get()}") }
+        val completeKey =
+            diskCache?.let {
+                when (content) {
+                    // Geometry has no glyphs to be short of; one key, forever.
+                    Content.GEOMETRY -> key("geom")
+                    Content.LABELS -> key("labels-complete")
+                    Content.FULL -> key("complete")
+                }
+            }
+        val provisionalKey =
+            when (content) {
+                Content.GEOMETRY -> null
+                Content.LABELS -> diskCache?.let { key("labels-g${glyphGeneration.get()}") }
+                Content.FULL -> diskCache?.let { key("g${glyphGeneration.get()}") }
+            }
         for (candidate in listOfNotNull(completeKey, provisionalKey)) {
             val hit = diskCache?.get(candidate)
             if (hit != null) {
@@ -544,8 +596,9 @@ class VectorTileProvider private constructor(
 
         // Cached ranges belong in the store before the tile is judged to be
         // missing them; otherwise the first tile of a launch is drawn bare and
-        // handed over a moment later for no reason.
-        if (glyphsWarmed.count > 0L) {
+        // handed over a moment later for no reason. Geometry has no glyphs, so
+        // it does not wait on them.
+        if (content != Content.GEOMETRY && glyphsWarmed.count > 0L) {
             runCatching {
                 glyphsWarmed.await(GLYPH_WARM_WAIT_MS, java.util.concurrent.TimeUnit.MILLISECONDS)
             }
@@ -553,7 +606,9 @@ class VectorTileProvider private constructor(
 
         // Short of its sheet counts the same as short of its glyphs: the tile
         // is missing ink it will have later.
-        val drawnShortOfGlyphs = requestGlyphs(request, tiles) || renderer.needsSprite()
+        val drawnShortOfGlyphs =
+            content != Content.GEOMETRY &&
+                (requestGlyphs(request, tiles) || renderer.needsSprite())
 
         // The last chance to bail. Past here the work is native and cannot be
         // interrupted, and it is the part that takes hundreds of milliseconds
@@ -568,59 +623,10 @@ class VectorTileProvider private constructor(
         }
 
         val renderStarted = System.nanoTime()
-        // A patterned fill needs an image repeated across the polygon, which
-        // the GPU path cannot draw, so those tiles take the slower road.
-        val onGpu =
-            gpu != null &&
-                runCatching { !renderer.needsCpu(request.z, tiles) }.getOrDefault(true)
-        if (gpu != null && !onGpu && Log.isLoggable(TAG, Log.DEBUG)) {
-            Log.d(
-                TAG,
-                "tile ${request.z}/${request.x}/${request.y} drawn on the CPU: " +
-                    "the style paints a pattern here",
-            )
-        }
         val png =
-            if (onGpu) {
-                // The GL thread serialises drawing already, so the CPU-side
-                // semaphore would only add queueing on top of it.
-                val drawn =
-                    try {
-                        renderOnGpu(request, tiles)
-                    } catch (error: Throwable) {
-                        // Logged, not swallowed: a silent catch here is what made a
-                        // GPU path that fell back on every single tile look healthy.
-                        Log.w(TAG, "GPU render failed; falling back to the CPU", error)
-                        null
-                    }
-                if (drawn != null) gpuRenderCount.incrementAndGet() else gpuFallbackCount.incrementAndGet()
-                drawn
-                    ?: run {
-                        // A GPU failure must not lose the tile; the CPU can always
-                        // draw it.
-                        renderSlots.acquire()
-                        try {
-                            // Waiting for a slot is where a tile spends its
-                            // time when the map is busy, and the map can lose
-                            // interest while it waits.
-                            if (isCancelled()) return null
-                            runCatching {
-                                renderer.render(request.z, request.x, request.y, tileSize, tiles)
-                            }.getOrNull()
-                        } finally {
-                            renderSlots.release()
-                        }
-                    }
-            } else {
-                renderSlots.acquire()
-                try {
-                    if (isCancelled()) return null
-                    runCatching {
-                        renderer.render(request.z, request.x, request.y, tileSize, tiles)
-                    }.getOrNull()
-                } finally {
-                    renderSlots.release()
-                }
+            when (content) {
+                Content.LABELS -> renderLabelTile(request, tiles, isCancelled)
+                else -> renderGroundTile(request, tiles, isCancelled, content)
             }
         val renderMs = (System.nanoTime() - renderStarted) / 1_000_000
 
@@ -638,6 +644,126 @@ class VectorTileProvider private constructor(
             if (store != null) diskCache?.put(store, png)
         }
         return png
+    }
+
+    /**
+     * Draws the ground: on the GPU when there is one and no pattern in the
+     * tile, on the CPU otherwise. [Content.FULL] also composites labels over
+     * the readback, the single-layer behaviour.
+     */
+    private fun renderGroundTile(
+        request: TileRequest,
+        tiles: List<ByteArray?>,
+        isCancelled: () -> Boolean,
+        content: Content,
+    ): ByteArray? {
+        // A patterned fill needs an image repeated across the polygon, which
+        // the GPU path cannot draw, so those tiles take the slower road.
+        val onGpu =
+            gpu != null &&
+                runCatching { !renderer.needsCpu(request.z, tiles) }.getOrDefault(true)
+        if (gpu != null && !onGpu && Log.isLoggable(TAG, Log.DEBUG)) {
+            Log.d(
+                TAG,
+                "tile ${request.z}/${request.x}/${request.y} drawn on the CPU: " +
+                    "the style paints a pattern here",
+            )
+        }
+        if (onGpu) {
+            // The GL thread serialises drawing already, so the CPU-side
+            // semaphore would only add queueing on top of it.
+            val drawn =
+                try {
+                    renderOnGpu(request, tiles, withLabels = content == Content.FULL)
+                } catch (error: Throwable) {
+                    // Logged, not swallowed: a silent catch here is what made a
+                    // GPU path that fell back on every single tile look healthy.
+                    Log.w(TAG, "GPU render failed; falling back to the CPU", error)
+                    null
+                }
+            if (drawn != null) {
+                gpuRenderCount.incrementAndGet()
+                return drawn
+            }
+            gpuFallbackCount.incrementAndGet()
+        }
+        // A GPU failure must not lose the tile; the CPU can always draw it.
+        renderSlots.acquire()
+        return try {
+            // Waiting for a slot is where a tile spends its time when the map
+            // is busy, and the map can lose interest while it waits.
+            if (isCancelled()) return null
+            runCatching {
+                renderer.render(
+                    request.z,
+                    request.x,
+                    request.y,
+                    tileSize,
+                    tiles,
+                    geometryOnly = content == Content.GEOMETRY,
+                )
+            }.getOrNull()
+        } finally {
+            renderSlots.release()
+        }
+    }
+
+    /**
+     * Draws the labels and icons on a transparent ground.
+     *
+     * Pure CPU: no GL thread, no readback -- which is the point of serving
+     * them as their own layer. Eight of these can run at once while the GPU
+     * draws geometry underneath.
+     */
+    private fun renderLabelTile(
+        request: TileRequest,
+        tiles: List<ByteArray?>,
+        isCancelled: () -> Boolean,
+    ): ByteArray? {
+        renderSlots.acquire()
+        return try {
+            if (isCancelled()) return null
+            val rgba = ByteArray(tileSize * tileSize * 4)
+            val placed =
+                runCatching {
+                    renderer.drawLabels(request.z, request.x, request.y, tileSize, rgba, tiles)
+                }.getOrElse {
+                    Log.w(TAG, "label tile failed", it)
+                    return null
+                }
+            // A tile with nothing on it is common -- water, fields -- and one
+            // shared transparent PNG serves them all.
+            if (placed == 0) return emptyLabelTile
+            encodeLabelTile(rgba)
+        } finally {
+            renderSlots.release()
+        }
+    }
+
+    /** One fully transparent tile, encoded once. */
+    private val emptyLabelTile: ByteArray by lazy {
+        encodeLabelTile(ByteArray(tileSize * tileSize * 4))
+            ?: ByteArray(0)
+    }
+
+    /** Direct buffers for the label encoder, one per concurrent render slot. */
+    private val labelEncodeBuffers =
+        java.util.concurrent.ArrayBlockingQueue<java.nio.ByteBuffer>(8)
+
+    private fun encodeLabelTile(rgba: ByteArray): ByteArray? {
+        val buffer =
+            labelEncodeBuffers.poll()
+                ?: java.nio.ByteBuffer.allocateDirect(tileSize * tileSize * 4)
+        return try {
+            buffer.clear()
+            buffer.put(rgba)
+            buffer.rewind()
+            // The label pass writes straight alpha, which is what PNG stores.
+            com.mapconductor.core.tileserver.TilePngEncoder
+                .encode(buffer, tileSize, tileSize, premultiplied = false)
+        } finally {
+            labelEncodeBuffers.offer(buffer)
+        }
     }
 
     /**
@@ -761,6 +887,7 @@ class VectorTileProvider private constructor(
     private fun renderOnGpu(
         request: TileRequest,
         tiles: List<ByteArray?>,
+        withLabels: Boolean,
     ): ByteArray? {
         val rasterizer = gpu ?: return null
         val lengths = IntArray(tiles.size) { tiles[it]?.size ?: 0 }
@@ -780,7 +907,7 @@ class VectorTileProvider private constructor(
         // this the GPU path lost every label a style asked for and said
         // nothing about it.
         val decorate: ((ByteArray) -> Unit)? =
-            if (glyphsUnavailable) {
+            if (!withLabels || glyphsUnavailable) {
                 null
             } else {
                 { rgba ->

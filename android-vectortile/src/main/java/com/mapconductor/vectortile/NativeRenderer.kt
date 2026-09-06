@@ -42,6 +42,7 @@ internal object NativeRenderer {
         tileSize: Int,
         data: ByteArray,
         lengths: IntArray,
+        geometryOnly: Int,
     ): ByteArray
 
     /** The style's `glyphs` URL template, or empty when it has none. */

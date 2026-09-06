@@ -28,8 +28,10 @@ import kotlinx.coroutines.withContext
  * work on Google Maps, MapKit, HERE, ArcGIS and the rest — none of which can
  * render a vector style themselves.
  *
- * Symbol layers are not drawn; [onDiagnostics] reports that and anything else
- * about the style worth knowing.
+ * Under the hood this mounts *two* raster layers: the geometry, GPU-drawn and
+ * never invalidated, and a transparent label overlay above it, CPU-drawn and
+ * refreshed alone when fonts arrive. To the map and the user they read as one
+ * layer.
  *
  * Pass [diskCacheDir] to keep rendered tiles across app launches. It does not
  * make the first view faster — the tiles still have to be fetched and
@@ -102,7 +104,8 @@ fun MapViewScope.VectorTileLayer(
 
     DisposableEffect(groupId, tileSize) {
         onDispose {
-            tileServer.unregister(groupId)
+            tileServer.unregister("$groupId-geom")
+            tileServer.unregister("$groupId-labels")
             provider?.close()
             provider = null
         }
@@ -127,7 +130,13 @@ fun MapViewScope.VectorTileLayer(
                 // round trip and a tile at low zoom wants dozens, so tiles are
                 // drawn with whatever is loaded and refetched once more is.
                 it.onGlyphsLoaded = { glyphGeneration++ }
-                tileServer.register(groupId, it)
+                // Two routes from one provider: the ground and the labels are
+                // served as separate tile layers stacked on each other. The
+                // user sees one map; the halves render in parallel -- GPU
+                // under, CPU over -- and glyphs arriving refresh only the
+                // transparent overlay, never the ground.
+                tileServer.register("$groupId-geom", it.geometryTiles)
+                tileServer.register("$groupId-labels", it.labelTiles)
                 provider = it
                 onDiagnostics?.invoke(it.diagnostics())
             }.onFailure {
@@ -140,58 +149,60 @@ fun MapViewScope.VectorTileLayer(
     if (failure != null) return
 
     /**
-     * The raster layers currently mounted: normally one, briefly two.
-     *
-     * Changing a raster layer's source URL is implemented as remove-then-add,
-     * so the layer vanishes for as long as the new source takes to fetch its
-     * first tiles — the flash after labels arrived. Adding the replacement
-     * alongside and dropping the old one a moment later hands over instead:
-     * the new tiles are opaque, so they cover the old ones as they land, and
-     * there is never a frame with nothing on it.
+     * The ground: geometry only, drawn by the GPU, never invalidated by
+     * glyphs. One layer, mounted once, at the bottom.
      */
-    val mounted =
+    val ground =
         remember(groupId, tileSize) {
-            mutableStateListOf(
-                RasterLayerState(
-                    id = "$groupId-g0",
-                    source =
-                        RasterLayerSource.UrlTemplate(
-                            template = tileServer.urlTemplate(groupId, tileSize, "g0"),
-                            tileSize = tileSize,
-                            maxZoom = maxZoom,
-                            scheme = TileScheme.XYZ,
-                        ),
-                    opacity = opacity.coerceIn(0.0f, 1.0f),
-                    visible = visible,
-                    zIndex = 0,
-                ),
+            RasterLayerState(
+                id = "$groupId-geom",
+                source =
+                    RasterLayerSource.UrlTemplate(
+                        template = tileServer.urlTemplate("$groupId-geom", tileSize, "static"),
+                        tileSize = tileSize,
+                        maxZoom = maxZoom,
+                        scheme = TileScheme.XYZ,
+                    ),
+                opacity = opacity.coerceIn(0.0f, 1.0f),
+                visible = visible,
+                zIndex = 0,
             )
         }
 
-    fun layerStateFor(generation: Int) =
+    /**
+     * The label overlays currently mounted: normally one, briefly two.
+     *
+     * Changing a raster layer's source URL is implemented as remove-then-add,
+     * so the layer vanishes for as long as the new source takes its first
+     * tiles. Adding the replacement alongside and dropping the old one a
+     * moment later hands over instead — and because the ground is its own
+     * layer underneath, the worst a handover can now cost is a moment of
+     * doubled labels, never a bare map.
+     */
+    fun labelStateFor(generation: Int) =
         RasterLayerState(
-            id = "$groupId-g$generation",
+            id = "$groupId-labels-g$generation",
             source =
                 RasterLayerSource.UrlTemplate(
-                    template = tileServer.urlTemplate(groupId, tileSize, "g$generation"),
+                    template = tileServer.urlTemplate("$groupId-labels", tileSize, "g$generation"),
                     tileSize = tileSize,
                     maxZoom = maxZoom,
                     scheme = TileScheme.XYZ,
                 ),
             opacity = opacity.coerceIn(0.0f, 1.0f),
             visible = visible,
-            // Above the generation it replaces. The provider orders raster
-            // layers by zIndex and the order between equal ones is whatever
-            // the map iterates in — which put the old, unlabelled layer on top
-            // as often as not, and the map alternated between labelled and
-            // unlabelled for the length of the handover. That was the flicker:
-            // not a blank frame, the two versions taking turns.
-            zIndex = generation,
+            // Above the ground, and above the generation it replaces.
+            zIndex = 1000 + generation,
         )
+
+    val mounted =
+        remember(groupId, tileSize) {
+            mutableStateListOf(labelStateFor(0))
+        }
 
     LaunchedEffect(glyphGeneration) {
         if (glyphGeneration == 0) return@LaunchedEffect
-        mounted.add(layerStateFor(glyphGeneration))
+        mounted.add(labelStateFor(glyphGeneration))
         // Long enough for the replacement's tiles to arrive. There is no
         // per-source "loaded" signal to wait on, and holding the old layer a
         // little too long only costs one extra layer for that moment.
@@ -202,6 +213,8 @@ fun MapViewScope.VectorTileLayer(
     }
 
     LaunchedEffect(opacity, visible) {
+        ground.opacity = opacity.coerceIn(0.0f, 1.0f)
+        ground.visible = visible
         mounted.forEach {
             it.opacity = opacity.coerceIn(0.0f, 1.0f)
             it.visible = visible
@@ -212,6 +225,7 @@ fun MapViewScope.VectorTileLayer(
     // mounted, and makes the dependency explicit rather than incidental.
     LaunchedEffect(current) { }
 
+    RasterLayer(state = ground)
     mounted.forEach { RasterLayer(state = it) }
 }
 
