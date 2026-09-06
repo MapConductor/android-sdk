@@ -355,6 +355,15 @@ class VectorTileProvider private constructor(
         private const val GLYPH_WARM_WAIT_MS: Long = 1_500
 
         /**
+         * How much finer the label overlay is drawn than the tile it covers.
+         *
+         * Two, because phone screens are two-to-three device pixels per style
+         * pixel and a glyph drawn at one-to-one arrives at the eye stretched
+         * to blur. The image covers the same ground; only its grain changes.
+         */
+        private const val LABEL_RESOLUTION = 2
+
+        /**
          * @param styleJson a MapLibre style document
          * @param headers sent with every source tile request
          * @param fetchTile overrides fetching entirely; return null for "no tile"
@@ -723,10 +732,18 @@ class VectorTileProvider private constructor(
         renderSlots.acquire()
         return try {
             if (isCancelled()) return null
-            val rgba = ByteArray(tileSize * tileSize * 4)
+            // Drawn at twice the tile's nominal size. The image is stretched
+            // over the same ground either way, and at one-to-one every glyph
+            // was being blown up by the screen's density and read as blur --
+            // text is where resolution is seen, so text is where it is spent.
+            // The ground layer stays at one-to-one: a fill's edge does not
+            // show it the way a letter does, and its cost is per pixel on the
+            // GPU readback.
+            val resolution = tileSize * LABEL_RESOLUTION
+            val rgba = ByteArray(resolution * resolution * 4)
             val placed =
                 runCatching {
-                    renderer.drawLabels(request.z, request.x, request.y, tileSize, rgba, tiles)
+                    renderer.drawLabels(request.z, request.x, request.y, resolution, rgba, tiles)
                 }.getOrElse {
                     Log.w(TAG, "label tile failed", it)
                     return null
@@ -734,7 +751,7 @@ class VectorTileProvider private constructor(
             // A tile with nothing on it is common -- water, fields -- and one
             // shared transparent PNG serves them all.
             if (placed == 0) return emptyLabelTile
-            encodeLabelTile(rgba)
+            encodeLabelTile(rgba, resolution)
         } finally {
             renderSlots.release()
         }
@@ -742,25 +759,35 @@ class VectorTileProvider private constructor(
 
     /** One fully transparent tile, encoded once. */
     private val emptyLabelTile: ByteArray by lazy {
-        encodeLabelTile(ByteArray(tileSize * tileSize * 4))
+        val resolution = tileSize * LABEL_RESOLUTION
+        encodeLabelTile(ByteArray(resolution * resolution * 4), resolution)
             ?: ByteArray(0)
     }
 
-    /** Direct buffers for the label encoder, one per concurrent render slot. */
+    /**
+     * Direct buffers for the label encoder.
+     *
+     * Capped below the worker count on purpose: at label resolution each is
+     * several megabytes, and [renderSlots] already bounds how many renders
+     * run at once.
+     */
     private val labelEncodeBuffers =
-        java.util.concurrent.ArrayBlockingQueue<java.nio.ByteBuffer>(8)
+        java.util.concurrent.ArrayBlockingQueue<java.nio.ByteBuffer>(4)
 
-    private fun encodeLabelTile(rgba: ByteArray): ByteArray? {
+    private fun encodeLabelTile(
+        rgba: ByteArray,
+        resolution: Int,
+    ): ByteArray? {
         val buffer =
-            labelEncodeBuffers.poll()
-                ?: java.nio.ByteBuffer.allocateDirect(tileSize * tileSize * 4)
+            labelEncodeBuffers.poll()?.takeIf { it.capacity() >= rgba.size }
+                ?: java.nio.ByteBuffer.allocateDirect(rgba.size)
         return try {
             buffer.clear()
             buffer.put(rgba)
             buffer.rewind()
             // The label pass writes straight alpha, which is what PNG stores.
             com.mapconductor.core.tileserver.TilePngEncoder
-                .encode(buffer, tileSize, tileSize, premultiplied = false)
+                .encode(buffer, resolution, resolution, premultiplied = false)
         } finally {
             labelEncodeBuffers.offer(buffer)
         }
