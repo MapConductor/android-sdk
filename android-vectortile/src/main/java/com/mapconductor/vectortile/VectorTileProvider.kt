@@ -30,6 +30,7 @@ class VectorTileProvider private constructor(
     private val fetchTile: (String) -> ByteArray?,
     cacheBytes: Int,
     private val diskCache: TileDiskCache?,
+    private val glyphCache: GlyphDiskCache?,
     styleJson: String,
     /** Null when rendering on the CPU. */
     private val gpu: GpuTileRasterizer?,
@@ -141,6 +142,33 @@ class VectorTileProvider private constructor(
     private val glyphsUnavailable: Boolean = renderer.glyphsUrlTemplate() == null
 
     /**
+     * Open once the ranges kept from earlier runs are back in the store.
+     *
+     * A tile drawn before that has no labels on it and has to be handed over
+     * later, which is the thing this is here to avoid, so the first render
+     * waits -- but only for reads of a few small local files, and only up to
+     * [GLYPH_WARM_WAIT_MS] so a slow disk cannot hold the map up.
+     */
+    private val glyphsWarmed = java.util.concurrent.CountDownLatch(1)
+
+    init {
+        val cache = glyphCache
+        if (cache == null || glyphsUnavailable) {
+            glyphsWarmed.countDown()
+        } else {
+            Thread({
+                val started = System.nanoTime()
+                val loaded = runCatching { cache.warm { renderer.addGlyphs(it) } }.getOrDefault(0)
+                glyphsWarmed.countDown()
+                if (Log.isLoggable(TAG, Log.DEBUG)) {
+                    val ms = (System.nanoTime() - started) / 1_000_000
+                    Log.d(TAG, "loaded $loaded glyph ranges from disk in ${ms}ms")
+                }
+            }, "mc-glyph-warm").apply { isDaemon = true }.start()
+        }
+    }
+
+    /**
      * Source tiles keyed by URL.
      *
      * Not an optimisation detail: neighbouring target tiles routinely need the
@@ -210,6 +238,27 @@ class VectorTileProvider private constructor(
         const val DEFAULT_DISK_CACHE_BYTES: Long = 64L * 1024 * 1024
 
         /**
+         * Glyph range disk cache budget, in bytes.
+         *
+         * Measured rather than guessed: one screen of Tokyo wants 69 ranges
+         * and they average 150KB each, so a single view is already 10MB. At
+         * 8MB the sweep threw away exactly what the next launch was about to
+         * ask for -- 43 of the 69 survived and the map still spent 3.4
+         * seconds unlabelled. This holds roughly 200 ranges, which is a
+         * couple of scripts' worth of roaming.
+         */
+        const val DEFAULT_GLYPH_CACHE_BYTES: Long = 32L * 1024 * 1024
+
+        /**
+         * How long a tile waits for the stored ranges to be read back.
+         *
+         * Reading them is local and takes milliseconds; the limit is only so
+         * that a wedged filesystem costs a mute first tile rather than a map
+         * that never draws.
+         */
+        private const val GLYPH_WARM_WAIT_MS: Long = 1_500
+
+        /**
          * @param styleJson a MapLibre style document
          * @param headers sent with every source tile request
          * @param fetchTile overrides fetching entirely; return null for "no tile"
@@ -247,6 +296,10 @@ class VectorTileProvider private constructor(
                 fetchTile = fetchTile ?: { url -> httpGet(url, headers) },
                 cacheBytes = cacheBytes,
                 diskCache = diskCacheDir?.let { TileDiskCache(it, diskCacheBytes) },
+                glyphCache =
+                    diskCacheDir?.let {
+                        GlyphDiskCache(File(it, "glyphs"), DEFAULT_GLYPH_CACHE_BYTES)
+                    },
                 styleJson = styleJson,
                 gpu = gpu,
             )
@@ -378,6 +431,15 @@ class VectorTileProvider private constructor(
         val fetchMs = (System.nanoTime() - fetchStarted) / 1_000_000
         if (closed) return null
 
+        // Cached ranges belong in the store before the tile is judged to be
+        // missing them; otherwise the first tile of a launch is drawn bare and
+        // handed over a moment later for no reason.
+        if (glyphsWarmed.count > 0L) {
+            runCatching {
+                glyphsWarmed.await(GLYPH_WARM_WAIT_MS, java.util.concurrent.TimeUnit.MILLISECONDS)
+            }
+        }
+
         val drawnShortOfGlyphs = requestGlyphs(request, tiles)
 
         // The last chance to bail. Past here the work is native and cannot be
@@ -489,7 +551,13 @@ class VectorTileProvider private constructor(
                     glyphFetchers.execute {
                         try {
                             if (closed) return@execute
-                            val bytes = runCatching { fetchTile(url) }.getOrNull()
+                            val cached = glyphCache?.get(url)
+                            val bytes =
+                                cached ?: runCatching { fetchTile(url) }.getOrNull()?.also {
+                                    // Ranges do not change, so this is kept
+                                    // without an expiry.
+                                    glyphCache?.put(url, it)
+                                }
                             if (bytes == null || bytes.isEmpty()) {
                                 // Left in the claimed set: a range the server
                                 // does not have will not appear on a retry.
