@@ -74,7 +74,7 @@ class StreetTreeViewModel(
         coroutine.launch {
             _isDataLoading.value = true
             val data = dataLoader.load()
-            val icons = StreetTreeIcons.palette(data.species.size, sizePx = 14)
+            val icons = StreetTreeIcons.palette(data.species.size, sizeDp = 10f)
             _markerList.value =
                 data.trees.mapIndexed { index, tree ->
                     MarkerState(

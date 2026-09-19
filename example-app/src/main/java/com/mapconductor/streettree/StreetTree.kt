@@ -1,5 +1,6 @@
 package com.mapconductor.streettree
 
+import com.mapconductor.core.ResourceProvider
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.unit.Dp
@@ -49,11 +50,14 @@ data class StreetTree(
 /** A small coloured dot. One per species, shared by every tree of that species. */
 class TreeDotIcon(
     bitmap: Bitmap,
+    /** ビットマップの実ピクセル。タイルレンダラはこれを canvas 上の大きさに使う。 */
     sizePx: Float,
+    /** 同じ絵の dp での大きさ。ネイティブマーカー経路と当たり判定はこちらを見る。 */
+    sizeDp: Float,
 ) : MarkerIconInterface {
     override val scale: Float = 1.0f
     override val anchor: Offset = Offset(0.5f, 0.5f)
-    override val iconSize: Dp = sizePx.dp
+    override val iconSize: Dp = sizeDp.dp
     override val infoAnchor: Offset = Offset(0.5f, 0.0f)
     override val debug: Boolean = false
 
@@ -66,10 +70,23 @@ class TreeDotIcon(
 }
 
 object StreetTreeIcons {
+    /**
+     * 種ごとの色分けドット。
+     *
+     * [sizeDp] は **dp**。ビットマップは密度倍したピクセルで作る -- core の
+     * [com.mapconductor.core.marker.AbstractDefaultIcon] が
+     * `dpToPxForBitmap(iconSize)` でそうしているのと同じ流儀で、ここだけ生ピクセル
+     * で作ると端末が精細になるほど小さく見える。
+     *
+     * 実測（density 2.13 の端末、zoom > 15）: 生ピクセルだと見かけ 8.47dp、
+     * dp 基準だと 18dp。ios-sdk は既定アイコンもサンプルもポイント基準なので、
+     * dp 基準にして初めて 3 プラットフォームが揃う。
+     */
     fun palette(
         count: Int,
-        sizePx: Int,
+        sizeDp: Float,
     ): List<TreeDotIcon> {
+        val sizePx = ResourceProvider.dpToPxForBitmap(sizeDp).toInt().coerceAtLeast(1)
         val paint = Paint(Paint.ANTI_ALIAS_FLAG)
         return (0 until count).map { index ->
             // Golden-angle hue rotation, so neighbouring species indices do not
@@ -94,7 +111,7 @@ object StreetTreeIcons {
                 paint.strokeWidth = 1f
                 drawCircle(sizePx / 2f, sizePx / 2f, radius, paint)
             }
-            TreeDotIcon(bitmap, sizePx.toFloat())
+            TreeDotIcon(bitmap, sizePx.toFloat(), sizeDp)
         }
     }
 }
