@@ -11,8 +11,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.mapconductor.compose.MapViewScope
 import com.mapconductor.compose.raster.RasterLayer
+import com.mapconductor.core.map.AttributionRule
+import com.mapconductor.core.map.LocalMapServiceRegistry
 import com.mapconductor.core.raster.RasterLayerSource
 import com.mapconductor.core.raster.RasterLayerState
+import com.mapconductor.core.raster.RasterTilePreferenceKey
 import com.mapconductor.core.raster.TileScheme
 import com.mapconductor.core.tileserver.TileServerRegistry
 import java.io.File
@@ -31,7 +34,9 @@ import kotlinx.coroutines.withContext
  * Under the hood this mounts *two* raster layers: the geometry, GPU-drawn and
  * never invalidated, and a transparent label overlay above it, CPU-drawn and
  * refreshed alone when fonts arrive. To the map and the user they read as one
- * layer.
+ * layer. (Measured on an iPad against one merged layer: the merged tile waits
+ * for its nine neighbours and its glyphs before it can show anything, and
+ * first paint was three times slower; the split lets the ground land first.)
  *
  * Pass [diskCacheDir] to keep rendered tiles across app launches. It does not
  * make the first view faster — the tiles still have to be fetched and
@@ -63,7 +68,19 @@ import kotlinx.coroutines.withContext
 @Composable
 fun MapViewScope.VectorTileLayer(
     styleJson: String,
-    tileSize: Int = VectorTileProvider.DEFAULT_TILE_SIZE,
+    /**
+     * タイル 1 枚の一辺（dp）。null なら地図 SDK の好みに従う。
+     *
+     * 既定を null にしてあるのは、良い値が**載せる地図による**から。1 枚あたりの
+     * 固定費は枚数に比例するので同じ画面なら大きいタイルが安く、既定は 512。
+     * ただし ArcGIS の 3D SceneView のように「タイルは 256px」という前提で
+     * レベルを選ぶ SDK があり、そこへ 512 を渡すと 1 段深いレベルを 4 倍の枚数で
+     * 引く。プロバイダが [RasterTilePreferenceKey] で宣言していればそれに従い、
+     * 何も言わなければ [VectorTileProvider.DEFAULT_TILE_SIZE]。
+     *
+     * 明示した値は常に優先される。
+     */
+    tileSize: Int? = null,
     opacity: Float = 1.0f,
     visible: Boolean = true,
     maxZoom: Int = 22,
@@ -93,6 +110,11 @@ fun MapViewScope.VectorTileLayer(
 ) {
     val groupId = remember { "vectortile-${UUID.randomUUID()}" }
     val tileServer = remember { TileServerRegistry.get() }
+
+    val preferred = LocalMapServiceRegistry.current.get(RasterTilePreferenceKey)?.preferredTileSize
+
+    @Suppress("NAME_SHADOWING")
+    val tileSize = tileSize ?: preferred ?: VectorTileProvider.DEFAULT_TILE_SIZE
 
     // Parsing a real basemap style is not free, so it happens once and off the
     // main thread; the layer simply does not mount until it is ready.
@@ -149,11 +171,36 @@ fun MapViewScope.VectorTileLayer(
     if (failure != null) return
 
     /**
+     * The credits the style's sources ask for, carried by the layer itself.
+     *
+     * The map's attribution overlay is fed from `resolveMapAttributions`,
+     * which merges the design's rules with those of every visible raster
+     * layer — so a credit attached here appears without the host writing any
+     * UI, and disappears when the layer is unmounted. Nothing else about this
+     * layer can be wrong while still looking right; the tiles draw perfectly
+     * whether or not anyone is credited for them.
+     *
+     * No zoom or bounds narrowing on the rules. A source's `maxzoom` is where
+     * its tiles stop, not where its data stops being on screen: past it the
+     * renderer magnifies the deepest tile it has, so the data is still shown
+     * and still has to be credited. Crediting a little too often costs a line
+     * of text; crediting too rarely breaks a licence.
+     */
+    val credits =
+        remember(current) {
+            current.attributions().map { AttributionRule(attribution = it) }
+        }
+
+    /**
      * The ground: geometry only, drawn by the GPU, never invalidated by
      * glyphs. One layer, mounted once, at the bottom.
      */
     val ground =
-        remember(groupId, tileSize) {
+        // `credits` is a key so that swapping the style to one with different
+        // sources re-credits the map. Two styles with the same credits compare
+        // equal and the layer is left alone, which is the ordinary case -- a
+        // recolour keeps its data.
+        remember(groupId, tileSize, credits) {
             RasterLayerState(
                 id = "$groupId-geom",
                 source =
@@ -161,6 +208,7 @@ fun MapViewScope.VectorTileLayer(
                         template = tileServer.urlTemplate("$groupId-geom", tileSize, "static"),
                         tileSize = tileSize,
                         maxZoom = maxZoom,
+                        attributionRules = credits,
                         scheme = TileScheme.XYZ,
                     ),
                 opacity = opacity.coerceIn(0.0f, 1.0f),
@@ -187,6 +235,10 @@ fun MapViewScope.VectorTileLayer(
                     template = tileServer.urlTemplate("$groupId-labels", tileSize, "g$generation"),
                     tileSize = tileSize,
                     maxZoom = maxZoom,
+                    // Both halves carry the credit. `resolveMapAttributions`
+                    // ends in `distinct()`, so it is printed once; putting it
+                    // on both means hiding either half cannot silence it.
+                    attributionRules = credits,
                     scheme = TileScheme.XYZ,
                 ),
             opacity = opacity.coerceIn(0.0f, 1.0f),

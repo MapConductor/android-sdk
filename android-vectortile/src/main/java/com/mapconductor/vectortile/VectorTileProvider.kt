@@ -282,6 +282,22 @@ class VectorTileProvider private constructor(
             true,
         )
 
+    /**
+     * Bounds only GPU input packing and native tessellation.
+     *
+     * The Pixel 5a gains little throughput from its seventh and eighth
+     * simultaneous preparation, while latency and memory rise sharply. Six
+     * slots also let its six street-zoom viewport tiles start immediately;
+     * only excess/fallback work queues. This is deliberately separate from
+     * [renderSlots]: labels must not wait behind geometry that will later
+     * serialize on the GL thread anyway.
+     */
+    private val gpuPrepareSlots =
+        Semaphore(
+            minOf(6, maxOf(1, Runtime.getRuntime().availableProcessors() - 1)),
+            true,
+        )
+
     /** URLs known to hold nothing, so a missing tile is not re-requested. */
     private val empties = java.util.Collections.synchronizedSet(HashSet<String>())
 
@@ -381,7 +397,10 @@ class VectorTileProvider private constructor(
             renderMode: RenderMode = RenderMode.AUTO,
             fetchTile: ((String) -> ByteArray?)? = null,
         ): VectorTileProvider {
-            val renderer = VectorTileRenderer.create(styleJson)
+            // The renderer needs the dp a tile covers, not the pixels a render
+            // asks for: the label pass draws at twice the pixels, and the
+            // style's sizes are screen units either way.
+            val renderer = VectorTileRenderer.create(styleJson, tileSize)
             val gpu =
                 when (renderMode) {
                     RenderMode.CPU -> null
@@ -456,6 +475,20 @@ class VectorTileProvider private constructor(
                 if (!reuse) connection.disconnect()
             }
         }
+    }
+
+    /**
+     * The credits this style's sources ask to be shown.
+     *
+     * These are not optional. A style is data under someone's licence, and the
+     * sample basemap draws OpenStreetMap, whose licence requires the credit;
+     * reading it out of the style and then not showing it is the one way this
+     * layer can be used wrongly without anything looking wrong. May contain
+     * HTML — the credit is normally a link to the licence.
+     */
+    fun attributions(): List<String> {
+        val array = JSONArray(renderer.attributions())
+        return (0 until array.length()).map { array.getString(it) }
     }
 
     /** Reasons the current style may not render as intended. */
@@ -568,7 +601,7 @@ class VectorTileProvider private constructor(
                 if (Log.isLoggable(TAG, Log.DEBUG)) {
                     Log.d(
                         TAG,
-                        "tile ${request.z}/${request.x}/${request.y} disk-hit " +
+                        "tile ${request.z}/${request.x}/${request.y} content=$content disk-hit " +
                             "bytes=${hit.size}",
                     )
                 }
@@ -588,10 +621,24 @@ class VectorTileProvider private constructor(
         // for what takes a fraction of it at once. Most are cache hits in
         // steady use -- every tile is its neighbours' neighbour.
         val urls =
-            (0 until plan.length()).map { plan.getJSONObject(it).getString("url") }
-        val pending =
+            (0 until plan.length()).map {
+                val source = plan.getJSONObject(it)
+                // Preserve positional entries for Rust's plan, but avoid both
+                // downloading and packing neighbours used only by labels.
+                if (content == Content.GEOMETRY && source.optBoolean("labelsOnly", false)) {
+                    null
+                } else {
+                    source.getString("url")
+                }
+            }
+        val pending: List<java.util.concurrent.Future<ByteArray?>> =
             urls.map { url ->
-                sourceFetchers.submit<ByteArray?> { if (closed) null else sourceTile(url) }
+                if (url == null) {
+                    java.util.concurrent.CompletableFuture
+                        .completedFuture<ByteArray?>(null)
+                } else {
+                    sourceFetchers.submit<ByteArray?> { if (closed) null else sourceTile(url) }
+                }
             }
         for (future in pending) {
             if (isCancelled()) {
@@ -632,18 +679,22 @@ class VectorTileProvider private constructor(
         }
 
         val renderStarted = System.nanoTime()
+        val groundKey = key("geom")
         val png =
             when (content) {
                 Content.LABELS -> renderLabelTile(request, tiles, isCancelled)
-                else -> renderGroundTile(request, tiles, isCancelled, content)
+                Content.FULL ->
+                    groundRasters.get(groundKey)?.let { compositeLabels(request, it, tiles) }
+                        ?: renderGroundTile(request, tiles, isCancelled, content, cacheGroundAs = groundKey)
+                Content.GEOMETRY -> renderGroundTile(request, tiles, isCancelled, content, cacheGroundAs = null)
             }
         val renderMs = (System.nanoTime() - renderStarted) / 1_000_000
 
         if (Log.isLoggable(TAG, Log.DEBUG)) {
             Log.d(
                 TAG,
-                "tile ${request.z}/${request.x}/${request.y} " +
-                    "sources=${plan.length()} fetch=${fetchMs}ms " +
+                "tile ${request.z}/${request.x}/${request.y} content=$content " +
+                    "sources=${urls.count { it != null }} planned=${plan.length()} fetch=${fetchMs}ms " +
                     "render=${renderMs}ms bytes=${png?.size ?: 0}",
             )
         }
@@ -660,11 +711,44 @@ class VectorTileProvider private constructor(
      * tile, on the CPU otherwise. [Content.FULL] also composites labels over
      * the readback, the single-layer behaviour.
      */
+    /**
+     * The ground of every tile the GPU drew, straight RGBA, keyed like the
+     * disk cache. A glyph generation arriving redraws the tile, and with this
+     * the redraw is the labels and a PNG encode, not the geometry again.
+     */
+    private val groundRasters =
+        object : LruCache<String, ByteArray>(64 shl 20) {
+            override fun sizeOf(key: String, value: ByteArray): Int = value.size
+        }
+
+    /**
+     * Labels over a ground the GPU drew earlier: the whole cost of a glyph
+     * generation arriving, once the ground is in [groundRasters].
+     */
+    private fun compositeLabels(
+        request: TileRequest,
+        ground: ByteArray,
+        tiles: List<ByteArray?>,
+    ): ByteArray? {
+        if (ground.size != tileSize * tileSize * 4) return null
+        val rgba = ground.copyOf()
+        if (!glyphsUnavailable) {
+            runCatching { renderer.drawLabels(request.z, request.x, request.y, tileSize, rgba, tiles) }
+                .onFailure { Log.w(TAG, "label pass failed on the cached ground", it) }
+        }
+        // The encoder reads a direct buffer only.
+        val buffer = java.nio.ByteBuffer.allocateDirect(rgba.size).order(java.nio.ByteOrder.nativeOrder())
+        buffer.put(rgba)
+        buffer.rewind()
+        return com.mapconductor.core.tileserver.TilePngEncoder.encode(buffer, tileSize, tileSize, premultiplied = false)
+    }
+
     private fun renderGroundTile(
         request: TileRequest,
         tiles: List<ByteArray?>,
         isCancelled: () -> Boolean,
         content: Content,
+        cacheGroundAs: String?,
     ): ByteArray? {
         // A patterned fill needs an image repeated across the polygon, which
         // the GPU path cannot draw, so those tiles take the slower road.
@@ -679,11 +763,11 @@ class VectorTileProvider private constructor(
             )
         }
         if (onGpu) {
-            // The GL thread serialises drawing already, so the CPU-side
-            // semaphore would only add queueing on top of it.
+            // GL submission is serialized by the rasterizer. Sharing the
+            // label semaphore here increased viewport latency on Pixel 5a.
             val drawn =
                 try {
-                    renderOnGpu(request, tiles, withLabels = content == Content.FULL)
+                    renderOnGpu(request, tiles, withLabels = content == Content.FULL, isCancelled, cacheGroundAs)
                 } catch (error: Throwable) {
                     // Logged, not swallowed: a silent catch here is what made a
                     // GPU path that fell back on every single tile look healthy.
@@ -694,6 +778,7 @@ class VectorTileProvider private constructor(
                 gpuRenderCount.incrementAndGet()
                 return drawn
             }
+            if (isCancelled()) return null
             gpuFallbackCount.incrementAndGet()
         }
         // A GPU failure must not lose the tile; the CPU can always draw it.
@@ -729,7 +814,9 @@ class VectorTileProvider private constructor(
         tiles: List<ByteArray?>,
         isCancelled: () -> Boolean,
     ): ByteArray? {
+        val queued = System.nanoTime()
         renderSlots.acquire()
+        val started = System.nanoTime()
         return try {
             if (isCancelled()) return null
             // Drawn at twice the tile's nominal size. The image is stretched
@@ -740,18 +827,37 @@ class VectorTileProvider private constructor(
             // show it the way a letter does, and its cost is per pixel on the
             // GPU readback.
             val resolution = tileSize * LABEL_RESOLUTION
-            val rgba = ByteArray(resolution * resolution * 4)
-            val placed =
+            val rendered =
                 runCatching {
-                    renderer.drawLabels(request.z, request.x, request.y, resolution, rgba, tiles)
+                    renderer.renderLabels(request.z, request.x, request.y, resolution, tiles)
                 }.getOrElse {
                     Log.w(TAG, "label tile failed", it)
                     return null
                 }
+            val placed = rendered?.placed ?: 0
             // A tile with nothing on it is common -- water, fields -- and one
             // shared transparent PNG serves them all.
-            if (placed == 0) return emptyLabelTile
-            encodeLabelTile(rgba, resolution)
+            val drawn = System.nanoTime()
+            val png =
+                if (rendered == null) {
+                    emptyLabelTile
+                } else {
+                    try {
+                        encodeLabelTile(rendered.buffer, resolution)
+                    } finally {
+                        rendered.close()
+                    }
+                }
+            if (Log.isLoggable(TAG, Log.DEBUG)) {
+                Log.d(
+                    TAG,
+                    "labels ${request.z}/${request.x}/${request.y} placed=$placed " +
+                        "queue=${(started - queued) / 1_000_000.0}ms " +
+                        "draw=${(drawn - started) / 1_000_000.0}ms " +
+                        "encode=${(System.nanoTime() - drawn) / 1_000_000.0}ms",
+                )
+            }
+            png
         } finally {
             renderSlots.release()
         }
@@ -798,6 +904,14 @@ class VectorTileProvider private constructor(
             labelEncodeBuffers.offer(buffer)
         }
     }
+
+    /** Encodes Rust-owned label pixels without another 4 MiB staging copy. */
+    private fun encodeLabelTile(
+        rgba: java.nio.ByteBuffer,
+        resolution: Int,
+    ): ByteArray? =
+        com.mapconductor.core.tileserver.TilePngEncoder
+            .encode(rgba, resolution, resolution, premultiplied = true)
 
     /**
      * Starts fetching the glyph ranges this tile's labels need, and returns.
@@ -921,35 +1035,64 @@ class VectorTileProvider private constructor(
         request: TileRequest,
         tiles: List<ByteArray?>,
         withLabels: Boolean,
+        isCancelled: () -> Boolean,
+        cacheGroundAs: String? = null,
     ): ByteArray? {
         val rasterizer = gpu ?: return null
-        val lengths = IntArray(tiles.size) { tiles[it]?.size ?: 0 }
-        val data = ByteArray(lengths.sum())
-        var offset = 0
-        for (tile in tiles) {
-            if (tile == null) continue
-            tile.copyInto(data, offset)
-            offset += tile.size
-        }
-        val packed =
-            renderer.tessellate(
-                request.z, request.x, request.y, tileSize, data, lengths,
+        val queued = System.nanoTime()
+        if (isCancelled()) return null
+        gpuPrepareSlots.acquire()
+        val started = System.nanoTime()
+        val tessellated =
+            try {
+                if (isCancelled()) return null
+                val lengths = IntArray(tiles.size) { tiles[it]?.size ?: 0 }
+                val data = ByteArray(lengths.sum())
+                var offset = 0
+                for (tile in tiles) {
+                    if (tile == null) continue
+                    tile.copyInto(data, offset)
+                    offset += tile.size
+                }
+                TessellatedTile(
+                    renderer.tessellate(
+                        request.z, request.x, request.y, tileSize, data, lengths,
+                    ),
+                )
+            } finally {
+                gpuPrepareSlots.release()
+            }
+        if (Log.isLoggable(TAG, Log.DEBUG)) {
+            Log.d(
+                TAG,
+                "prepare ${request.z}/${request.x}/${request.y} " +
+                    "queue=${(started - queued) / 1_000_000.0}ms " +
+                    "cpu=${(System.nanoTime() - started) / 1_000_000.0}ms",
             )
+        }
+        if (isCancelled()) {
+            tessellated.close()
+            return null
+        }
         // The tessellator produces fills and lines; labels come from a
         // distance field per glyph and are drawn over the readback. Without
         // this the GPU path lost every label a style asked for and said
         // nothing about it.
+        val drawLabels = withLabels && !glyphsUnavailable
         val decorate: ((ByteArray) -> Unit)? =
-            if (!withLabels || glyphsUnavailable) {
+            if (!drawLabels && cacheGroundAs == null) {
                 null
             } else {
                 { rgba ->
-                    runCatching {
-                        renderer.drawLabels(request.z, request.x, request.y, tileSize, rgba, tiles)
-                    }.onFailure { Log.w(TAG, "label pass failed on the GPU readback", it) }
+                    if (cacheGroundAs != null) groundRasters.put(cacheGroundAs, rgba.copyOf())
+                    if (drawLabels) {
+                        runCatching {
+                            renderer.drawLabels(request.z, request.x, request.y, tileSize, rgba, tiles)
+                        }.onFailure { Log.w(TAG, "label pass failed on the GPU readback", it) }
+                    }
                 }
             }
-        return rasterizer.renderPng(TessellatedTile(packed), decorate)
+        return rasterizer.renderPng(tessellated, decorate)
     }
 
     private fun sourceTile(url: String): ByteArray? {
@@ -1003,6 +1146,7 @@ class VectorTileProvider private constructor(
         if (closed) return
         closed = true
         cache.evictAll()
+        groundRasters.evictAll()
         empties.clear()
         gpu?.close()
         renderer.close()
