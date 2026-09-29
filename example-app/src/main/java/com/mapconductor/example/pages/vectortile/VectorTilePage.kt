@@ -1,13 +1,12 @@
 package com.mapconductor.example.pages.vectortile
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Card
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Slider
@@ -53,8 +52,14 @@ fun VectorTilePage(
     // 256 quarters the pixels per tile but needs four times as many tiles for
     // the same screen — and four times the source fetches. Which wins is not
     // predictable, so it is switchable and measured.
-    var tileSize by remember { mutableIntStateOf(512) }
+    // null は「地図 SDK の好みに任せる」。ArcGIS の 3D だけ 256 を要求してくる。
+    var tileSize by remember { mutableStateOf<Int?>(null) }
     var mapViewState by remember { mutableStateOf<com.mapconductor.core.map.MapViewStateInterface<*>?>(null) }
+    // Basemap mode: blank whatever the backend would draw underneath, so the
+    // only thing on screen is the style rendered here. What the backend keeps
+    // is its own business — this is the part of `MapConductorDesign` that can
+    // be tried before the design type itself exists.
+    var asBasemap by remember { mutableStateOf(false) }
 
     // Central Tokyo: the OSMF Shortbread service has street-level detail here,
     // so the layer is obviously doing something at the default zoom.
@@ -75,51 +80,80 @@ fun VectorTilePage(
             .onFailure { failure = it.message ?: it.toString() }
     }
 
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        DemoMapPageScaffold(
-            menuItems = DefaultMapViewItems(initCameraPosition),
-            onToggleSidebar = onToggleSidebar,
-            onMapViewStateChanged = { mapViewState = it },
-        ) { paddings ->
+    DemoMapPageScaffold(
+        menuItems = DefaultMapViewItems(initCameraPosition),
+        onToggleSidebar = onToggleSidebar,
+        onMapViewStateChanged = { mapViewState = it },
+    ) { paddings ->
+        Box(
+            modifier = modifier.fillMaxSize().padding(paddings),
+            contentAlignment = Alignment.Center,
+        ) {
             VectorTileMapComponent(
                 mapViewState = mapViewState,
+                asBasemap = asBasemap,
                 styleJson = styleJson,
                 opacity = opacity,
                 tileSize = tileSize,
-                modifier = modifier.fillMaxSize().padding(paddings),
                 onDiagnostics = { diagnostics = it },
             )
-        }
 
-        Column(
-            modifier =
-                Modifier
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth()
-                    .background(Color(0xCCFFFFFF))
-                    .padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-        ) {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                listOf(256, 512).forEach { size ->
-                    FilterChip(
-                        selected = tileSize == size,
-                        onClick = { tileSize = size },
-                        label = { Text("${size}px", fontSize = 12.sp) },
-                        colors = FilterChipDefaults.filterChipColors(),
+            Card(
+                modifier =
+                    Modifier
+                        .align(Alignment.BottomCenter)
+                        // Clear of the attribution band the SDK draws along the
+                        // bottom edge. A credit half-hidden behind this demo's
+                        // own controls is not a credit -- and this page draws
+                        // OpenStreetMap, whose licence requires one.
+                        .padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 28.dp),
+            ) {
+                Column(
+                    modifier = Modifier.padding(8.dp),
+                ) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        FilterChip(
+                            selected = asBasemap,
+                            onClick = { asBasemap = !asBasemap },
+                            label = { Text("As basemap", fontSize = 12.sp) },
+                            colors = FilterChipDefaults.filterChipColors(),
+                        )
+                        FilterChip(
+                            selected = tileSize == null,
+                            onClick = { tileSize = null },
+                            label = { Text("Auto", fontSize = 12.sp) },
+                            colors = FilterChipDefaults.filterChipColors(),
+                        )
+                        listOf(256, 512).forEach { size ->
+                            FilterChip(
+                                selected = tileSize == size,
+                                onClick = { tileSize = size },
+                                label = { Text("${size}px", fontSize = 12.sp) },
+                                colors = FilterChipDefaults.filterChipColors(),
+                            )
+                        }
+                    }
+                    Text(
+                        text = "Opacity ${"%.2f".format(opacity)}",
+                        fontSize = 12.sp,
                     )
+                    Slider(
+                        value = opacity,
+                        onValueChange = { opacity = it },
+                        valueRange = 0f..1f,
+                    )
+                    // Undrawn layer types and unusable sources are worth showing: the
+                    // failure mode that matters is a blank tile with no explanation.
+                    diagnostics.forEach { Text(it, fontSize = 11.sp, color = Color(0xFF7A4A00)) }
+                    failure?.let { Text("style failed: $it", fontSize = 11.sp, color = Color.Red) }
                 }
             }
-            Text("Opacity ${"%.2f".format(opacity)}", fontSize = 12.sp)
-            Slider(value = opacity, onValueChange = { opacity = it }, valueRange = 0f..1f)
-            // Undrawn layer types and unusable sources are worth showing: the
-            // failure mode that matters is a blank tile with no explanation.
-            diagnostics.forEach { Text(it, fontSize = 11.sp, color = Color(0xFF7A4A00)) }
-            failure?.let { Text("style failed: $it", fontSize = 11.sp, color = Color.Red) }
-        }
 
-        if (styleJson == null && failure == null) {
-            LoadingDialog(title = "Vector tiles", message = "Loading vector style…")
+            if (styleJson == null && failure == null) {
+                LoadingDialog(title = "Vector tiles", message = "Loading vector style…")
+            }
         }
     }
 }

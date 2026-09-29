@@ -19,7 +19,10 @@ import com.mapconductor.example.ui.DemoMapPageScaffold
 import com.mapconductor.example.ui.MessageCard
 
 @Composable
-fun PolygonMapPage(onToggleSidebar: () -> Unit = {}) {
+fun PolygonMapPage(
+    modifier: Modifier = Modifier,
+    onToggleSidebar: () -> Unit = {},
+) {
     val viewModel = remember { PolygonMapPageViewModel() }
 
     DemoMapPageScaffold(
@@ -34,6 +37,7 @@ fun PolygonMapPage(onToggleSidebar: () -> Unit = {}) {
             mapViewState = mapViewState.value,
             polygonState = viewModel.polygonState,
             polygonVertexMarkers = viewModel.polygonVertexMarkers,
+            modifier = modifier.padding(paddingValues),
         )
         MessageCard(
             title = "Polygon Example",

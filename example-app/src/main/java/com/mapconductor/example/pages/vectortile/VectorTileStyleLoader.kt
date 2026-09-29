@@ -15,18 +15,40 @@ object VectorTileStyleLoader {
     private const val STYLE_URL = "https://tiles.versatiles.org/assets/styles/colorful/style.json"
     private const val OSM_TILES = "https://vector.openstreetmap.org/shortbread_v1/{z}/{x}/{y}.mvt"
 
+    /**
+     * What the tiles this points at are owed.
+     *
+     * Kept here rather than taken on trust from the upstream style: the
+     * sources are being repointed at the OSMF service, so the credit that
+     * matters is the one *those* tiles require, whatever the original style
+     * happened to say. The style's own wording is preferred when it has one --
+     * it is the same licence, in the publisher's own phrasing.
+     */
+    private const val OSM_ATTRIBUTION =
+        "&copy; <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors"
+
     /** Blocking; call from a background dispatcher. */
     fun load(): String {
         val style = JSONObject(fetch(STYLE_URL))
         val sources = style.getJSONObject("sources")
         for (id in sources.keys()) {
+            // Carried across rather than dropped. Rewriting a source is not a
+            // reason to stop crediting the data, and a bare replacement object
+            // is how the credit went missing in the first place.
+            val attribution =
+                sources
+                    .optJSONObject(id)
+                    ?.optString("attribution")
+                    ?.takeIf { it.isNotBlank() }
+                    ?: OSM_ATTRIBUTION
             sources.put(
                 id,
                 JSONObject()
                     .put("type", "vector")
                     .put("tiles", org.json.JSONArray().put(OSM_TILES))
                     .put("minzoom", 0)
-                    .put("maxzoom", 14),
+                    .put("maxzoom", 14)
+                    .put("attribution", attribution),
             )
         }
         return style.toString()

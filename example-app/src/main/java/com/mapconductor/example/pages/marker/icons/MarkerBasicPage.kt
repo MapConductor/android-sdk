@@ -1,6 +1,6 @@
 package com.mapconductor.example.pages.marker.icons
 
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -14,7 +14,10 @@ import com.mapconductor.example.ui.DefaultMapViewItems
 import com.mapconductor.example.ui.DemoMapPageScaffold
 
 @Composable
-fun MarkerBasicPage(onToggleSidebar: () -> Unit = {}) {
+fun MarkerBasicPage(
+    modifier: Modifier = Modifier,
+    onToggleSidebar: () -> Unit = {},
+) {
     val initCameraPosition =
         remember {
             MapCameraPosition(
@@ -27,15 +30,15 @@ fun MarkerBasicPage(onToggleSidebar: () -> Unit = {}) {
 
     DemoMapPageScaffold(
         menuItems = DefaultMapViewItems(initCameraPosition),
+        modifier = modifier,
         onToggleSidebar = onToggleSidebar,
         onMapViewStateChanged = { newMapViewState ->
             mapViewState = newMapViewState
         },
-    ) { paddingValues ->
+    ) {
         mapViewState?.let {
             MarkerBasicMapComponent(
                 mapViewState = it,
-                modifier = Modifier.fillMaxSize(),
             )
         }
     }

@@ -4,7 +4,6 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -45,7 +44,7 @@ data class LocationInfo(
 ) : Serializable
 
 @Composable
-fun RichContentBubblePage(onToggleSidebar: () -> Unit = {}) {
+fun RichContentBubblePage(modifier: Modifier = Modifier, onToggleSidebar: () -> Unit = {}) {
     val initCameraPosition =
         MapCameraPosition(
             position = GeoPoint.fromLatLong(37.7749, -122.4194),
@@ -72,6 +71,7 @@ fun RichContentBubblePage(onToggleSidebar: () -> Unit = {}) {
 
     DemoMapPageScaffold(
         menuItems = DefaultMapViewItems(initCameraPosition),
+        modifier = modifier,
         onToggleSidebar = onToggleSidebar,
         onMapViewStateChanged = { state ->
             @Suppress("UNCHECKED_CAST")
@@ -84,7 +84,6 @@ fun RichContentBubblePage(onToggleSidebar: () -> Unit = {}) {
 
         mapViewState?.let {
             MapViewContainer(
-                modifier = Modifier.fillMaxSize(),
                 state = mapViewState,
                 onMapLoaded = {
                     selectedMarker = markerState

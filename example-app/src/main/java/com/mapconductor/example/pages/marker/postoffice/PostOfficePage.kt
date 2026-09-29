@@ -2,6 +2,7 @@ package com.mapconductor.example.pages.marker.postoffice
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
@@ -20,6 +21,7 @@ import com.mapconductor.utils.LoadingDialog
 @Composable
 fun PostOfficePage(
     postOfficeIcon: ImageIcon,
+    modifier: Modifier = Modifier,
     onToggleSidebar: () -> Unit = {},
 ) {
     val context = LocalContext.current
@@ -44,7 +46,7 @@ fun PostOfficePage(
 
     // Show loading dialog while map or data is loading; start data load once
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
         contentAlignment = Alignment.Center,
     ) {
         val selectedMarker = viewModel.selectedMarker.collectAsState().value

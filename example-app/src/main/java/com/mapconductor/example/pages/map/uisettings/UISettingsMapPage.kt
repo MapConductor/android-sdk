@@ -22,6 +22,7 @@ import com.mapconductor.example.MapViewContainer
 import com.mapconductor.example.ui.DefaultMapViewItems
 import com.mapconductor.example.ui.DemoMapPageScaffold
 import com.mapconductor.tomtom.TomTomMapViewState
+import kotlin.time.Duration.Companion.milliseconds
 import android.util.Log
 import kotlinx.coroutines.delay
 
@@ -34,7 +35,7 @@ import kotlinx.coroutines.delay
  * to touch the screen. On start it also cycles None -> Default automatically.
  */
 @Composable
-fun UISettingsMapPage(onToggleSidebar: () -> Unit = {}) {
+fun UISettingsMapPage(modifier: Modifier = Modifier, onToggleSidebar: () -> Unit = {}) {
     val viewModel = remember { UISettingsMapPageViewModel() }
     // A UI test presets the flags through an intent extra rather than tapping the
     // switches, which is far more reliable than driving a Compose Switch by coordinate.
@@ -59,6 +60,7 @@ fun UISettingsMapPage(onToggleSidebar: () -> Unit = {}) {
             state.uiSettings = settings
             MapViewContainer(
                 state = state,
+                modifier = modifier,
                 onCameraMove = { c ->
                     Log.i("MCCamera", "%.5f,%.5f".format(c.position.latitude, c.position.longitude))
                 },
@@ -66,7 +68,7 @@ fun UISettingsMapPage(onToggleSidebar: () -> Unit = {}) {
 
             // Read back after every change, so manual toggles are verifiable too.
             androidx.compose.runtime.LaunchedEffect(settings, state) {
-                delay(800)
+                delay(800.milliseconds)
                 report("settings=$settings", state)
             }
         }
@@ -122,7 +124,7 @@ private fun report(
     val holder = (state as? com.mapconductor.core.map.MapViewStateInterface<*>)?.getMapViewHolder()
     val map = holder?.map
     val actual =
-        when (state) {
+        when (map) {
             is TomTomMapViewState -> {
                 val ttMap = map as? com.tomtom.sdk.map.display.TomTomMap
                 if (ttMap == null) {

@@ -6,7 +6,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -93,7 +92,7 @@ private fun SwatchRow(
 }
 
 @Composable
-fun StyledInfoBubblePage(onToggleSidebar: () -> Unit = {}) {
+fun StyledInfoBubblePage(modifier: Modifier = Modifier, onToggleSidebar: () -> Unit = {}) {
     val initCameraPosition =
         remember {
             MapCameraPosition(
@@ -125,6 +124,7 @@ fun StyledInfoBubblePage(onToggleSidebar: () -> Unit = {}) {
 
     DemoMapPageScaffold(
         menuItems = DefaultMapViewItems(initCameraPosition),
+        modifier = modifier,
         onToggleSidebar = onToggleSidebar,
         onMapViewStateChanged = { state ->
             @Suppress("UNCHECKED_CAST")
@@ -133,7 +133,6 @@ fun StyledInfoBubblePage(onToggleSidebar: () -> Unit = {}) {
     ) { paddingValues ->
         mapViewState?.let {
             MapViewContainer(
-                modifier = Modifier.fillMaxSize(),
                 state = mapViewState,
             ) {
                 Marker(marker)

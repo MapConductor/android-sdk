@@ -20,14 +20,14 @@ import com.mapconductor.postoffice.PostOfficeInfoView
 
 @Composable
 fun MarkerClusterMapComponent(
-    modifier: Modifier = Modifier,
     mapViewState: MapViewStateInterface<*>,
     selectedMarker: MarkerState?,
+    modifier: Modifier = Modifier,
+    clusterGroupState: MarkerClusterGroupState? = null,
     markers: List<MarkerState> = emptyList<MarkerState>(),
     onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
     onInfoWndClick: ((PostOffice) -> Unit)? = null,
-    clusterGroupState: MarkerClusterGroupState? = null,
 ) {
     val darkTheme: Boolean = isSystemInDarkTheme()
     val bubbleColor by remember {

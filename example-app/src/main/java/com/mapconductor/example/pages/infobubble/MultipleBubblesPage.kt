@@ -2,7 +2,7 @@ package com.mapconductor.example.pages.infobubble
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,7 +27,7 @@ import com.mapconductor.example.ui.DefaultMapViewItems
 import com.mapconductor.example.ui.DemoMapPageScaffold
 
 @Composable
-fun MultipleBubblesPage(onToggleSidebar: () -> Unit = {}) {
+fun MultipleBubblesPage(modifier: Modifier = Modifier, onToggleSidebar: () -> Unit = {}) {
     val initCameraPosition =
         MapCameraPosition(
             position = GeoPoint.fromLatLong(37.7749, -122.4194),
@@ -72,6 +72,7 @@ fun MultipleBubblesPage(onToggleSidebar: () -> Unit = {}) {
 
     DemoMapPageScaffold(
         menuItems = DefaultMapViewItems(initCameraPosition),
+        modifier = modifier,
         onToggleSidebar = onToggleSidebar,
         onMapViewStateChanged = { state ->
             @Suppress("UNCHECKED_CAST")
@@ -80,7 +81,6 @@ fun MultipleBubblesPage(onToggleSidebar: () -> Unit = {}) {
     ) {
         mapViewState?.let {
             MapViewContainer(
-                modifier = Modifier.fillMaxSize(),
                 state = mapViewState,
                 onMapLoaded = {
                     selectedMarkers = markerStates.map { it.id }.toSet()

@@ -19,7 +19,10 @@ import com.mapconductor.example.ui.DemoMapPageScaffold
 import com.mapconductor.example.ui.MessageCard
 
 @Composable
-fun HolePolygonMapPage(onToggleSidebar: () -> Unit = {}) {
+fun HolePolygonMapPage(
+    modifier: Modifier = Modifier,
+    onToggleSidebar: () -> Unit = {},
+) {
     val viewModel = remember { HolePolygonMapPageViewModel() }
 
     DemoMapPageScaffold(
@@ -33,6 +36,7 @@ fun HolePolygonMapPage(onToggleSidebar: () -> Unit = {}) {
             MapViewContainer(
                 state = it,
                 cameraRestriction = viewModel.cameraRestriction,
+                modifier = modifier.padding(paddingValues),
             ) {
                 Polygon(viewModel.polygonState)
                 viewModel.holeVertexMarkers.forEach { marker ->

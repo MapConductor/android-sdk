@@ -28,6 +28,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun GroundImageMapPage(
     groundImageResources: GroundImageResources,
+    modifier: Modifier = Modifier,
     onToggleSidebar: () -> Unit = {},
 ) {
     val viewModel = remember { GroundImageMapPageViewModel(groundImageResources) }
@@ -38,6 +39,7 @@ fun GroundImageMapPage(
 
     DemoMapPageScaffold(
         menuItems = DefaultMapViewItems(viewModel.initCameraPosition),
+        modifier = modifier,
         onToggleSidebar = onToggleSidebar,
         onMapViewStateChanged = viewModel::onMapViewChanged,
     ) { paddingValues ->

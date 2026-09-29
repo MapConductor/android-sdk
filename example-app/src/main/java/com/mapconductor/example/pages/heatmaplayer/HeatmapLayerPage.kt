@@ -2,6 +2,7 @@
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -18,7 +19,10 @@ import com.mapconductor.postoffice.PostOfficeDataLoader
 import com.mapconductor.utils.LoadingDialog
 
 @Composable
-fun HeatmapLayerPage(onToggleSidebar: () -> Unit = {}) {
+fun HeatmapLayerPage(
+    modifier: Modifier = Modifier,
+    onToggleSidebar: () -> Unit = {},
+) {
     val context = LocalContext.current
     val dataLoader = remember { PostOfficeDataLoader(context) }
 

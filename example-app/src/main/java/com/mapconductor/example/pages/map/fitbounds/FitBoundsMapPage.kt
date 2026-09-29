@@ -15,11 +15,12 @@ import com.mapconductor.example.ui.DemoMapPageScaffold
 import com.mapconductor.example.ui.MessageCard
 
 @Composable
-fun FitBoundsMapPage(onToggleSidebar: () -> Unit = {}) {
+fun FitBoundsMapPage(modifier: Modifier = Modifier, onToggleSidebar: () -> Unit = {}) {
     val viewModel: FitBoundsPageViewModelInterface = remember { FitBoundsPageViewModel() }
 
     DemoMapPageScaffold(
         menuItems = DefaultMapViewItems(viewModel.initCameraPosition),
+        modifier = modifier,
         onToggleSidebar = onToggleSidebar,
         onMapViewStateChanged = viewModel::onMapViewChanged,
     ) { paddingValues ->
@@ -30,6 +31,7 @@ fun FitBoundsMapPage(onToggleSidebar: () -> Unit = {}) {
             mapViewState = mapViewState.value,
             marker = viewModel.marker,
             boundsPolygon = boundsPolygon.value,
+            modifier = Modifier.padding(paddingValues),
         )
 
         MessageCard(

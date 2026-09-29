@@ -78,7 +78,7 @@ private val boundsPolygon =
     )
 
 @Composable
-fun CameraRestrictionMapPage(onToggleSidebar: () -> Unit = {}) {
+fun CameraRestrictionMapPage(modifier: Modifier = Modifier, onToggleSidebar: () -> Unit = {}) {
     val initCameraPosition =
         remember {
             MapCameraPosition(
@@ -111,6 +111,7 @@ fun CameraRestrictionMapPage(onToggleSidebar: () -> Unit = {}) {
 
     DemoMapPageScaffold(
         menuItems = DefaultMapViewItems(initCameraPosition),
+        modifier = modifier,
         onToggleSidebar = onToggleSidebar,
         onMapViewStateChanged = { state ->
             mapViewState?.cameraPosition?.let { state.moveCameraTo(it) }

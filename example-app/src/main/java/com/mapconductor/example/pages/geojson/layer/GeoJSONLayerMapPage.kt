@@ -70,7 +70,10 @@ private val PROPERTY_LABELS =
 private const val ENGLISH_SUFFIX = "_en"
 
 @Composable
-fun GeoJSONLayerMapPage(onToggleSidebar: () -> Unit = {}) {
+fun GeoJSONLayerMapPage(
+    modifier: Modifier = Modifier,
+    onToggleSidebar: () -> Unit = {},
+) {
     val initCameraPosition =
         remember {
             MapCameraPosition(
@@ -82,10 +85,13 @@ fun GeoJSONLayerMapPage(onToggleSidebar: () -> Unit = {}) {
 
     DemoMapPageScaffold(
         menuItems = DefaultMapViewItems(initCameraPosition),
+        modifier = modifier,
         onToggleSidebar = onToggleSidebar,
         onMapViewStateChanged = { mapViewState = it },
     ) { paddingValues ->
-        GeoJSONLayerMapComponent(mapViewState = mapViewState)
+        GeoJSONLayerMapComponent(
+            mapViewState = mapViewState,
+        )
 
         MessageCard(
             title = "GeoJSON Layer",
@@ -104,7 +110,10 @@ fun GeoJSONLayerMapPage(onToggleSidebar: () -> Unit = {}) {
 }
 
 @Composable
-private fun GeoJSONLayerMapComponent(mapViewState: MapViewStateInterface<*>?) {
+private fun GeoJSONLayerMapComponent(
+    mapViewState: MapViewStateInterface<*>?,
+    modifier: Modifier = Modifier,
+) {
     val context = LocalContext.current
     var selectedFeature by remember { mutableStateOf<GeoJSONFeature?>(null) }
     var tappedPosition by remember { mutableStateOf<GeoPoint?>(null) }
@@ -147,6 +156,7 @@ private fun GeoJSONLayerMapComponent(mapViewState: MapViewStateInterface<*>?) {
     mapViewState?.let { state ->
         MapViewContainer(
             state = state,
+            modifier = modifier,
             onMapClick = { clicked ->
                 if (!layerState.processClick(clicked, pixelTolerance = 10.0, zoom = state.cameraPosition.zoom)) {
                     tappedPosition = null
