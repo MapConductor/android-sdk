@@ -82,6 +82,7 @@ class VectorTileProviderTest {
                   "layers": []
                 }
                 """.trimIndent(),
+                VectorTileProvider.DEFAULT_TILE_SIZE,
             )
         subject.use {
             assertEquals(

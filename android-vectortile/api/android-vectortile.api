@@ -1,0 +1,204 @@
+public final class com.mapconductor.vectortile.EglOffscreen implements java.io.Closeable {
+  public static final com.mapconductor.vectortile.EglOffscreen$Companion Companion;
+  public final int getEsVersion();
+  public final int getActiveSamples();
+  public final void prepare(int, int);
+  public final void bindDrawTarget();
+  public final void resolve();
+  public final java.nio.ByteBuffer readPixels(java.nio.ByteBuffer);
+  public final void finish();
+  public void close();
+  public com.mapconductor.vectortile.EglOffscreen(android.opengl.EGLDisplay, android.opengl.EGLContext, android.opengl.EGLSurface, int, kotlin.jvm.internal.DefaultConstructorMarker);
+}
+public final class com.mapconductor.vectortile.EglOffscreen$Companion {
+  public final com.mapconductor.vectortile.EglOffscreen create(boolean);
+}
+final class com.mapconductor.vectortile.EglOffscreen$EGLExt {
+  public static final com.mapconductor.vectortile.EglOffscreen$EGLExt INSTANCE;
+  public static final int EGL_OPENGL_ES3_BIT;
+}
+public final class com.mapconductor.vectortile.GpuTileRasterizer implements java.io.Closeable {
+  public static final com.mapconductor.vectortile.GpuTileRasterizer$Companion Companion;
+  public com.mapconductor.vectortile.GpuTileRasterizer(int);
+  public final java.lang.String describe();
+  public final byte[] renderPng(com.mapconductor.vectortile.TessellatedTile, kotlin.jvm.functions.Function1<? super byte[], kotlin.Unit>);
+  public void close();
+}
+public final class com.mapconductor.vectortile.GpuTileRasterizer$Companion {
+  public final com.mapconductor.vectortile.GpuTileRasterizer createOrNull(int);
+}
+public final class com.mapconductor.vectortile.NativeLabelPixels implements java.io.Closeable {
+  public com.mapconductor.vectortile.NativeLabelPixels(java.nio.ByteBuffer, int);
+  public final java.nio.ByteBuffer getBuffer();
+  public final int getPlaced();
+  public void close();
+}
+public final class com.mapconductor.vectortile.NativeRenderer {
+  public static final com.mapconductor.vectortile.NativeRenderer INSTANCE;
+  public final native long nativeNew(java.lang.String);
+  public final native void nativeFree(long);
+  public final native void nativeSetStyle(long, java.lang.String);
+  public final native java.lang.String nativePlan(long, int, int, int);
+  public final native byte[] nativeRender(long, int, int, int, int, byte[], int[], int);
+  public final native java.lang.String nativeGlyphsUrlTemplate(long);
+  public final native java.lang.String nativeNeededGlyphs(long, int, int, int, byte[], int[]);
+  public final native java.lang.String nativeSpriteUrls(long, int);
+  public final native int nativeNeedsSprite(long);
+  public final native int nativeNeedsCpu(long, int, byte[], int[]);
+  public final native int nativeAddSprite(long, java.lang.String, byte[]);
+  public final native int nativeAddGlyphs(long, byte[]);
+  public final native int nativeDrawLabels(long, int, int, int, int, byte[], byte[], int[]);
+  public final native java.nio.ByteBuffer nativeRenderLabels(long, int, int, int, int, byte[], int[], int[]);
+  public final native void nativeFreeLabelPixels(java.nio.ByteBuffer);
+  public final native java.lang.String nativeUnsupportedLayerTypes(long);
+  public final native java.lang.String nativeAttributions(long);
+  public final native java.lang.String nativeDiagnostics(long);
+  public final native java.nio.ByteBuffer nativeTessellate(long, int, int, int, int, byte[], int[]);
+  public final native void nativeFreeTessellation(java.nio.ByteBuffer);
+}
+public final class com.mapconductor.vectortile.SolidBatchRenderer implements java.io.Closeable {
+  public static final com.mapconductor.vectortile.SolidBatchRenderer$Companion Companion;
+  public static final int VERTEX_STRIDE;
+  public static final java.lang.String VERTEX_SHADER;
+  public static final java.lang.String FRAGMENT_SHADER;
+  public com.mapconductor.vectortile.SolidBatchRenderer();
+  public final void initialise();
+  public final void upload(java.nio.FloatBuffer, int, int);
+  public final void clear(float, float, float, float);
+  public final void draw(java.util.List<com.mapconductor.vectortile.SolidBatchRenderer$Batch>, float);
+  public void close();
+}
+public final class com.mapconductor.vectortile.SolidBatchRenderer$Batch {
+  public final int getVertexOffset();
+  public final int getVertexCount();
+  public final int component1();
+  public final int component2();
+  public final com.mapconductor.vectortile.SolidBatchRenderer$Batch copy(int, int);
+  public java.lang.String toString();
+  public int hashCode();
+  public boolean equals(java.lang.Object);
+}
+public final class com.mapconductor.vectortile.SolidBatchRenderer$Companion {
+}
+public final class com.mapconductor.vectortile.StyleAssetCache {
+  public static final com.mapconductor.vectortile.StyleAssetCache$Companion Companion;
+  public com.mapconductor.vectortile.StyleAssetCache(java.io.File, long);
+  public final byte[] get(java.lang.String);
+  public final void put(java.lang.String, byte[]);
+  public final int warm(kotlin.jvm.functions.Function1<? super byte[], kotlin.Unit>);
+  public final void clear();
+}
+public final class com.mapconductor.vectortile.StyleAssetCache$Companion {
+}
+public final class com.mapconductor.vectortile.TessellatedTile implements java.io.Closeable {
+  public com.mapconductor.vectortile.TessellatedTile(java.nio.ByteBuffer);
+  public final java.nio.FloatBuffer getPacked();
+  public final float getExtent();
+  public final float[] getBackground();
+  public final java.util.List<com.mapconductor.vectortile.SolidBatchRenderer$Batch> getBatches();
+  public final int getVertexOffset();
+  public final int getVertexFloatCount();
+  public final float getDecodeMs();
+  public final float getTessellateMs();
+  public final float getFilterMs();
+  public final float getFillMs();
+  public final float getLineMs();
+  public final float getFeatureLoopMs();
+  public final int getTriangleCount();
+  public void close();
+}
+public final class com.mapconductor.vectortile.TileDiskCache {
+  public static final com.mapconductor.vectortile.TileDiskCache$Companion Companion;
+  public com.mapconductor.vectortile.TileDiskCache(java.io.File, long);
+  public final byte[] get(java.lang.String);
+  public final void put(java.lang.String, byte[]);
+  public final void clear();
+}
+public final class com.mapconductor.vectortile.TileDiskCache$Companion {
+  public final java.lang.String digest(java.lang.String...);
+}
+public final class com.mapconductor.vectortile.VectorTileLayerKt {
+  public static final void VectorTileLayer(com.mapconductor.compose.MapViewScope, java.lang.String, java.lang.Integer, float, boolean, int, java.util.Map<java.lang.String, java.lang.String>, com.mapconductor.vectortile.VectorTileProvider$RenderMode, java.io.File, kotlin.jvm.functions.Function1<? super java.util.List<java.lang.String>, kotlin.Unit>, androidx.compose.runtime.Composer, int, int);
+}
+public final class com.mapconductor.vectortile.VectorTileProvider implements com.mapconductor.core.tileserver.TileProviderInterface,java.io.Closeable {
+  public static final com.mapconductor.vectortile.VectorTileProvider$Companion Companion;
+  public static final int DEFAULT_TILE_SIZE;
+  public static final int DEFAULT_CACHE_BYTES;
+  public static final long DEFAULT_DISK_CACHE_BYTES;
+  public static final long DEFAULT_GLYPH_CACHE_BYTES;
+  public static final long DEFAULT_SPRITE_CACHE_BYTES;
+  public final com.mapconductor.vectortile.VectorTileProvider$RenderMode getRenderMode();
+  public final kotlin.jvm.functions.Function0<kotlin.Unit> getOnGlyphsLoaded();
+  public final void setOnGlyphsLoaded(kotlin.jvm.functions.Function0<kotlin.Unit>);
+  public final long getGpuRenders();
+  public final long getGpuFallbacks();
+  public final java.util.List<java.lang.String> attributions();
+  public final java.util.List<java.lang.String> diagnostics();
+  public final java.lang.String rendererDescription();
+  public final void setStyle(java.lang.String);
+  public byte[] renderTile(com.mapconductor.core.tileserver.TileRequest);
+  public byte[] renderTile(com.mapconductor.core.tileserver.TileRequest, kotlin.jvm.functions.Function0<java.lang.Boolean>);
+  public final com.mapconductor.core.tileserver.TileProviderInterface getGeometryTiles();
+  public final com.mapconductor.core.tileserver.TileProviderInterface getLabelTiles();
+  public void close();
+  public static final com.mapconductor.vectortile.VectorTileProvider create(java.lang.String, int, java.util.Map<java.lang.String, java.lang.String>, int, java.io.File, long, com.mapconductor.vectortile.VectorTileProvider$RenderMode, kotlin.jvm.functions.Function1<? super java.lang.String, byte[]>);
+  public static final com.mapconductor.vectortile.VectorTileProvider create(java.lang.String, int, java.util.Map<java.lang.String, java.lang.String>, int, java.io.File, long, com.mapconductor.vectortile.VectorTileProvider$RenderMode);
+  public static final com.mapconductor.vectortile.VectorTileProvider create(java.lang.String, int, java.util.Map<java.lang.String, java.lang.String>, int, java.io.File, long);
+  public static final com.mapconductor.vectortile.VectorTileProvider create(java.lang.String, int, java.util.Map<java.lang.String, java.lang.String>, int, java.io.File);
+  public static final com.mapconductor.vectortile.VectorTileProvider create(java.lang.String, int, java.util.Map<java.lang.String, java.lang.String>, int);
+  public static final com.mapconductor.vectortile.VectorTileProvider create(java.lang.String, int, java.util.Map<java.lang.String, java.lang.String>);
+  public static final com.mapconductor.vectortile.VectorTileProvider create(java.lang.String, int);
+  public static final com.mapconductor.vectortile.VectorTileProvider create(java.lang.String);
+  public com.mapconductor.vectortile.VectorTileProvider(com.mapconductor.vectortile.VectorTileRenderer, int, java.util.Map, kotlin.jvm.functions.Function1, int, com.mapconductor.vectortile.TileDiskCache, com.mapconductor.vectortile.StyleAssetCache, com.mapconductor.vectortile.StyleAssetCache, java.lang.String, com.mapconductor.vectortile.GpuTileRasterizer, kotlin.jvm.internal.DefaultConstructorMarker);
+}
+public final class com.mapconductor.vectortile.VectorTileProvider$Companion {
+  public final com.mapconductor.vectortile.VectorTileProvider create(java.lang.String, int, java.util.Map<java.lang.String, java.lang.String>, int, java.io.File, long, com.mapconductor.vectortile.VectorTileProvider$RenderMode, kotlin.jvm.functions.Function1<? super java.lang.String, byte[]>);
+  public final com.mapconductor.vectortile.VectorTileProvider create(java.lang.String, int, java.util.Map<java.lang.String, java.lang.String>, int, java.io.File, long, com.mapconductor.vectortile.VectorTileProvider$RenderMode);
+  public final com.mapconductor.vectortile.VectorTileProvider create(java.lang.String, int, java.util.Map<java.lang.String, java.lang.String>, int, java.io.File, long);
+  public final com.mapconductor.vectortile.VectorTileProvider create(java.lang.String, int, java.util.Map<java.lang.String, java.lang.String>, int, java.io.File);
+  public final com.mapconductor.vectortile.VectorTileProvider create(java.lang.String, int, java.util.Map<java.lang.String, java.lang.String>, int);
+  public final com.mapconductor.vectortile.VectorTileProvider create(java.lang.String, int, java.util.Map<java.lang.String, java.lang.String>);
+  public final com.mapconductor.vectortile.VectorTileProvider create(java.lang.String, int);
+  public final com.mapconductor.vectortile.VectorTileProvider create(java.lang.String);
+}
+final class com.mapconductor.vectortile.VectorTileProvider$Content extends java.lang.Enum<com.mapconductor.vectortile.VectorTileProvider$Content> {
+  public static final com.mapconductor.vectortile.VectorTileProvider$Content FULL;
+  public static final com.mapconductor.vectortile.VectorTileProvider$Content GEOMETRY;
+  public static final com.mapconductor.vectortile.VectorTileProvider$Content LABELS;
+  public static com.mapconductor.vectortile.VectorTileProvider$Content[] values();
+  public static com.mapconductor.vectortile.VectorTileProvider$Content valueOf(java.lang.String);
+  public static kotlin.enums.EnumEntries<com.mapconductor.vectortile.VectorTileProvider$Content> getEntries();
+}
+public final class com.mapconductor.vectortile.VectorTileProvider$RenderMode extends java.lang.Enum<com.mapconductor.vectortile.VectorTileProvider$RenderMode> {
+  public static final com.mapconductor.vectortile.VectorTileProvider$RenderMode CPU;
+  public static final com.mapconductor.vectortile.VectorTileProvider$RenderMode GPU;
+  public static final com.mapconductor.vectortile.VectorTileProvider$RenderMode AUTO;
+  public static com.mapconductor.vectortile.VectorTileProvider$RenderMode[] values();
+  public static com.mapconductor.vectortile.VectorTileProvider$RenderMode valueOf(java.lang.String);
+  public static kotlin.enums.EnumEntries<com.mapconductor.vectortile.VectorTileProvider$RenderMode> getEntries();
+}
+public final class com.mapconductor.vectortile.VectorTileRenderer implements java.io.Closeable {
+  public static final com.mapconductor.vectortile.VectorTileRenderer$Companion Companion;
+  public static final int DEFAULT_TILE_SIZE;
+  public static final int OUTPUT_VERSION;
+  public final java.lang.String plan(int, int, int);
+  public final java.lang.String glyphsUrlTemplate();
+  public final java.util.List<java.lang.String> neededGlyphs(int, int, int, java.util.List<byte[]>);
+  public final int addGlyphs(byte[]);
+  public final java.util.List<java.lang.String> spriteUrls(int);
+  public final boolean needsCpu(int, java.util.List<byte[]>);
+  public final boolean needsSprite();
+  public final int addSprite(java.lang.String, byte[]);
+  public final int drawLabels(int, int, int, int, byte[], java.util.List<byte[]>);
+  public final byte[] render(int, int, int, int, java.util.List<byte[]>, boolean);
+  public final void setStyle(java.lang.String);
+  public final java.lang.String unsupportedLayerTypes();
+  public final java.lang.String attributions();
+  public final java.lang.String diagnostics();
+  public void close();
+  public static final com.mapconductor.vectortile.VectorTileRenderer create(java.lang.String);
+  public com.mapconductor.vectortile.VectorTileRenderer(long, kotlin.jvm.internal.DefaultConstructorMarker);
+}
+public final class com.mapconductor.vectortile.VectorTileRenderer$Companion {
+  public final com.mapconductor.vectortile.VectorTileRenderer create(java.lang.String);
+}

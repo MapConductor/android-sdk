@@ -65,6 +65,8 @@ class VectorTileProvider private constructor(
     val gpuRenders: Long get() = gpuRenderCount.get()
     val gpuFallbacks: Long get() = gpuFallbackCount.get()
 
+    private var sourceDiskCache: StyleAssetCache? = null
+
     /**
      * Identifies the style for disk cache keys. Content-addressed, so a
      * restyle misses rather than needing explicit invalidation.
@@ -341,6 +343,9 @@ class VectorTileProvider private constructor(
         /** Rendered tile disk cache budget, in bytes. */
         const val DEFAULT_DISK_CACHE_BYTES: Long = 64L * 1024 * 1024
 
+        /** Source MVT disk cache budget, in bytes. */
+        private const val DEFAULT_SOURCE_CACHE_BYTES: Long = 128L * 1024 * 1024
+
         /**
          * Glyph range disk cache budget, in bytes.
          *
@@ -369,6 +374,12 @@ class VectorTileProvider private constructor(
          * that never draws.
          */
         private const val GLYPH_WARM_WAIT_MS: Long = 1_500
+        private const val STAT_MEMORY = 0
+        private const val STAT_DISK = 1
+        private const val STAT_NETWORK = 2
+        private const val STAT_SHARED = 3
+        private const val STAT_CANCELLED = 4
+        private const val STAT_QUEUE_MS = 5
 
         /**
          * How much finer the label overlay is drawn than the tile it covers.
@@ -430,7 +441,12 @@ class VectorTileProvider private constructor(
                     },
                 styleJson = styleJson,
                 gpu = gpu,
-            )
+            ).apply {
+                sourceDiskCache =
+                    diskCacheDir?.let {
+                        StyleAssetCache(File(it, "sources"), DEFAULT_SOURCE_CACHE_BYTES)
+                    }
+            }
         }
 
         private fun httpGet(
@@ -631,21 +647,33 @@ class VectorTileProvider private constructor(
                     source.getString("url")
                 }
             }
-        val pending: List<java.util.concurrent.Future<ByteArray?>> =
-            urls.map { url ->
-                if (url == null) {
-                    java.util.concurrent.CompletableFuture
-                        .completedFuture<ByteArray?>(null)
-                } else {
-                    sourceFetchers.submit<ByteArray?> { if (closed) null else sourceTile(url) }
-                }
+        val fetchStats = Array(6) { java.util.concurrent.atomic.AtomicLong() }
+        val pending = MutableList<java.util.concurrent.Future<ByteArray?>?>(urls.size) { null }
+        urls.indices
+            .sortedBy { index ->
+                val labelsOnly = plan.getJSONObject(index).optBoolean("labelsOnly", false)
+                if (labelsOnly) 1_000 + index else index
+            }
+            .forEach { index ->
+                val url = urls[index]
+                pending[index] =
+                    if (url == null) {
+                        java.util.concurrent.CompletableFuture.completedFuture(null)
+                    } else {
+                        val queued = System.nanoTime()
+                        sourceFetchers.submit<ByteArray?> {
+                            fetchStats[STAT_QUEUE_MS].addAndGet((System.nanoTime() - queued) / 1_000_000)
+                            if (closed) null else sourceTile(url, fetchStats)
+                        }
+                    }
             }
         for (future in pending) {
             if (isCancelled()) {
-                pending.forEach { it.cancel(false) }
+                fetchStats[STAT_CANCELLED].addAndGet(pending.count { it?.cancel(false) == true }.toLong())
+                pending.forEach { it?.cancel(false) }
                 return null
             }
-            tiles.add(runCatching { future.get() }.getOrNull())
+            tiles.add(runCatching { future?.get() }.getOrNull())
         }
         val fetchMs = (System.nanoTime() - fetchStarted) / 1_000_000
         if (closed) return null
@@ -695,7 +723,10 @@ class VectorTileProvider private constructor(
                 TAG,
                 "tile ${request.z}/${request.x}/${request.y} content=$content " +
                     "sources=${urls.count { it != null }} planned=${plan.length()} fetch=${fetchMs}ms " +
-                    "render=${renderMs}ms bytes=${png?.size ?: 0}",
+                    "render=${renderMs}ms bytes=${png?.size ?: 0} " +
+                    "mvt(mem=${fetchStats[STAT_MEMORY].get()} disk=${fetchStats[STAT_DISK].get()} " +
+                    "net=${fetchStats[STAT_NETWORK].get()} shared=${fetchStats[STAT_SHARED].get()} " +
+                    "cancel=${fetchStats[STAT_CANCELLED].get()} queue=${fetchStats[STAT_QUEUE_MS].get()}ms)",
             )
         }
         if (drawnShortOfGlyphs) provisionalSinceHandover.set(true)
@@ -1095,9 +1126,20 @@ class VectorTileProvider private constructor(
         return rasterizer.renderPng(tessellated, decorate)
     }
 
-    private fun sourceTile(url: String): ByteArray? {
-        cache.get(url)?.let { return it }
+    private fun sourceTile(
+        url: String,
+        stats: Array<java.util.concurrent.atomic.AtomicLong>,
+    ): ByteArray? {
+        cache.get(url)?.let {
+            stats[STAT_MEMORY].incrementAndGet()
+            return it
+        }
         if (empties.contains(url)) return null
+        sourceDiskCache?.get(url)?.let {
+            stats[STAT_DISK].incrementAndGet()
+            cache.put(url, it)
+            return it
+        }
 
         // One download per URL, however many tiles want it. Every tile is its
         // neighbours' neighbour, so on a cold screen the same source tile is
@@ -1105,10 +1147,11 @@ class VectorTileProvider private constructor(
         val mine = java.util.concurrent.CompletableFuture<ByteArray?>()
         val existing = inFlight.putIfAbsent(url, mine)
         if (existing != null) {
+            stats[STAT_SHARED].incrementAndGet()
             return runCatching { existing.get() }.getOrNull()
         }
         try {
-            val bytes = fetchAndRemember(url)
+            val bytes = fetchAndRemember(url, stats)
             mine.complete(bytes)
             return bytes
         } catch (error: Throwable) {
@@ -1119,12 +1162,16 @@ class VectorTileProvider private constructor(
         }
     }
 
-    private fun fetchAndRemember(url: String): ByteArray? {
+    private fun fetchAndRemember(
+        url: String,
+        stats: Array<java.util.concurrent.atomic.AtomicLong>,
+    ): ByteArray? {
         // A source that answers "no tile here" is remembered, because it will
         // answer the same way tomorrow. A source that fails to answer is not:
         // treating a dropped connection as an empty tile leaves a hole in the
         // map for as long as the app runs, and the hole is invisible from
         // here -- the tile simply draws without that data.
+        stats[STAT_NETWORK].incrementAndGet()
         val fetched = runCatching { fetchTile(url) }
         val bytes = fetched.getOrNull()
         if (bytes == null) {
@@ -1136,6 +1183,7 @@ class VectorTileProvider private constructor(
             return null
         }
         cache.put(url, bytes)
+        sourceDiskCache?.put(url, bytes)
         return bytes
     }
 
@@ -1151,4 +1199,5 @@ class VectorTileProvider private constructor(
         gpu?.close()
         renderer.close()
     }
+
 }

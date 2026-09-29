@@ -13,6 +13,8 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import java.net.HttpURLConnection
 import java.net.URL
+import java.util.concurrent.Callable
+import java.util.concurrent.Executors
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 
@@ -212,5 +214,63 @@ class GpuRenderModeTest {
             return samples[samples.size / 2]
         }
         println("MODE_COST gpu=%.1fms cpu=%.1fms".format(median(gpu), median(cpu)))
+    }
+
+    @Test
+    fun reportsFixedInputGpuConcurrency() {
+        val subject = provider(VectorTileProvider.RenderMode.GPU)
+        val requests =
+            listOf(
+                TileRequest(x = 6, y = 6, z = 4),
+                TileRequest(x = 7, y = 6, z = 4),
+                TileRequest(x = 8, y = 6, z = 4),
+                TileRequest(x = 9, y = 6, z = 4),
+                TileRequest(x = 6, y = 7, z = 4),
+                TileRequest(x = 7, y = 7, z = 4),
+                TileRequest(x = 8, y = 7, z = 4),
+                TileRequest(x = 9, y = 7, z = 4),
+            )
+
+        fun median(values: List<Double>): Double = values.sorted()[values.size / 2]
+
+        assertNotNull(subject.geometryTiles.renderTile(requests[0]))
+        for (width in listOf(1, 2, 4, 8)) {
+            val executor = Executors.newFixedThreadPool(width)
+            try {
+                val walls = mutableListOf<Double>()
+                val latencies = mutableListOf<Double>()
+                repeat(7) { batch ->
+                    val started = java.util.concurrent.CountDownLatch(1)
+                    val tasks =
+                        (0 until width).map { index ->
+                            executor.submit(
+                                Callable {
+                                    started.await()
+                                    val tileStarted = System.nanoTime()
+                                    val png =
+                                        subject.geometryTiles.renderTile(
+                                            requests[(batch + index) % requests.size],
+                                        )
+                                    assertNotNull(png)
+                                    (System.nanoTime() - tileStarted) / 1_000_000.0
+                                },
+                            )
+                        }
+                    val wallStarted = System.nanoTime()
+                    started.countDown()
+                    latencies += tasks.map { it.get() }
+                    walls += (System.nanoTime() - wallStarted) / 1_000_000.0
+                }
+                println(
+                    "GPU_CONCURRENCY width=$width wall=%.1fms latency=%.1fms throughput=%.1f_tiles_s".format(
+                        median(walls),
+                        median(latencies),
+                        width * 1_000.0 / median(walls),
+                    ),
+                )
+            } finally {
+                executor.shutdownNow()
+            }
+        }
     }
 }

@@ -1,5 +1,11 @@
 package com.mapconductor.vectortile
 
+import java.io.Closeable
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
+import java.nio.FloatBuffer
+import java.util.concurrent.atomic.AtomicBoolean
+
 /**
  * Thin JNI surface over the Rust renderer.
  *
@@ -12,8 +18,19 @@ internal object NativeRenderer {
         System.loadLibrary("mvt_render_jni")
     }
 
-    /** Returns an opaque handle; throws IllegalArgumentException on a bad style. */
-    external fun nativeNew(styleJson: String): Long
+    /**
+     * Returns an opaque handle; throws IllegalArgumentException on a bad style.
+     *
+     * [displayTileSize] is how many dp one tile covers where the map shows it
+     * -- not the pixel count a render is asked for. A label pass draws at
+     * twice the pixels, and a 256dp tile is still 256dp however many pixels it
+     * carries. It fixes the size the style draws at and the zoom its
+     * expressions are read at.
+     */
+    external fun nativeNew(
+        styleJson: String,
+        displayTileSize: Int,
+    ): Long
 
     external fun nativeFree(handle: Long)
 
@@ -105,14 +122,31 @@ internal object NativeRenderer {
         lengths: IntArray,
     ): Int
 
+    /** Draws a transparent label tile into Rust-owned direct memory. */
+    external fun nativeRenderLabels(
+        handle: Long,
+        z: Int,
+        x: Int,
+        y: Int,
+        tileSize: Int,
+        data: ByteArray,
+        lengths: IntArray,
+        placedOut: IntArray,
+    ): ByteBuffer?
+
+    external fun nativeFreeLabelPixels(buffer: ByteBuffer)
+
     /** JSON array of layer `type` values the renderer will not draw. */
     external fun nativeUnsupportedLayerTypes(handle: Long): String
+
+    /** JSON array of the credits the style's sources ask to be shown. */
+    external fun nativeAttributions(handle: Long): String
 
     /** JSON array of reasons the style may not render as intended. */
     external fun nativeDiagnostics(handle: Long): String
 
     /**
-     * Triangulates a tile for the GPU renderer. Returns one packed array; see
+     * Triangulates a tile for the GPU renderer. Returns one packed direct buffer; see
      * [TessellatedTile] for the layout.
      */
     external fun nativeTessellate(
@@ -123,14 +157,17 @@ internal object NativeRenderer {
         tileSize: Int,
         data: ByteArray,
         lengths: IntArray,
-    ): FloatArray
+    ): ByteBuffer
+
+    /** Releases the native allocation backing [buffer]. */
+    external fun nativeFreeTessellation(buffer: ByteBuffer)
 }
 
 /**
  * A tile triangulated by [NativeRenderer.nativeTessellate].
  *
- * One packed `float[]` carries everything, so a tile crosses JNI in a single
- * call with no object marshalling:
+ * One packed native buffer carries everything, so a tile crosses JNI without
+ * copying its vertex data into a Java array:
  *
  * ```text
  * [0]              extent
@@ -149,13 +186,17 @@ internal object NativeRenderer {
  * tile.
  */
 internal class TessellatedTile(
-    packed: FloatArray,
-) {
+    private val storage: ByteBuffer,
+) : Closeable {
+    /** Direct view passed to OpenGL; its storage remains owned by Rust. */
+    val packed: FloatBuffer = storage.order(ByteOrder.nativeOrder()).asFloatBuffer()
+    private val closed = AtomicBoolean(false)
     val extent: Float = packed[0]
     val background: FloatArray? =
         if (packed[1] != 0f) floatArrayOf(packed[2], packed[3], packed[4], packed[5]) else null
     val batches: List<SolidBatchRenderer.Batch>
-    val vertices: FloatArray
+    val vertexOffset: Int
+    val vertexFloatCount: Int
 
     /** Milliseconds spent inside the native call, by phase. */
     val decodeMs: Float = packed[7]
@@ -178,11 +219,25 @@ internal class TessellatedTile(
                 cursor += 2
                 batch
             }
-        vertices = packed.copyOfRange(cursor, packed.size)
+        vertexOffset = cursor
+        vertexFloatCount = packed.capacity() - cursor
     }
 
-    val triangleCount: Int get() = vertices.size / (SolidBatchRenderer.VERTEX_STRIDE * 3)
+    val triangleCount: Int get() = vertexFloatCount / (SolidBatchRenderer.VERTEX_STRIDE * 3)
 
-    /** JSON array of reasons the style may not render as intended. */
-    external fun nativeDiagnostics(handle: Long): String
+    override fun close() {
+        if (closed.compareAndSet(false, true)) NativeRenderer.nativeFreeTessellation(storage)
+    }
+}
+
+/** Rust-owned premultiplied RGBA for a transparent label tile. */
+internal class NativeLabelPixels(
+    val buffer: ByteBuffer,
+    val placed: Int,
+) : Closeable {
+    private val closed = AtomicBoolean(false)
+
+    override fun close() {
+        if (closed.compareAndSet(false, true)) NativeRenderer.nativeFreeLabelPixels(buffer)
+    }
 }

@@ -1,8 +1,6 @@
 package com.mapconductor.vectortile
 
 import java.io.Closeable
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
 import java.nio.FloatBuffer
 import android.opengl.GLES20
 
@@ -77,17 +75,18 @@ internal class SolidBatchRenderer : Closeable {
     }
 
     /** Uploads all geometry for a tile in one go. */
-    fun upload(vertices: FloatArray) {
-        val buffer: FloatBuffer =
-            ByteBuffer
-                .allocateDirect(vertices.size * 4)
-                .order(ByteOrder.nativeOrder())
-                .asFloatBuffer()
-        buffer.put(vertices).rewind()
+    fun upload(
+        packed: FloatBuffer,
+        offset: Int,
+        count: Int,
+    ) {
+        val vertices = packed.duplicate()
+        vertices.position(offset)
+        vertices.limit(offset + count)
 
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vertexBuffer)
         GLES20.glBufferData(
-            GLES20.GL_ARRAY_BUFFER, vertices.size * 4, buffer, GLES20.GL_STATIC_DRAW,
+            GLES20.GL_ARRAY_BUFFER, count * 4, vertices, GLES20.GL_STATIC_DRAW,
         )
     }
 
