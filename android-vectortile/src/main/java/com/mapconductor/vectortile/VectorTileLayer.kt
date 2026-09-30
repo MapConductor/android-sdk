@@ -8,11 +8,14 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import com.mapconductor.compose.MapViewScope
 import com.mapconductor.compose.raster.RasterLayer
 import com.mapconductor.core.map.AttributionRule
 import com.mapconductor.core.map.LocalMapServiceRegistry
+import com.mapconductor.core.map.VectorStyleSupport
+import com.mapconductor.core.map.VectorStyleSupportKey
 import com.mapconductor.core.raster.RasterLayerSource
 import com.mapconductor.core.raster.RasterLayerState
 import com.mapconductor.core.raster.RasterTilePreferenceKey
@@ -22,6 +25,7 @@ import java.io.File
 import java.util.UUID
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.json.JSONObject
 
 /**
  * Draws a MapLibre vector style on any map backend, by rendering it to raster
@@ -64,6 +68,14 @@ import kotlinx.coroutines.withContext
  * ```kotlin
  * VectorTileLayer(styleJson = style, opacity = 0.9f)
  * ```
+ *
+ * With [asBasemap] on a map that can draw the style itself (MapLibre, Mapbox,
+ * MapTiler -- anything registering [VectorStyleSupportKey]), none of the
+ * above happens: the style document is served to the map as its own style
+ * and the map's vector renderer draws it. See [VectorStyleSupport] for what
+ * that means -- chiefly that the style *replaces* the basemap and [opacity]
+ * does not apply. Maps without the capability take the raster path whatever
+ * [asBasemap] says.
  */
 @Composable
 fun MapViewScope.VectorTileLayer(
@@ -107,9 +119,67 @@ fun MapViewScope.VectorTileLayer(
      */
     diskCacheDir: File? = null,
     onDiagnostics: ((List<String>) -> Unit)? = null,
+    /**
+     * The style is the basemap, not a layer over one.
+     *
+     * On a map that renders vector styles itself this hands the style over
+     * directly and mounts no raster layer at all -- the fast path, and the
+     * one an offline package will take. Elsewhere it changes nothing here;
+     * the app blanks the map's own basemap (a `None` design) and the opaque
+     * raster tiles are the map.
+     */
+    asBasemap: Boolean = false,
+    /**
+     * A downloaded [OfflinePackage] to draw from. Source tiles, glyph ranges
+     * and the sprite the package holds are read from it and never fetched;
+     * anything else is fetched while [online] and refused otherwise. On the
+     * direct path the map reads the package through the local tile server.
+     */
+    offlinePackage: OfflinePackage? = null,
+    /**
+     * Whether the network may be used for what [offlinePackage] lacks. Off,
+     * a source the package does not hold is drawn as absent and the tile is
+     * not kept, so it is drawn again once the network is back. Meaningless
+     * without a package: a style with no package is always online.
+     */
+    online: Boolean = true,
+    /** Counts of what the package answered and what it could not, as fetches happen. */
+    onOfflineStats: ((OfflinePackage.Stats) -> Unit)? = null,
 ) {
     val groupId = remember { "vectortile-${UUID.randomUUID()}" }
     val tileServer = remember { TileServerRegistry.get() }
+
+    val direct = if (asBasemap) LocalMapServiceRegistry.current.get(VectorStyleSupportKey) else null
+    if (direct != null) {
+        DirectVectorStyle(
+            styleJson = styleJson,
+            support = direct,
+            tileServer = tileServer,
+            onDiagnostics = onDiagnostics,
+            offlinePackage = offlinePackage,
+            online = online,
+            headers = headers,
+        )
+        return
+    }
+
+    // The fetcher outlives any one fetch and is what `online` switches; the
+    // stats callback is delivered on the main thread, where the caller's
+    // state lives, from whichever thread fetched.
+    val statsListener by rememberUpdatedState(onOfflineStats)
+    val mainHandler = remember { android.os.Handler(android.os.Looper.getMainLooper()) }
+    val fetcher =
+        remember(offlinePackage) {
+            offlinePackage?.let { pkg ->
+                OfflinePackage.Fetcher(
+                    pkg = pkg,
+                    upstream = { url -> VectorTileProvider.httpGet(url, headers) },
+                    online = online,
+                    onStats = { stats -> mainHandler.post { statsListener?.invoke(stats) } },
+                )
+            }
+        }
+    LaunchedEffect(fetcher, online) { fetcher?.online = online }
 
     val preferred = LocalMapServiceRegistry.current.get(RasterTilePreferenceKey)?.preferredTileSize
 
@@ -143,6 +213,7 @@ fun MapViewScope.VectorTileLayer(
                         headers = headers,
                         diskCacheDir = diskCacheDir,
                         renderMode = renderMode,
+                        fetchTile = fetcher,
                     )
                 }
             }
@@ -280,6 +351,102 @@ fun MapViewScope.VectorTileLayer(
     RasterLayer(state = ground)
     mounted.forEach { RasterLayer(state = it) }
 }
+
+/**
+ * The direct path: the style is served as a document and the map draws it.
+ *
+ * Two effects rather than one so that a style change does not bounce the map
+ * through the previous design on its way to the new style: the document
+ * (keyed by content) is swapped, the support is told once more, and only a
+ * real unmount clears it.
+ */
+@Composable
+private fun DirectVectorStyle(
+    styleJson: String,
+    support: VectorStyleSupport,
+    tileServer: com.mapconductor.core.tileserver.LocalTileServer,
+    onDiagnostics: ((List<String>) -> Unit)?,
+    offlinePackage: OfflinePackage?,
+    online: Boolean,
+    headers: Map<String, String>,
+) {
+    // With a package, the map reads its tiles, glyphs and sprite from the
+    // local server, which answers from the package and -- online -- fetches
+    // upstream for the rest. The route carries the mode: a map remembers a
+    // tile it was told does not exist, so going back online has to change
+    // the URLs to be noticed.
+    val filesRoute =
+        remember(offlinePackage, online) {
+            offlinePackage?.let { "vectortile-package-${it.manifest.styleDigest.take(12)}-${if (online) "online" else "offline"}" }
+        }
+    DisposableEffect(filesRoute, offlinePackage) {
+        if (filesRoute != null && offlinePackage != null) {
+            tileServer.registerFiles(
+                routeId = filesRoute,
+                directory = offlinePackage.directory,
+                fallback =
+                    if (online) {
+                        { relative -> offlinePackage.upstreamUrl(relative)?.let { VectorTileProvider.httpGet(it, headers) } }
+                    } else {
+                        null
+                    },
+            )
+        }
+        onDispose { if (filesRoute != null) tileServer.unregisterFiles(filesRoute) }
+    }
+    val served =
+        remember(styleJson, filesRoute) {
+            if (filesRoute != null && offlinePackage != null) offlinePackage.styleServedBy(tileServer.filesUrl(filesRoute)) else styleJson
+        }
+
+    // The id is the content and nothing else -- not the layer instance. The
+    // map only re-reads a style whose URL changed, so a changed style must
+    // change the URL; but a provider that rebuilds its view on a design
+    // change (MapTiler) remounts this layer with it, and if the remount
+    // minted a fresh URL it would be a fresh design, another rebuild, and
+    // so on -- the map never comes up. Same content, same URL, and the
+    // remount is a no-op. Two layers showing one style share the document,
+    // which is harmless: one basemap is all a map has.
+    val documentId = remember(served) { "vectortile-style-${served.hashCode().toUInt()}" }
+
+    DisposableEffect(support) {
+        onDispose { support.clearStyle() }
+    }
+
+    DisposableEffect(documentId, support) {
+        tileServer.registerDocument(documentId, "application/json", served.toByteArray())
+        support.showStyle(
+            styleUrl = tileServer.documentUrl(documentId),
+            attributionRules = styleAttributions(styleJson).map { AttributionRule(attribution = it) },
+        )
+        onDiagnostics?.invoke(
+            listOf(
+                if (offlinePackage != null) {
+                    "direct: the map reads the package itself (${if (online) "online" else "offline"})"
+                } else {
+                    "direct: the map draws the style itself"
+                },
+            ),
+        )
+        onDispose { tileServer.unregisterDocument(documentId) }
+    }
+}
+
+/**
+ * The `attribution` of every source in a style, in style order, without
+ * duplicates. A style that will not parse credits nothing here -- the map
+ * will refuse it anyway, more visibly.
+ */
+private fun styleAttributions(styleJson: String): List<String> =
+    runCatching {
+        val sources = JSONObject(styleJson).optJSONObject("sources") ?: return emptyList()
+        sources
+            .keys()
+            .asSequence()
+            .mapNotNull { sources.optJSONObject(it)?.optString("attribution")?.takeIf { a -> a.isNotBlank() } }
+            .distinct()
+            .toList()
+    }.getOrDefault(emptyList())
 
 /**
  * How long the layer being replaced stays up.

@@ -35,7 +35,7 @@ public final class com.mapconductor.vectortile.NativeLabelPixels implements java
 }
 public final class com.mapconductor.vectortile.NativeRenderer {
   public static final com.mapconductor.vectortile.NativeRenderer INSTANCE;
-  public final native long nativeNew(java.lang.String);
+  public final native long nativeNew(java.lang.String, int);
   public final native void nativeFree(long);
   public final native void nativeSetStyle(long, java.lang.String);
   public final native java.lang.String nativePlan(long, int, int, int);
@@ -55,6 +55,115 @@ public final class com.mapconductor.vectortile.NativeRenderer {
   public final native java.lang.String nativeDiagnostics(long);
   public final native java.nio.ByteBuffer nativeTessellate(long, int, int, int, int, byte[], int[]);
   public final native void nativeFreeTessellation(java.nio.ByteBuffer);
+}
+public final class com.mapconductor.vectortile.OfflinePackage {
+  public static final com.mapconductor.vectortile.OfflinePackage$Companion Companion;
+  public static final int FORMAT_VERSION;
+  public static final java.lang.String MANIFEST_FILE;
+  public static final java.lang.String STYLE_FILE;
+  public static final java.lang.String INDEX_FILE;
+  public static final java.lang.String TILES_DIR;
+  public static final java.lang.String GLYPHS_DIR;
+  public static final java.lang.String SPRITE_FILE;
+  public final java.io.File getDirectory();
+  public final com.mapconductor.vectortile.OfflinePackage$Manifest getManifest();
+  public final java.lang.String getStyleJson();
+  public final byte[] bytes(java.lang.String);
+  public final boolean contains(java.lang.String);
+  public final java.lang.String upstreamUrl(java.lang.String);
+  public final java.lang.String styleServedBy(java.lang.String);
+  public static final com.mapconductor.vectortile.OfflinePackage open(java.io.File);
+  public static final boolean delete(java.io.File);
+  public com.mapconductor.vectortile.OfflinePackage(java.io.File, com.mapconductor.vectortile.OfflinePackage$Manifest, java.util.Map, kotlin.jvm.internal.DefaultConstructorMarker);
+}
+public final class com.mapconductor.vectortile.OfflinePackage$Bounds {
+  public static final com.mapconductor.vectortile.OfflinePackage$Bounds$Companion Companion;
+  public final double getSouth();
+  public final double getWest();
+  public final double getNorth();
+  public final double getEast();
+  public final org.json.JSONObject toJson();
+}
+public final class com.mapconductor.vectortile.OfflinePackage$Bounds$Companion {
+  public final com.mapconductor.vectortile.OfflinePackage$Bounds fromJson(org.json.JSONObject);
+}
+public final class com.mapconductor.vectortile.OfflinePackage$Companion {
+  public final com.mapconductor.vectortile.OfflinePackage open(java.io.File);
+  public final boolean delete(java.io.File);
+}
+final class com.mapconductor.vectortile.OfflinePackage$Counters {
+  public final java.util.concurrent.atomic.AtomicLong getPackageHits();
+  public final java.util.concurrent.atomic.AtomicLong getNetworkFetches();
+  public final java.util.concurrent.atomic.AtomicLong getBlocked();
+  public final com.mapconductor.vectortile.OfflinePackage$Stats snapshot();
+}
+public final class com.mapconductor.vectortile.OfflinePackage$Fetcher implements kotlin.jvm.functions.Function1<java.lang.String, byte[]> {
+  public final boolean getOnline();
+  public final void setOnline(boolean);
+  public final com.mapconductor.vectortile.OfflinePackage$Stats getStats();
+  public byte[] invoke(java.lang.String);
+  public java.lang.Object invoke(java.lang.Object);
+}
+public final class com.mapconductor.vectortile.OfflinePackage$Manifest {
+  public static final com.mapconductor.vectortile.OfflinePackage$Manifest$Companion Companion;
+  public final com.mapconductor.vectortile.OfflinePackage$Bounds getBounds();
+  public final int getMinZoom();
+  public final int getMaxZoom();
+  public final java.lang.String getStyleDigest();
+  public final long getCreatedAt();
+  public final int getTiles();
+  public final int getGlyphs();
+  public final int getSprites();
+  public final long getBytes();
+  public final java.util.Map<java.lang.String, java.lang.String> getSources();
+  public final java.lang.String getGlyphsTemplate();
+  public final java.lang.String getSpriteBase();
+  public final org.json.JSONObject toJson();
+}
+public final class com.mapconductor.vectortile.OfflinePackage$Manifest$Companion {
+  public final com.mapconductor.vectortile.OfflinePackage$Manifest fromJson(org.json.JSONObject);
+}
+public final class com.mapconductor.vectortile.OfflinePackage$Stats {
+  public final long getPackageHits();
+  public final long getNetworkFetches();
+  public final long getBlocked();
+  public java.lang.String toString();
+  public final long component1();
+  public final long component2();
+  public final long component3();
+  public final com.mapconductor.vectortile.OfflinePackage$Stats copy(long, long, long);
+  public int hashCode();
+  public boolean equals(java.lang.Object);
+}
+public final class com.mapconductor.vectortile.OfflinePackageDownloader {
+  public static final com.mapconductor.vectortile.OfflinePackageDownloader INSTANCE;
+  public static final int MAX_TILES;
+  public static final java.lang.Object download(java.lang.String, com.mapconductor.vectortile.OfflinePackage$Bounds, int, int, java.io.File, java.util.Map<java.lang.String, java.lang.String>, int, kotlin.jvm.functions.Function1<? super java.lang.String, byte[]>, kotlin.jvm.functions.Function1<? super com.mapconductor.vectortile.OfflinePackageDownloader$Progress, kotlin.Unit>, kotlin.coroutines.Continuation<? super com.mapconductor.vectortile.OfflinePackage>);
+}
+public final class com.mapconductor.vectortile.OfflinePackageDownloader$Phase extends java.lang.Enum<com.mapconductor.vectortile.OfflinePackageDownloader$Phase> {
+  public static final com.mapconductor.vectortile.OfflinePackageDownloader$Phase PLANNING;
+  public static final com.mapconductor.vectortile.OfflinePackageDownloader$Phase TILES;
+  public static final com.mapconductor.vectortile.OfflinePackageDownloader$Phase GLYPHS;
+  public static final com.mapconductor.vectortile.OfflinePackageDownloader$Phase SPRITE;
+  public static final com.mapconductor.vectortile.OfflinePackageDownloader$Phase DONE;
+  public static com.mapconductor.vectortile.OfflinePackageDownloader$Phase[] values();
+  public static com.mapconductor.vectortile.OfflinePackageDownloader$Phase valueOf(java.lang.String);
+  public static kotlin.enums.EnumEntries<com.mapconductor.vectortile.OfflinePackageDownloader$Phase> getEntries();
+}
+public final class com.mapconductor.vectortile.OfflinePackageDownloader$Progress {
+  public final com.mapconductor.vectortile.OfflinePackageDownloader$Phase getPhase();
+  public final int getDone();
+  public final int getTotal();
+  public java.lang.String toString();
+}
+public final class com.mapconductor.vectortile.OfflinePackageDownloader$download$3$DisplayTile {
+  public final int getZ();
+  public final int getX();
+  public final int getY();
+  public final java.util.List<java.lang.String> getUrls();
+}
+public final class com.mapconductor.vectortile.OfflineUnavailableException extends java.lang.RuntimeException {
+  public com.mapconductor.vectortile.OfflineUnavailableException(java.lang.String);
 }
 public final class com.mapconductor.vectortile.SolidBatchRenderer implements java.io.Closeable {
   public static final com.mapconductor.vectortile.SolidBatchRenderer$Companion Companion;
@@ -118,7 +227,7 @@ public final class com.mapconductor.vectortile.TileDiskCache$Companion {
   public final java.lang.String digest(java.lang.String...);
 }
 public final class com.mapconductor.vectortile.VectorTileLayerKt {
-  public static final void VectorTileLayer(com.mapconductor.compose.MapViewScope, java.lang.String, java.lang.Integer, float, boolean, int, java.util.Map<java.lang.String, java.lang.String>, com.mapconductor.vectortile.VectorTileProvider$RenderMode, java.io.File, kotlin.jvm.functions.Function1<? super java.util.List<java.lang.String>, kotlin.Unit>, androidx.compose.runtime.Composer, int, int);
+  public static final void VectorTileLayer(com.mapconductor.compose.MapViewScope, java.lang.String, java.lang.Integer, float, boolean, int, java.util.Map<java.lang.String, java.lang.String>, com.mapconductor.vectortile.VectorTileProvider$RenderMode, java.io.File, kotlin.jvm.functions.Function1<? super java.util.List<java.lang.String>, kotlin.Unit>, boolean, com.mapconductor.vectortile.OfflinePackage, boolean, kotlin.jvm.functions.Function1<? super com.mapconductor.vectortile.OfflinePackage$Stats, kotlin.Unit>, androidx.compose.runtime.Composer, int, int, int);
 }
 public final class com.mapconductor.vectortile.VectorTileProvider implements com.mapconductor.core.tileserver.TileProviderInterface,java.io.Closeable {
   public static final com.mapconductor.vectortile.VectorTileProvider$Companion Companion;
@@ -196,9 +305,9 @@ public final class com.mapconductor.vectortile.VectorTileRenderer implements jav
   public final java.lang.String attributions();
   public final java.lang.String diagnostics();
   public void close();
-  public static final com.mapconductor.vectortile.VectorTileRenderer create(java.lang.String);
+  public static final com.mapconductor.vectortile.VectorTileRenderer create(java.lang.String, int);
   public com.mapconductor.vectortile.VectorTileRenderer(long, kotlin.jvm.internal.DefaultConstructorMarker);
 }
 public final class com.mapconductor.vectortile.VectorTileRenderer$Companion {
-  public final com.mapconductor.vectortile.VectorTileRenderer create(java.lang.String);
+  public final com.mapconductor.vectortile.VectorTileRenderer create(java.lang.String, int);
 }

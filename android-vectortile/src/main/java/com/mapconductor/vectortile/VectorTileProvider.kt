@@ -380,6 +380,8 @@ class VectorTileProvider private constructor(
         private const val STAT_SHARED = 3
         private const val STAT_CANCELLED = 4
         private const val STAT_QUEUE_MS = 5
+        private const val STAT_BLOCKED = 6
+        private const val STAT_COUNT = 7
 
         /**
          * How much finer the label overlay is drawn than the tile it covers.
@@ -449,7 +451,7 @@ class VectorTileProvider private constructor(
             }
         }
 
-        private fun httpGet(
+        internal fun httpGet(
             url: String,
             headers: Map<String, String>,
         ): ByteArray? {
@@ -647,7 +649,7 @@ class VectorTileProvider private constructor(
                     source.getString("url")
                 }
             }
-        val fetchStats = Array(6) { java.util.concurrent.atomic.AtomicLong() }
+        val fetchStats = Array(STAT_COUNT) { java.util.concurrent.atomic.AtomicLong() }
         val pending = MutableList<java.util.concurrent.Future<ByteArray?>?>(urls.size) { null }
         urls.indices
             .sortedBy { index ->
@@ -708,12 +710,17 @@ class VectorTileProvider private constructor(
 
         val renderStarted = System.nanoTime()
         val groundKey = key("geom")
+        // A tile drawn while the network was off and a source was not in the
+        // package is missing ink, like one drawn short of glyphs -- but
+        // nothing will arrive to redraw it, so it must not be kept at all.
+        val drawnShortOfSources = fetchStats[STAT_BLOCKED].get() > 0
+        val keepGroundAs = if (drawnShortOfSources) null else groundKey
         val png =
             when (content) {
                 Content.LABELS -> renderLabelTile(request, tiles, isCancelled)
                 Content.FULL ->
                     groundRasters.get(groundKey)?.let { compositeLabels(request, it, tiles) }
-                        ?: renderGroundTile(request, tiles, isCancelled, content, cacheGroundAs = groundKey)
+                        ?: renderGroundTile(request, tiles, isCancelled, content, cacheGroundAs = keepGroundAs)
                 Content.GEOMETRY -> renderGroundTile(request, tiles, isCancelled, content, cacheGroundAs = null)
             }
         val renderMs = (System.nanoTime() - renderStarted) / 1_000_000
@@ -730,7 +737,7 @@ class VectorTileProvider private constructor(
             )
         }
         if (drawnShortOfGlyphs) provisionalSinceHandover.set(true)
-        if (png != null) {
+        if (png != null && !drawnShortOfSources) {
             val store = if (drawnShortOfGlyphs) provisionalKey else completeKey
             if (store != null) diskCache?.put(store, png)
         }
@@ -981,11 +988,18 @@ class VectorTileProvider private constructor(
                         try {
                             if (closed) return@execute
                             val cached = glyphCache?.get(url)
+                            val fetched = if (cached != null) Result.success(cached) else runCatching { fetchTile(url) }
+                            if (fetched.exceptionOrNull() is OfflineUnavailableException) {
+                                // Unclaimed: the range is there to be had
+                                // once the network is back.
+                                requestedGlyphs.remove(url)
+                                return@execute
+                            }
                             val bytes =
-                                cached ?: runCatching { fetchTile(url) }.getOrNull()?.also {
+                                fetched.getOrNull()?.also {
                                     // Ranges do not change, so this is kept
                                     // without an expiry.
-                                    glyphCache?.put(url, it)
+                                    if (cached == null) glyphCache?.put(url, it)
                                 }
                             if (bytes == null || bytes.isEmpty()) {
                                 // Left in the claimed set: a range the server
@@ -1175,9 +1189,17 @@ class VectorTileProvider private constructor(
         val fetched = runCatching { fetchTile(url) }
         val bytes = fetched.getOrNull()
         if (bytes == null) {
-            if (fetched.isSuccess) {
+            if (fetched.exceptionOrNull() is OfflineUnavailableException) {
+                // Not an error and not an answer: the network is off. The
+                // tile is drawn without this source and not kept, so it is
+                // drawn again once the network is back.
+                stats[STAT_BLOCKED].incrementAndGet()
+            } else if (fetched.isSuccess) {
                 empties.add(url)
             } else {
+                // A network failure is the same for the tile: drawn without
+                // this source, not kept, tried again next time.
+                stats[STAT_BLOCKED].incrementAndGet()
                 Log.w(TAG, "source tile failed; will try again: $url", fetched.exceptionOrNull())
             }
             return null

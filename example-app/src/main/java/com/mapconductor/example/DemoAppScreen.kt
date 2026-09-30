@@ -46,6 +46,7 @@ import com.mapconductor.example.pages.polyline.PolylineMapPage
 import com.mapconductor.example.pages.rasterlayer.RasterHeaderProbePage
 import com.mapconductor.example.pages.rasterlayer.RasterLayerMapPage
 import com.mapconductor.example.pages.startup.StartUpPage
+import com.mapconductor.example.pages.offlinemap.OfflineMapPage
 import com.mapconductor.example.pages.vectortile.VectorTilePage
 import com.mapconductor.example.ui.sidebar.Sidebar
 import com.mapconductor.example.ui.sidebar.SidebarItem
@@ -159,7 +160,11 @@ fun DemoAppScreen(initPage: String = "map") {
             ),
             SidebarSection(
                 title = "Vector Tile Layer",
-                items = listOf(SidebarItem(id = "vector-tile", title = "MapLibre Style")),
+                items =
+                    listOf(
+                        SidebarItem(id = "vector-tile", title = "MapLibre Style"),
+                        SidebarItem(id = "offline-map", title = "Offline Map"),
+                    ),
             ),
             SidebarSection(
                 title = "GeoJSON",
@@ -336,6 +341,11 @@ fun DemoAppScreen(initPage: String = "map") {
                     }
                     "vector-tile" -> {
                         VectorTilePage(
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
+                    }
+                    "offline-map" -> {
+                        OfflineMapPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }

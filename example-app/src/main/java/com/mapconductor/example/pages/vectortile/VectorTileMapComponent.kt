@@ -4,25 +4,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import com.mapconductor.arcgis.ArcGISDesign
-import com.mapconductor.arcgis.ArcGISMapViewStateInterface
 import com.mapconductor.core.OnMapLoadedHandler
 import com.mapconductor.core.map.MapViewStateInterface
+import com.mapconductor.core.map.VectorStyleSupportKey
 import com.mapconductor.example.MapViewContainer
-import com.mapconductor.googlemaps.GoogleMapDesign
-import com.mapconductor.googlemaps.GoogleMapViewStateInterface
-import com.mapconductor.longdo.LongdoDesign
-import com.mapconductor.longdo.LongdoViewStateInterface
-import com.mapconductor.mapbox.MapboxMapDesign
-import com.mapconductor.mapbox.MapboxViewStateInterface
-import com.mapconductor.maptiler.MapTilerDesign
-import com.mapconductor.maptiler.MapTilerViewStateInterface
-import com.mapconductor.openmobilemaps.OpenMobileMapsDesign
-import com.mapconductor.openmobilemaps.OpenMobileMapsViewStateInterface
-import com.mapconductor.tomtom.TomTomMapDesign
-import com.mapconductor.tomtom.TomTomMapViewStateInterface
-import com.mapconductor.maplibre.MapLibreDesign
-import com.mapconductor.maplibre.MapLibreViewStateInterface
 import com.mapconductor.vectortile.VectorTileLayer
 
 @Composable
@@ -44,39 +29,11 @@ fun VectorTileMapComponent(
     // the difference is whether the device also fetches a basemap nobody sees.
     LaunchedEffect(mapViewState, asBasemap) {
         val state = mapViewState ?: return@LaunchedEffect
-        when (state) {
-            is MapLibreViewStateInterface ->
-                state.mapDesignType =
-                    if (asBasemap) {
-                        MapLibreDesign(id = "blank", styleJsonURL = "asset://blank-style.json")
-                    } else {
-                        MapLibreDesign.OsmBrightJa
-                    }
-            is GoogleMapViewStateInterface ->
-                state.mapDesignType =
-                    if (asBasemap) GoogleMapDesign.None else GoogleMapDesign.Normal
-            is ArcGISMapViewStateInterface ->
-                state.mapDesignType =
-                    if (asBasemap) ArcGISDesign.None else ArcGISDesign.OsmStandard
-            is MapboxViewStateInterface ->
-                state.mapDesignType =
-                    if (asBasemap) MapboxMapDesign.None else MapboxMapDesign.Standard
-            is TomTomMapViewStateInterface ->
-                state.mapDesignType =
-                    if (asBasemap) TomTomMapDesign.None else TomTomMapDesign.Standard
-            is MapTilerViewStateInterface ->
-                state.mapDesignType =
-                    if (asBasemap) MapTilerDesign.None else MapTilerDesign.Streets
-            is LongdoViewStateInterface ->
-                state.mapDesignType =
-                    if (asBasemap) LongdoDesign.None else LongdoDesign.Normal
-            is OpenMobileMapsViewStateInterface ->
-                state.mapDesignType =
-                    if (asBasemap) OpenMobileMapsDesign.None else OpenMobileMapsDesign.OpenStreetMap
-            // HERE and Mappls have no design that draws nothing; the opaque
-            // tiles cover their basemap, which is still fetched.
-            else -> Unit
-        }
+        // A map that takes the style directly gets it *as* its design from
+        // the layer; blanking first would only load one style to throw it
+        // away. Going back to the provider's own basemap is still done here.
+        if (asBasemap && state.serviceRegistry.has(VectorStyleSupportKey)) return@LaunchedEffect
+        showProviderBasemap(state, visible = !asBasemap)
     }
 
     mapViewState?.let { state ->
@@ -94,6 +51,7 @@ fun VectorTileMapComponent(
                     opacity = opacity,
                     diskCacheDir = diskCacheDir,
                     onDiagnostics = onDiagnostics,
+                    asBasemap = asBasemap,
                 )
             }
         }
