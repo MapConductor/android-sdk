@@ -733,7 +733,8 @@ class VectorTileProvider private constructor(
                     "render=${renderMs}ms bytes=${png?.size ?: 0} " +
                     "mvt(mem=${fetchStats[STAT_MEMORY].get()} disk=${fetchStats[STAT_DISK].get()} " +
                     "net=${fetchStats[STAT_NETWORK].get()} shared=${fetchStats[STAT_SHARED].get()} " +
-                    "cancel=${fetchStats[STAT_CANCELLED].get()} queue=${fetchStats[STAT_QUEUE_MS].get()}ms)",
+                    "blocked=${fetchStats[STAT_BLOCKED].get()} cancel=${fetchStats[STAT_CANCELLED].get()} " +
+                    "queue=${fetchStats[STAT_QUEUE_MS].get()}ms)",
             )
         }
         if (drawnShortOfGlyphs) provisionalSinceHandover.set(true)
