@@ -38,6 +38,7 @@ mapplsSdk = "9.0.3"
 materialVersion = "1.14.0"
 coroutines = "1.9.0"
 ui = "1.11.4"
+material3 = "1.4.0"
 
 [libraries]
 # Open Mobile Maps (https://github.com/openmobilemaps/maps-core) — MPL 2.0
@@ -47,7 +48,7 @@ androidx-core = { module = "androidx.test:core", version.ref = "core" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 androidx-runner = { module = "androidx.test:runner", version.ref = "runner" }
-androidx-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "composeLibs" }
+androidx-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
 androidx-material-icons-core = { group = "androidx.compose.material", name = "material-icons-core" }
 androidx-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
 
@@ -120,6 +121,7 @@ androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime
 androidx-runtime = { group = "androidx.compose.runtime", name = "runtime", version.ref = "composeLibs" }
 material = { group = "com.google.android.material", name = "material", version.ref = "materialVersion" }
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
+kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines" }
 androidx-compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics", version.ref = "composeLibs" }
 androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "composeLibs" }
 androidx-compose-ui-unit = { group = "androidx.compose.ui", name = "ui-unit", version.ref = "composeLibs" }
