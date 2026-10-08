@@ -26,6 +26,7 @@ import android.util.LruCache
 class VectorTileProvider private constructor(
     private val renderer: VectorTileRenderer,
     private val tileSize: Int,
+    private val geometryPixelRatio: Int,
     private val headers: Map<String, String>,
     private val fetchTile: (String) -> ByteArray?,
     cacheBytes: Int,
@@ -37,6 +38,8 @@ class VectorTileProvider private constructor(
     private val gpu: GpuTileRasterizer?,
 ) : TileProviderInterface,
     Closeable {
+    private val groundResolution = tileSize * geometryPixelRatio
+
     /** Where rasterisation actually happens, after any fallback. */
     val renderMode: RenderMode = if (gpu != null) RenderMode.GPU else RenderMode.CPU
 
@@ -394,6 +397,8 @@ class VectorTileProvider private constructor(
 
         /**
          * @param styleJson a MapLibre style document
+         * @param geometryPixelRatio ground image pixels per logical tile pixel.
+         *   A value of 2 keeps the geographic tile size while doubling both image axes.
          * @param headers sent with every source tile request
          * @param fetchTile overrides fetching entirely; return null for "no tile"
          * @throws IllegalArgumentException if the style cannot be parsed
@@ -408,8 +413,11 @@ class VectorTileProvider private constructor(
             diskCacheDir: File? = null,
             diskCacheBytes: Long = DEFAULT_DISK_CACHE_BYTES,
             renderMode: RenderMode = RenderMode.AUTO,
+            geometryPixelRatio: Int = 1,
             fetchTile: ((String) -> ByteArray?)? = null,
         ): VectorTileProvider {
+            require(geometryPixelRatio in 1..2) { "geometryPixelRatio must be 1 or 2" }
+            require(tileSize in 1..(8192 / geometryPixelRatio)) { "invalid geometry resolution" }
             // The renderer needs the dp a tile covers, not the pixels a render
             // asks for: the label pass draws at twice the pixels, and the
             // style's sizes are screen units either way.
@@ -420,15 +428,16 @@ class VectorTileProvider private constructor(
                     // AUTO and GPU both probe; AUTO falls back silently, GPU says
                     // so, because asking for the GPU and quietly getting the CPU
                     // is how a performance regression hides.
-                    RenderMode.AUTO -> GpuTileRasterizer.createOrNull(tileSize)
+                    RenderMode.AUTO -> GpuTileRasterizer.createOrNull(tileSize * geometryPixelRatio)
                     RenderMode.GPU ->
-                        GpuTileRasterizer.createOrNull(tileSize).also {
+                        GpuTileRasterizer.createOrNull(tileSize * geometryPixelRatio).also {
                             if (it == null) Log.w(TAG, "GPU requested but unavailable; using the CPU")
                         }
                 }
             return VectorTileProvider(
                 renderer = renderer,
                 tileSize = tileSize,
+                geometryPixelRatio = geometryPixelRatio,
                 headers = headers,
                 fetchTile = fetchTile ?: { url -> httpGet(url, headers) },
                 cacheBytes = cacheBytes,
@@ -595,6 +604,9 @@ class VectorTileProvider private constructor(
                 // tiles.
                 "v${VectorTileRenderer.OUTPUT_VERSION}",
                 generation,
+                // Keep default and label cache keys stable. A high-resolution
+                // ground must never reuse a low-resolution PNG.
+                if (content != Content.LABELS && geometryPixelRatio != 1) "ground-r$geometryPixelRatio" else "",
                 "${request.z}/${request.x}/${request.y}",
             )
 
@@ -769,17 +781,17 @@ class VectorTileProvider private constructor(
         ground: ByteArray,
         tiles: List<ByteArray?>,
     ): ByteArray? {
-        if (ground.size != tileSize * tileSize * 4) return null
+        if (ground.size != groundResolution * groundResolution * 4) return null
         val rgba = ground.copyOf()
         if (!glyphsUnavailable) {
-            runCatching { renderer.drawLabels(request.z, request.x, request.y, tileSize, rgba, tiles) }
+            runCatching { renderer.drawLabels(request.z, request.x, request.y, groundResolution, rgba, tiles) }
                 .onFailure { Log.w(TAG, "label pass failed on the cached ground", it) }
         }
         // The encoder reads a direct buffer only.
         val buffer = java.nio.ByteBuffer.allocateDirect(rgba.size).order(java.nio.ByteOrder.nativeOrder())
         buffer.put(rgba)
         buffer.rewind()
-        return com.mapconductor.core.tileserver.TilePngEncoder.encode(buffer, tileSize, tileSize, premultiplied = false)
+        return com.mapconductor.core.tileserver.TilePngEncoder.encode(buffer, groundResolution, groundResolution, premultiplied = false)
     }
 
     private fun renderGroundTile(
@@ -817,7 +829,7 @@ class VectorTileProvider private constructor(
                 gpuRenderCount.incrementAndGet()
                 return drawn
             }
-            if (isCancelled()) return null
+            if (closed || isCancelled()) return null
             gpuFallbackCount.incrementAndGet()
         }
         // A GPU failure must not lose the tile; the CPU can always draw it.
@@ -825,13 +837,13 @@ class VectorTileProvider private constructor(
         return try {
             // Waiting for a slot is where a tile spends its time when the map
             // is busy, and the map can lose interest while it waits.
-            if (isCancelled()) return null
+            if (closed || isCancelled()) return null
             runCatching {
                 renderer.render(
                     request.z,
                     request.x,
                     request.y,
-                    tileSize,
+                    groundResolution,
                     tiles,
                     geometryOnly = content == Content.GEOMETRY,
                 )
@@ -1086,12 +1098,12 @@ class VectorTileProvider private constructor(
     ): ByteArray? {
         val rasterizer = gpu ?: return null
         val queued = System.nanoTime()
-        if (isCancelled()) return null
+        if (closed || isCancelled()) return null
         gpuPrepareSlots.acquire()
         val started = System.nanoTime()
         val tessellated =
             try {
-                if (isCancelled()) return null
+                if (closed || isCancelled()) return null
                 val lengths = IntArray(tiles.size) { tiles[it]?.size ?: 0 }
                 val data = ByteArray(lengths.sum())
                 var offset = 0
@@ -1102,7 +1114,7 @@ class VectorTileProvider private constructor(
                 }
                 TessellatedTile(
                     renderer.tessellate(
-                        request.z, request.x, request.y, tileSize, data, lengths,
+                        request.z, request.x, request.y, groundResolution, data, lengths,
                     ),
                 )
             } finally {
@@ -1116,7 +1128,7 @@ class VectorTileProvider private constructor(
                     "cpu=${(System.nanoTime() - started) / 1_000_000.0}ms",
             )
         }
-        if (isCancelled()) {
+        if (closed || isCancelled()) {
             tessellated.close()
             return null
         }
@@ -1133,7 +1145,7 @@ class VectorTileProvider private constructor(
                     if (cacheGroundAs != null) groundRasters.put(cacheGroundAs, rgba.copyOf())
                     if (drawLabels) {
                         runCatching {
-                            renderer.drawLabels(request.z, request.x, request.y, tileSize, rgba, tiles)
+                            renderer.drawLabels(request.z, request.x, request.y, groundResolution, rgba, tiles)
                         }.onFailure { Log.w(TAG, "label pass failed on the GPU readback", it) }
                     }
                 }
@@ -1150,15 +1162,8 @@ class VectorTileProvider private constructor(
             return it
         }
         if (empties.contains(url)) return null
-        sourceDiskCache?.get(url)?.let {
-            stats[STAT_DISK].incrementAndGet()
-            cache.put(url, it)
-            return it
-        }
-
-        // One download per URL, however many tiles want it. Every tile is its
-        // neighbours' neighbour, so on a cold screen the same source tile is
-        // asked for by up to nine renders at once.
+        // Share disk reads as well as downloads. A cold memory cache lets
+        // neighbouring label tiles ask for the same file simultaneously.
         val mine = java.util.concurrent.CompletableFuture<ByteArray?>()
         val existing = inFlight.putIfAbsent(url, mine)
         if (existing != null) {
@@ -1166,7 +1171,18 @@ class VectorTileProvider private constructor(
             return runCatching { existing.get() }.getOrNull()
         }
         try {
-            val bytes = fetchAndRemember(url, stats)
+            // A prior flight may have filled memory between our initial
+            // lookup and claiming this URL. Recheck before doing any I/O.
+            val bytes = cache.get(url)?.also {
+                stats[STAT_MEMORY].incrementAndGet()
+            } ?: if (empties.contains(url)) {
+                null
+            } else {
+                sourceDiskCache?.get(url)?.also {
+                    stats[STAT_DISK].incrementAndGet()
+                    cache.put(url, it)
+                } ?: fetchAndRemember(url, stats)
+            }
             mine.complete(bytes)
             return bytes
         } catch (error: Throwable) {
@@ -1210,17 +1226,49 @@ class VectorTileProvider private constructor(
         return bytes
     }
 
-    /** Releases the native renderer. Safe to call more than once. */
-    override fun close() {
-        glyphFetchers.shutdownNow()
-        sourceFetchers.shutdownNow()
-        if (closed) return
+    private val closeStarted = java.util.concurrent.atomic.AtomicBoolean()
+
+    private fun beginClose(): Boolean {
+        if (!closeStarted.compareAndSet(false, true)) return false
         closed = true
-        cache.evictAll()
-        groundRasters.evictAll()
-        empties.clear()
-        gpu?.close()
-        renderer.close()
+        onGlyphsLoaded = null
+        glyphFetchers.shutdownNow().forEach { (it as? java.util.concurrent.Future<*>)?.cancel(false) }
+        sourceFetchers.shutdownNow().forEach { (it as? java.util.concurrent.Future<*>)?.cancel(false) }
+        return true
+    }
+
+    private fun releaseResources() {
+        try {
+            gpu?.close()
+        } finally {
+            try {
+                // Retain the renderer's write lock: an in-flight JNI call
+                // must finish before its native allocation can be freed.
+                renderer.close()
+            } finally {
+                cache.evictAll()
+                groundRasters.evictAll()
+                empties.clear()
+            }
+        }
+    }
+
+    /** Stops accepting tiles immediately and waits for native/GL cleanup off the UI thread. */
+    fun closeAsync() {
+        if (!beginClose()) return
+        Thread({
+            try {
+                releaseResources()
+            } catch (error: Exception) {
+                Log.e(TAG, "asynchronous renderer cleanup failed", error)
+            }
+        }, "vectortile-close").apply { isDaemon = true }.start()
+    }
+
+    /** Releases resources synchronously. Use [closeAsync] when disposing a UI layer. */
+    override fun close() {
+        if (!beginClose()) return
+        releaseResources()
     }
 
 }

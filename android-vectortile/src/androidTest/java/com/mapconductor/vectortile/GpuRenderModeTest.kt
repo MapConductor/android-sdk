@@ -80,7 +80,10 @@ class GpuRenderModeTest {
         // test passes just as well when the path falls back to the CPU on
         // every tile, which is precisely the failure worth catching.
         val subject = provider(VectorTileProvider.RenderMode.GPU)
-        repeat(3) { assertNotNull(subject.renderTile(TileRequest(x = 0, y = 0, z = 0))) }
+        // FULL reuses its cached ground after the first call. The geometry
+        // route renders every request here (no disk cache), so the assertion
+        // below really exercises three GPU draws.
+        repeat(3) { assertNotNull(subject.geometryTiles.renderTile(TileRequest(x = 0, y = 0, z = 0))) }
         assertEquals("tiles fell back to the CPU", 0L, subject.gpuFallbacks)
         assertEquals(3L, subject.gpuRenders)
     }

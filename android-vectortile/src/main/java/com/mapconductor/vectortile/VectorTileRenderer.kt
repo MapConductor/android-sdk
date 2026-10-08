@@ -60,8 +60,10 @@ class VectorTileRenderer private constructor(
          * 15: the whole background stack, not its last layer.
          * 16: magnified geometry lands inside its tile on the GPU path.
          * 17: labels judged against a tile of margin, so neighbours agree.
+         * 18: glyph pixels align across tile boundaries.
+         * 19: label bounds include glyph bearings and SDF raster extents.
          */
-        const val OUTPUT_VERSION: Int = 17
+        const val OUTPUT_VERSION: Int = 19
 
         /** @throws IllegalArgumentException if the style cannot be parsed. */
         @JvmStatic

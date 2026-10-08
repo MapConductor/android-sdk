@@ -38,6 +38,7 @@ import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.example.MapViewContainer
 import com.mapconductor.example.pages.vectortile.VectorTileStyleLoader
+import com.mapconductor.example.pages.vectortile.vectorTileGeometryPixelRatio
 import com.mapconductor.example.pages.vectortile.showProviderBasemap
 import com.mapconductor.example.ui.DefaultMapViewItems
 import com.mapconductor.example.ui.DemoMapPageScaffold
@@ -242,6 +243,7 @@ fun OfflineMapPage(
                             VectorTileLayer(
                                 styleJson = style,
                                 asBasemap = true,
+                                geometryPixelRatio = vectorTileGeometryPixelRatio(state),
                                 offlinePackage = offlinePackage,
                                 online = !airplane,
                                 onOfflineStats = { stats = it },

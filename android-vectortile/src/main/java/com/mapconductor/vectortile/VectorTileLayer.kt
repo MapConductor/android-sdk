@@ -107,6 +107,8 @@ fun MapViewScope.VectorTileLayer(
      * competing for.
      */
     renderMode: VectorTileProvider.RenderMode = VectorTileProvider.RenderMode.AUTO,
+    /** Ground raster resolution; 2 doubles image axes without changing source tile selection. */
+    geometryPixelRatio: Int = 1,
     /**
      * Where to keep rendered tiles across app launches, e.g.
      * `context.cacheDir.resolve("vectortile")`. Null disables it.
@@ -146,7 +148,7 @@ fun MapViewScope.VectorTileLayer(
     /** Counts of what the package answered and what it could not, as fetches happen. */
     onOfflineStats: ((OfflinePackage.Stats) -> Unit)? = null,
 ) {
-    val groupId = remember { "vectortile-${UUID.randomUUID()}" }
+    val groupId = remember(geometryPixelRatio) { "vectortile-${UUID.randomUUID()}" }
     val tileServer = remember { TileServerRegistry.get() }
 
     val direct = if (asBasemap) LocalMapServiceRegistry.current.get(VectorStyleSupportKey) else null
@@ -198,7 +200,7 @@ fun MapViewScope.VectorTileLayer(
         onDispose {
             tileServer.unregister("$groupId-geom")
             tileServer.unregister("$groupId-labels")
-            provider?.close()
+            provider?.closeAsync()
             provider = null
         }
     }
@@ -213,6 +215,7 @@ fun MapViewScope.VectorTileLayer(
                         headers = headers,
                         diskCacheDir = diskCacheDir,
                         renderMode = renderMode,
+                        geometryPixelRatio = geometryPixelRatio,
                         fetchTile = fetcher,
                     )
                 }
