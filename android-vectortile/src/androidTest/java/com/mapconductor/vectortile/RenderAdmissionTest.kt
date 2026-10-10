@@ -48,7 +48,7 @@ class RenderAdmissionTest {
             .create(
                 styleJson = style,
                 tileSize = 512,
-                geometryPixelRatio = 1,
+                renderScale = 1,
                 renderMode = VectorTileProvider.RenderMode.GPU,
                 fetchTile = { tile },
             ).use { provider ->
@@ -108,7 +108,7 @@ class RenderAdmissionTest {
             VectorTileProvider.create(
                 styleJson = style,
                 tileSize = 256,
-                geometryPixelRatio = 1,
+                renderScale = 1,
                 renderMode = if (gpu) VectorTileProvider.RenderMode.GPU else VectorTileProvider.RenderMode.CPU,
                 fetchTile = { tile },
             )

@@ -9,8 +9,6 @@ import com.mapconductor.core.map.MapViewStateInterface
 import com.mapconductor.core.map.VectorStyleSupportKey
 import com.mapconductor.example.MapViewContainer
 import com.mapconductor.vectortile.VectorTileLayer
-import com.mapconductor.openmobilemaps.OpenMobileMapsViewStateInterface
-import com.mapconductor.googlemaps.GoogleMapViewStateInterface
 
 @Composable
 fun VectorTileMapComponent(
@@ -50,7 +48,6 @@ fun VectorTileMapComponent(
                 VectorTileLayer(
                     styleJson = styleJson,
                     tileSize = tileSize,
-                    geometryPixelRatio = vectorTileGeometryPixelRatio(state),
                     opacity = opacity,
                     diskCacheDir = diskCacheDir,
                     onDiagnostics = onDiagnostics,
@@ -60,7 +57,3 @@ fun VectorTileMapComponent(
         }
     }
 }
-
-/** Shared by online and offline pages: improve ground pixels without changing logical tiles. */
-internal fun vectorTileGeometryPixelRatio(state: MapViewStateInterface<*>): Int =
-    if (state is OpenMobileMapsViewStateInterface || state is GoogleMapViewStateInterface) 2 else 1

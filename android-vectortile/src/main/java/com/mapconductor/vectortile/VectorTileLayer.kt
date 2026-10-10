@@ -107,8 +107,21 @@ fun MapViewScope.VectorTileLayer(
      * competing for.
      */
     renderMode: VectorTileProvider.RenderMode = VectorTileProvider.RenderMode.AUTO,
-    /** Ground raster resolution; 2 doubles image axes without changing source tile selection. */
-    geometryPixelRatio: Int = 1,
+    /**
+     * Image pixels drawn per style pixel.
+     *
+     * Null follows the display's own density, which is what stops a 3x screen
+     * stretching every tile — neither the map SDKs nor this layer ask for
+     * `@2x` tiles, so without it the tile is drawn at a third of the pixels
+     * the screen will show it at. A tile covers the same ground whatever this
+     * says; only its grain changes, and so does the cost: the image is this
+     * squared, and the GPU readback is per pixel.
+     *
+     * Pass 1 to trade sharpness back for speed on a slow device.
+     *
+     * Matches `renderScale` on iOS.
+     */
+    renderScale: Int ? = null,
     /**
      * Where to keep rendered tiles across app launches, e.g.
      * `context.cacheDir.resolve("vectortile")`. Null disables it.
@@ -148,7 +161,10 @@ fun MapViewScope.VectorTileLayer(
     /** Counts of what the package answered and what it could not, as fetches happen. */
     onOfflineStats: ((OfflinePackage.Stats) -> Unit)? = null,
 ) {
-    val groupId = remember(geometryPixelRatio) { "vectortile-${UUID.randomUUID()}" }
+    // Everything downstream is keyed off the group, so asking for a different
+    // scale rebuilds the provider and the routes with it. Null is resolved by
+    // the provider, from the display's own density.
+    val groupId = remember(renderScale) { "vectortile-${UUID.randomUUID()}" }
     val tileServer = remember { TileServerRegistry.get() }
 
     val direct = if (asBasemap) LocalMapServiceRegistry.current.get(VectorStyleSupportKey) else null
@@ -215,7 +231,7 @@ fun MapViewScope.VectorTileLayer(
                         headers = headers,
                         diskCacheDir = diskCacheDir,
                         renderMode = renderMode,
-                        geometryPixelRatio = geometryPixelRatio,
+                        renderScale = renderScale,
                         fetchTile = fetcher,
                     )
                 }

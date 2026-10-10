@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!--
+      A style named by URL is fetched here rather than by the map: the rules
+      have to be compiled against the document before the map is given
+      anything. A style the app already holds needs none of this, but the
+      permission is not optional per call.
+    -->
+    <uses-permission android:name="android.permission.INTERNET" />
+</manifest>

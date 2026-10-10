@@ -62,6 +62,8 @@ class VectorTileRenderer private constructor(
          * 17: labels judged against a tile of margin, so neighbours agree.
          * 18: glyph pixels align across tile boundaries.
          * 19: label bounds include glyph bearings and SDF raster extents.
+         * 20: that extent decides which tile a label draws in; collisions are
+         *     judged on the layout box again, so labels are as dense as before.
          */
         const val OUTPUT_VERSION: Int = 23
 

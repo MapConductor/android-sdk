@@ -38,6 +38,10 @@ class VectorTileProviderTest {
             VectorTileProvider.create(
                 styleJson = styleJson,
                 tileSize = 512,
+                // Pinned rather than left to the display: the image is this
+                // times the scale, and the suite runs on whatever device is
+                // attached. What is under test here is the route, not the grain.
+                renderScale = 1,
                 // Serve the bundled tile for whatever the plan asks for.
                 fetchTile = { tileBytes },
             )

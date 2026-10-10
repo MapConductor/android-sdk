@@ -157,6 +157,9 @@ android {
             // どちらも libc++_shared.so を同梱していて衝突する。どちらも同じ
             // NDK の STL なので 1 つに畳んでよい。
             pickFirsts += "lib/**/libc++_shared.so"
+            // The app's patched OMM quad/stencil implementation takes priority
+            // over the published 4.0.0 native library (upstream PR #928).
+            pickFirsts += "lib/arm64-v8a/libmapscore.so"
         }
     }
 
@@ -267,6 +270,7 @@ dependencies {
     debugImplementation(project(":android-marker-clustering"))
     debugImplementation(project(":android-heatmap"))
     debugImplementation(project(":android-vectortile"))
+    debugImplementation(project(":android-vectorstyle"))
     debugImplementation(project(":android-geojson-layer"))
     debugImplementation(project(":android-kml"))
 

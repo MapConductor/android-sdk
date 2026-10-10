@@ -64,6 +64,14 @@ dependencies {
         implementation("com.mapconductor:compose:${project.findProperty("coreLibraryVersion") as String? ?: "1.0.0"}")
     }
 
+    // `VectorStyleRasteriser` はあちらが宣言し、こちらが実装する
+    // （`VectorTileRasteriser`）。依存の向きはこの一方向だけ。
+    if (findProject(":android-vectorstyle") != null) {
+        api(project(":android-vectorstyle"))
+    } else {
+        api("com.mapconductor:vectorstyle:${project.findProperty("coreLibraryVersion") as String? ?: "1.0.0"}")
+    }
+
     implementation(libs.kotlinx.coroutines.android)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.runtime)

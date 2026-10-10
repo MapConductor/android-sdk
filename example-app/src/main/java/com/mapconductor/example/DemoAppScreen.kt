@@ -47,6 +47,7 @@ import com.mapconductor.example.pages.rasterlayer.RasterHeaderProbePage
 import com.mapconductor.example.pages.rasterlayer.RasterLayerMapPage
 import com.mapconductor.example.pages.startup.StartUpPage
 import com.mapconductor.example.pages.offlinemap.OfflineMapPage
+import com.mapconductor.example.pages.vectorstyle.VectorStylePage
 import com.mapconductor.example.pages.vectortile.VectorTilePage
 import com.mapconductor.example.ui.sidebar.Sidebar
 import com.mapconductor.example.ui.sidebar.SidebarItem
@@ -163,6 +164,7 @@ fun DemoAppScreen(initPage: String = "map") {
                 items =
                     listOf(
                         SidebarItem(id = "vector-tile", title = "MapLibre Style"),
+                        SidebarItem(id = "vector-style", title = "Style Adjustments"),
                         SidebarItem(id = "offline-map", title = "Offline Map"),
                     ),
             ),
@@ -341,6 +343,11 @@ fun DemoAppScreen(initPage: String = "map") {
                     }
                     "vector-tile" -> {
                         VectorTilePage(
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
+                    }
+                    "vector-style" -> {
+                        VectorStylePage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
