@@ -63,7 +63,7 @@ class VectorTileRenderer private constructor(
          * 18: glyph pixels align across tile boundaries.
          * 19: label bounds include glyph bearings and SDF raster extents.
          */
-        const val OUTPUT_VERSION: Int = 19
+        const val OUTPUT_VERSION: Int = 23
 
         /** @throws IllegalArgumentException if the style cannot be parsed. */
         @JvmStatic
@@ -139,6 +139,7 @@ class VectorTileRenderer private constructor(
     /**
      * Whether a tile at this zoom has to be rasterised on the CPU.
      *
+     * Complex visible polygons use the CPU to avoid expensive triangulation.
      * The GPU path draws flat-coloured triangles; a patterned fill needs an
      * image repeated across the polygon. Asked of the tile rather than of the
      * style, because a style that paints prisons with a hatch says nothing

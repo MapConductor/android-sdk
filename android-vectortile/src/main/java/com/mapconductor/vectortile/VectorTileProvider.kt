@@ -801,8 +801,8 @@ class VectorTileProvider private constructor(
         content: Content,
         cacheGroundAs: String?,
     ): ByteArray? {
-        // A patterned fill needs an image repeated across the polygon, which
-        // the GPU path cannot draw, so those tiles take the slower road.
+        // Patterns and complex polygons use the CPU; the latter avoids
+        // triangulation that can take tens of seconds on a tablet.
         val onGpu =
             gpu != null &&
                 runCatching { !renderer.needsCpu(request.z, tiles) }.getOrDefault(true)
@@ -810,7 +810,7 @@ class VectorTileProvider private constructor(
             Log.d(
                 TAG,
                 "tile ${request.z}/${request.x}/${request.y} drawn on the CPU: " +
-                    "the style paints a pattern here",
+                    "a pattern or complex polygon requires scanline rendering",
             )
         }
         if (onGpu) {
@@ -833,7 +833,7 @@ class VectorTileProvider private constructor(
             gpuFallbackCount.incrementAndGet()
         }
         // A GPU failure must not lose the tile; the CPU can always draw it.
-        renderSlots.acquire()
+        if (!renderSlots.acquireUnlessCancelled { closed || isCancelled() }) return null
         return try {
             // Waiting for a slot is where a tile spends its time when the map
             // is busy, and the map can lose interest while it waits.
@@ -866,7 +866,7 @@ class VectorTileProvider private constructor(
         isCancelled: () -> Boolean,
     ): ByteArray? {
         val queued = System.nanoTime()
-        renderSlots.acquire()
+        if (!renderSlots.acquireUnlessCancelled { closed || isCancelled() }) return null
         val started = System.nanoTime()
         return try {
             if (isCancelled()) return null
@@ -1099,7 +1099,7 @@ class VectorTileProvider private constructor(
         val rasterizer = gpu ?: return null
         val queued = System.nanoTime()
         if (closed || isCancelled()) return null
-        gpuPrepareSlots.acquire()
+        if (!gpuPrepareSlots.acquireUnlessCancelled { closed || isCancelled() }) return null
         val started = System.nanoTime()
         val tessellated =
             try {
@@ -1150,7 +1150,7 @@ class VectorTileProvider private constructor(
                     }
                 }
             }
-        return rasterizer.renderPng(tessellated, decorate)
+        return rasterizer.renderPng(tessellated, decorate) { closed || isCancelled() }
     }
 
     private fun sourceTile(

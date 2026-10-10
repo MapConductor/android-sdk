@@ -7,6 +7,8 @@ import java.nio.ByteOrder
 import java.util.concurrent.Callable
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.Executors
+import java.util.concurrent.Future
+import java.util.concurrent.Semaphore
 import android.util.Log
 
 /**
@@ -37,6 +39,7 @@ internal class GpuTileRasterizer(
 
     /** Readback/encoder buffers, one per worker that might be encoding. */
     private val pixelBuffers = java.util.concurrent.ArrayBlockingQueue<ByteBuffer>(8)
+    private val drawSlot = Semaphore(1, true)
 
     private var egl: EglOffscreen? = null
     private var renderer: SolidBatchRenderer? = null
@@ -112,8 +115,14 @@ internal class GpuTileRasterizer(
     fun renderPng(
         tile: TessellatedTile,
         decorate: ((ByteArray) -> Unit)? = null,
+    ): ByteArray? = renderPng(tile, decorate) { false }
+
+    internal fun renderPng(
+        tile: TessellatedTile,
+        decorate: ((ByteArray) -> Unit)? = null,
+        isCancelled: () -> Boolean,
     ): ByteArray? {
-        if (closed) {
+        if (closed || isCancelled()) {
             tile.close()
             return null
         }
@@ -125,23 +134,31 @@ internal class GpuTileRasterizer(
                         .order(ByteOrder.nativeOrder())
             try {
                 val submitted = System.nanoTime()
+                if (!drawSlot.acquireUnlessCancelled { closed || isCancelled() }) return null
                 val rendered =
                     try {
-                        thread
-                            .submit(
-                                Callable {
-                                    val queueMs = (System.nanoTime() - submitted) / 1_000_000.0
-                                    drawOnGlThread(tile, pixels, queueMs)
-                                },
-                            ).get()
+                        if (closed || isCancelled()) return null
+                        val draw =
+                            thread
+                                .submit(
+                                    Callable {
+                                        val queueMs = (System.nanoTime() - submitted) / 1_000_000.0
+                                        drawOnGlThread(tile, pixels, queueMs)
+                                    },
+                                )
+                        // Once submitted, tile and pixels belong to this draw.
+                        // Wait for completion before releasing either resource.
+                        awaitDraw(draw)
                     } catch (error: ExecutionException) {
                         Log.w(TAG, "GPU render failed", error.cause ?: error)
                         false
                     } catch (error: Exception) {
                         Log.w(TAG, "GPU render failed", error)
                         false
+                    } finally {
+                        drawSlot.release()
                     }
-                if (!rendered) return null
+                if (!rendered || closed || isCancelled()) return null
 
                 // FULL tiles still use the legacy draw-onto-byte-array label
                 // API. Split geometry tiles, which are what map backends
@@ -179,6 +196,21 @@ internal class GpuTileRasterizer(
             }
         } finally {
             tile.close()
+        }
+    }
+
+    private fun awaitDraw(draw: Future<Boolean>): Boolean {
+        var interrupted = false
+        try {
+            while (true) {
+                try {
+                    return draw.get()
+                } catch (_: InterruptedException) {
+                    interrupted = true
+                }
+            }
+        } finally {
+            if (interrupted) Thread.currentThread().interrupt()
         }
     }
 
