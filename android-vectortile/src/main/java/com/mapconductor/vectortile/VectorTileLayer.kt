@@ -1,5 +1,7 @@
 package com.mapconductor.vectortile
 
+import android.content.res.Resources
+import kotlin.math.roundToInt
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -199,10 +201,18 @@ fun MapViewScope.VectorTileLayer(
         }
     LaunchedEffect(fetcher, online) { fetcher?.online = online }
 
-    val preferred = LocalMapServiceRegistry.current.get(RasterTilePreferenceKey)?.preferredTileSize
+    val preference = LocalMapServiceRegistry.current.get(RasterTilePreferenceKey)
+    val preferred = preference?.preferredTileSize
 
     @Suppress("NAME_SHADOWING")
     val tileSize = tileSize ?: preferred ?: VectorTileProvider.DEFAULT_TILE_SIZE
+    // What the map is told. See `VectorTileRasteriser.declaredTileSize`.
+    val declaredTileSize =
+        if (preference?.layoutInDevicePixels == true) {
+            (tileSize * Resources.getSystem().displayMetrics.density).roundToInt()
+        } else {
+            tileSize
+        }
 
     // Parsing a real basemap style is not free, so it happens once and off the
     // main thread; the layer simply does not mount until it is ready.
@@ -290,13 +300,13 @@ fun MapViewScope.VectorTileLayer(
         // sources re-credits the map. Two styles with the same credits compare
         // equal and the layer is left alone, which is the ordinary case -- a
         // recolour keeps its data.
-        remember(groupId, tileSize, credits) {
+        remember(groupId, tileSize, declaredTileSize, credits) {
             RasterLayerState(
                 id = "$groupId-geom",
                 source =
                     RasterLayerSource.UrlTemplate(
                         template = tileServer.urlTemplate("$groupId-geom", tileSize, "static"),
-                        tileSize = tileSize,
+                        tileSize = declaredTileSize,
                         maxZoom = maxZoom,
                         attributionRules = credits,
                         scheme = TileScheme.XYZ,
@@ -323,7 +333,7 @@ fun MapViewScope.VectorTileLayer(
             source =
                 RasterLayerSource.UrlTemplate(
                     template = tileServer.urlTemplate("$groupId-labels", tileSize, "g$generation"),
-                    tileSize = tileSize,
+                    tileSize = declaredTileSize,
                     maxZoom = maxZoom,
                     // Both halves carry the credit. `resolveMapAttributions`
                     // ends in `distinct()`, so it is printed once; putting it
@@ -338,7 +348,7 @@ fun MapViewScope.VectorTileLayer(
         )
 
     val mounted =
-        remember(groupId, tileSize) {
+        remember(groupId, tileSize, declaredTileSize) {
             mutableStateListOf(labelStateFor(0))
         }
 
