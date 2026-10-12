@@ -8,9 +8,9 @@ import java.io.File
 import java.net.HttpURLConnection
 import java.net.URL
 import java.util.concurrent.Semaphore
+import kotlin.math.roundToInt
 import android.util.Log
 import android.util.LruCache
-import kotlin.math.roundToInt
 
 /**
  * Renders a MapLibre vector style to raster tiles, for map backends that cannot
@@ -446,7 +446,9 @@ class VectorTileProvider private constructor(
             // No upper bound on the scale itself -- iOS takes whatever the
             // screen reports and so does this -- but the image it implies has
             // to be a texture the GPU will accept.
-            require(tileSize in 1..(8192 / maxOf(renderScale, LABEL_RESOLUTION))) { "tile size $tileSize at scale $renderScale exceeds the maximum texture size" }
+            require(tileSize in 1..(8192 / maxOf(renderScale, LABEL_RESOLUTION))) {
+                "tile size $tileSize at scale $renderScale exceeds the maximum texture size"
+            }
             // The renderer needs the dp a tile covers, not the pixels a render
             // asks for: the label pass draws at twice the pixels, and the
             // style's sizes are screen units either way.
@@ -691,18 +693,22 @@ class VectorTileProvider private constructor(
                     source.getString("url")
                 }
             }
-        val fetchStats = Array(STAT_COUNT) { java.util.concurrent.atomic.AtomicLong() }
+        val fetchStats =
+            Array(STAT_COUNT) {
+                java.util.concurrent.atomic
+                    .AtomicLong()
+            }
         val pending = MutableList<java.util.concurrent.Future<ByteArray?>?>(urls.size) { null }
         urls.indices
             .sortedBy { index ->
                 val labelsOnly = plan.getJSONObject(index).optBoolean("labelsOnly", false)
                 if (labelsOnly) 1_000 + index else index
-            }
-            .forEach { index ->
+            }.forEach { index ->
                 val url = urls[index]
                 pending[index] =
                     if (url == null) {
-                        java.util.concurrent.CompletableFuture.completedFuture(null)
+                        java.util.concurrent.CompletableFuture
+                            .completedFuture(null)
                     } else {
                         val queued = System.nanoTime()
                         sourceFetchers.submit<ByteArray?> {
@@ -788,18 +794,16 @@ class VectorTileProvider private constructor(
     }
 
     /**
-     * Draws the ground: on the GPU when there is one and no pattern in the
-     * tile, on the CPU otherwise. [Content.FULL] also composites labels over
-     * the readback, the single-layer behaviour.
-     */
-    /**
      * The ground of every tile the GPU drew, straight RGBA, keyed like the
      * disk cache. A glyph generation arriving redraws the tile, and with this
      * the redraw is the labels and a PNG encode, not the geometry again.
      */
     private val groundRasters =
         object : LruCache<String, ByteArray>(64 shl 20) {
-            override fun sizeOf(key: String, value: ByteArray): Int = value.size
+            override fun sizeOf(
+                key: String,
+                value: ByteArray,
+            ): Int = value.size
         }
 
     /**
@@ -818,12 +822,21 @@ class VectorTileProvider private constructor(
                 .onFailure { Log.w(TAG, "label pass failed on the cached ground", it) }
         }
         // The encoder reads a direct buffer only.
-        val buffer = java.nio.ByteBuffer.allocateDirect(rgba.size).order(java.nio.ByteOrder.nativeOrder())
+        val buffer =
+            java.nio.ByteBuffer
+                .allocateDirect(rgba.size)
+                .order(java.nio.ByteOrder.nativeOrder())
         buffer.put(rgba)
         buffer.rewind()
-        return com.mapconductor.core.tileserver.TilePngEncoder.encode(buffer, groundResolution, groundResolution, premultiplied = false)
+        return com.mapconductor.core.tileserver.TilePngEncoder
+            .encode(buffer, groundResolution, groundResolution, premultiplied = false)
     }
 
+    /**
+     * Draws the ground: on the GPU when there is one and no pattern in the
+     * tile, on the CPU otherwise. [Content.FULL] also composites labels over
+     * the readback, the single-layer behaviour.
+     */
     private fun renderGroundTile(
         request: TileRequest,
         tiles: List<ByteArray?>,
@@ -1203,16 +1216,17 @@ class VectorTileProvider private constructor(
         try {
             // A prior flight may have filled memory between our initial
             // lookup and claiming this URL. Recheck before doing any I/O.
-            val bytes = cache.get(url)?.also {
-                stats[STAT_MEMORY].incrementAndGet()
-            } ?: if (empties.contains(url)) {
-                null
-            } else {
-                sourceDiskCache?.get(url)?.also {
-                    stats[STAT_DISK].incrementAndGet()
-                    cache.put(url, it)
-                } ?: fetchAndRemember(url, stats)
-            }
+            val bytes =
+                cache.get(url)?.also {
+                    stats[STAT_MEMORY].incrementAndGet()
+                } ?: if (empties.contains(url)) {
+                    null
+                } else {
+                    sourceDiskCache?.get(url)?.also {
+                        stats[STAT_DISK].incrementAndGet()
+                        cache.put(url, it)
+                    } ?: fetchAndRemember(url, stats)
+                }
             mine.complete(bytes)
             return bytes
         } catch (error: Throwable) {
@@ -1256,7 +1270,9 @@ class VectorTileProvider private constructor(
         return bytes
     }
 
-    private val closeStarted = java.util.concurrent.atomic.AtomicBoolean()
+    private val closeStarted =
+        java.util.concurrent.atomic
+            .AtomicBoolean()
 
     private fun beginClose(): Boolean {
         if (!closeStarted.compareAndSet(false, true)) return false
@@ -1300,5 +1316,4 @@ class VectorTileProvider private constructor(
         if (!beginClose()) return
         releaseResources()
     }
-
 }

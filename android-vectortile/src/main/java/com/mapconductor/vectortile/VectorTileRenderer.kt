@@ -116,7 +116,12 @@ class VectorTileRenderer private constructor(
         tiles: List<ByteArray?>,
     ): List<String> {
         val (data, lengths) = pack(tiles)
-        val urls = JSONArray(withRenderer { handle -> NativeRenderer.nativeNeededGlyphs(handle, z, x, y, data, lengths) })
+        val urls =
+            JSONArray(
+                withRenderer { handle ->
+                    NativeRenderer.nativeNeededGlyphs(handle, z, x, y, data, lengths)
+                },
+            )
         return (0 until urls.length()).map { urls.getString(it) }
     }
 
@@ -190,7 +195,9 @@ class VectorTileRenderer private constructor(
         tiles: List<ByteArray?>,
     ): Int {
         val (data, lengths) = pack(tiles)
-        return withRenderer { handle -> NativeRenderer.nativeDrawLabels(handle, z, x, y, tileSize, rgba, data, lengths) }
+        return withRenderer { handle ->
+            NativeRenderer.nativeDrawLabels(handle, z, x, y, tileSize, rgba, data, lengths)
+        }
     }
 
     /** Draws a standalone transparent label tile without an RGBA JNI copy. */
@@ -204,9 +211,11 @@ class VectorTileRenderer private constructor(
         val (data, lengths) = pack(tiles)
         val placed = IntArray(1)
         val pixels =
-            withRenderer { handle -> NativeRenderer.nativeRenderLabels(
-                handle, z, x, y, tileSize, data, lengths, placed,
-            ) } ?: return null
+            withRenderer { handle ->
+                NativeRenderer.nativeRenderLabels(
+                    handle, z, x, y, tileSize, data, lengths, placed,
+                )
+            } ?: return null
         return NativeLabelPixels(pixels, placed[0])
     }
 
@@ -225,16 +234,18 @@ class VectorTileRenderer private constructor(
         geometryOnly: Boolean = false,
     ): ByteArray {
         val (data, lengths) = pack(tiles)
-        return withRenderer { handle -> NativeRenderer.nativeRender(
-            handle,
-            z,
-            x,
-            y,
-            tileSize,
-            data,
-            lengths,
-            if (geometryOnly) 1 else 0,
-        ) }
+        return withRenderer { handle ->
+            NativeRenderer.nativeRender(
+                handle,
+                z,
+                x,
+                y,
+                tileSize,
+                data,
+                lengths,
+                if (geometryOnly) 1 else 0,
+            )
+        }
     }
 
     /**

@@ -1,10 +1,5 @@
 package com.mapconductor.vectortile
 
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.unit.Dp
@@ -23,6 +18,11 @@ import com.mapconductor.core.tileserver.TileRequest
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
 
 /**
  * アイコンが実際に何ピクセルで描かれるかを、出来上がったタイルから数える。
@@ -33,9 +33,11 @@ import org.junit.runner.RunWith
  */
 @RunWith(AndroidJUnit4::class)
 class IconSizeProbeTest {
-
     /** サンプルの TreeDotIcon と同じ形。 */
-    private class DotIcon(private val bitmap: Bitmap, private val sizePx: Float) : MarkerIconInterface {
+    private class DotIcon(
+        private val bitmap: Bitmap,
+        private val sizePx: Float,
+    ) : MarkerIconInterface {
         override val scale: Float = 1.0f
         override val anchor: Offset = Offset(0.5f, 0.5f)
         override val iconSize: Dp = sizePx.dp
@@ -51,7 +53,7 @@ class IconSizeProbeTest {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val density = context.resources.displayMetrics.density
         val callbackScale = 1.4 // サンプルの zoom > 15 の帯
-        val tileSize = 256      // プロバイダが渡す値（GoogleMapMarkerController）
+        val tileSize = 256 // プロバイダが渡す値（GoogleMapMarkerController）
 
         // サンプルと同じ作り: 14 **dp** の円。密度倍したピクセルでビットマップを作る。
         // core の AbstractDefaultIcon が dpToPxForBitmap(iconSize) でそうしているのと

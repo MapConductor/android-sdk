@@ -44,7 +44,10 @@ data class LocationInfo(
 ) : Serializable
 
 @Composable
-fun RichContentBubblePage(modifier: Modifier = Modifier, onToggleSidebar: () -> Unit = {}) {
+fun RichContentBubblePage(
+    modifier: Modifier = Modifier,
+    onToggleSidebar: () -> Unit = {},
+) {
     val initCameraPosition =
         MapCameraPosition(
             position = GeoPoint.fromLatLong(37.7749, -122.4194),

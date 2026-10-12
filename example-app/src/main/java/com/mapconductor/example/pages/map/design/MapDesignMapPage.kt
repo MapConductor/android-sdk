@@ -45,7 +45,10 @@ import com.mapconductor.tomtom.TomTomMapViewStateInterface
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MapDesignMapPage(modifier: Modifier = Modifier, onToggleSidebar: () -> Unit = {}) {
+fun MapDesignMapPage(
+    modifier: Modifier = Modifier,
+    onToggleSidebar: () -> Unit = {},
+) {
     val viewModel = remember { MapDesignPageViewModel() }
 
     DemoMapPageScaffold(

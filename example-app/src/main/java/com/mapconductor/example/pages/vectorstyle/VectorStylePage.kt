@@ -65,6 +65,7 @@ fun VectorStylePage(
     var failure by remember { mutableStateOf<String?>(null) }
     var diagnostics by remember { mutableStateOf<List<String>>(emptyList()) }
     var mapViewState by remember { mutableStateOf<MapViewStateInterface<*>?>(null) }
+
     /** Set once the map is up, which is when its capabilities are registered. */
     var loadedState by remember { mutableStateOf<MapViewStateInterface<*>?>(null) }
     var preset by remember { mutableStateOf(Preset.ROAD_EMPHASIS) }
@@ -144,8 +145,14 @@ fun VectorStylePage(
                 Preset.WATER_ONLY ->
                     StyleRules.build {
                         all { visible = false }
-                        role(LayerRole.BACKGROUND) { visible = true; color = Color(0xFFF2F2F2) }
-                        role(LayerRole.WATER) { visible = true; color = Color(0xFF2E6FB7) }
+                        role(LayerRole.BACKGROUND) {
+                            visible = true
+                            color = Color(0xFFF2F2F2)
+                        }
+                        role(LayerRole.WATER) {
+                            visible = true
+                            color = Color(0xFF2E6FB7)
+                        }
                     }
             }
         }

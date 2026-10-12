@@ -1,6 +1,5 @@
 package com.mapconductor.example.pages.geojson.basic
 
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -48,9 +47,7 @@ fun BasicGeoJSONMapPage(
 }
 
 @Composable
-private fun BasicGeoJSONMapComponent(
-    mapViewState: MapViewStateInterface<*>?,
-) {
+private fun BasicGeoJSONMapComponent(mapViewState: MapViewStateInterface<*>?) {
     val layerState =
         remember {
             GeoJSONLayerState(

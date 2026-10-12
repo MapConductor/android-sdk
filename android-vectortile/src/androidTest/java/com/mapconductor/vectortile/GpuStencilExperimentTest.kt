@@ -1,9 +1,5 @@
 package com.mapconductor.vectortile
 
-import android.graphics.Bitmap
-import android.opengl.GLES20
-import android.opengl.GLES30
-import android.util.Log
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import org.json.JSONArray
@@ -16,20 +12,36 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer
 import java.util.zip.GZIPInputStream
+import android.graphics.Bitmap
+import android.opengl.GLES20
+import android.opengl.GLES30
+import android.util.Log
 
 /** Real Shortbread forest: linear fan packing + GPU parity, compared to earcut. */
 @RunWith(AndroidJUnit4::class)
 class GpuStencilExperimentTest {
     private val instrumentation = InstrumentationRegistry.getInstrumentation()
+
     private fun asset(name: String): ByteArray {
         val path = "stencil-experiment/$name"
         return instrumentation.context.assets.open(path).use { stream ->
-            if (name.endsWith(".gzip")) GZIPInputStream(stream).use { it.readBytes() }
-            else stream.readBytes()
+            if (name.endsWith(".gzip")) {
+                GZIPInputStream(stream).use { it.readBytes() }
+            } else {
+                stream.readBytes()
+            }
         }
     }
-    private fun direct(bytes: ByteArray) = ByteBuffer.allocateDirect(bytes.size)
-        .order(ByteOrder.LITTLE_ENDIAN).apply { put(bytes); rewind() }
+
+    private fun direct(bytes: ByteArray) =
+        ByteBuffer
+            .allocateDirect(bytes.size)
+            .order(ByteOrder.LITTLE_ENDIAN)
+            .apply {
+                put(bytes)
+                rewind()
+            }
+
     private fun ms(start: Long) = (System.nanoTime() - start) / 1_000_000.0
 
     @Test
@@ -41,13 +53,15 @@ class GpuStencilExperimentTest {
             val mvt = asset("8-226-100.mvt")
             val native = VectorTileRenderer.create(asset("style.json").decodeToString(), 512)
             val plan = JSONArray(native.plan(8, 226, 100))
-            val lengths = IntArray(plan.length()) {
-                if (plan.getJSONObject(it).optBoolean("labelsOnly", false)) 0 else mvt.size
-            }
+            val lengths =
+                IntArray(plan.length()) {
+                    if (plan.getJSONObject(it).optBoolean("labelsOnly", false)) 0 else mvt.size
+                }
             started = System.nanoTime()
             val baseline = TessellatedTile(native.tessellate(8, 226, 100, 512, mvt, lengths))
-            val baselineMessage = "native total=" + ms(started) + "ms decode=" + baseline.decodeMs +
-                "ms earcut=" + baseline.tessellateMs + "ms fill=" + baseline.fillMs + "ms"
+            val baselineMessage =
+                "native total=" + ms(started) + "ms decode=" + baseline.decodeMs +
+                    "ms earcut=" + baseline.tessellateMs + "ms fill=" + baseline.fillMs + "ms"
             Log.i("GpuStencilExperiment", baselineMessage)
             File(output, "baseline.txt").writeText(baselineMessage)
             try {
@@ -75,8 +89,11 @@ class GpuStencilExperimentTest {
             rings.add(FloatArray(count * 2) { input.float })
             triangles += maxOf(0, count - 2)
         }
-        val fans = ByteBuffer.allocateDirect(triangles * 18 * 4)
-            .order(ByteOrder.nativeOrder()).asFloatBuffer()
+        val fans =
+            ByteBuffer
+                .allocateDirect(triangles * 18 * 4)
+                .order(ByteOrder.nativeOrder())
+                .asFloatBuffer()
         for (ring in rings) {
             for (i in 1 until ring.size / 2 - 1) {
                 fans.put(ring[0]).put(ring[1]).put(color)
@@ -87,10 +104,15 @@ class GpuStencilExperimentTest {
         fans.rewind()
         val packingMs = ms(started)
         val reference = direct(asset("forest-earcut.bin.gzip")).asFloatBuffer()
-        val cover = ByteBuffer.allocateDirect(6 * 6 * 4)
-            .order(ByteOrder.nativeOrder()).asFloatBuffer()
-        for ((x, y) in listOf(0f to 0f, extent to 0f, 0f to extent,
-                             0f to extent, extent to 0f, extent to extent)) {
+        val cover =
+            ByteBuffer
+                .allocateDirect(6 * 6 * 4)
+                .order(ByteOrder.nativeOrder())
+                .asFloatBuffer()
+        for ((x, y) in listOf(
+            0f to 0f, extent to 0f, 0f to extent,
+            0f to extent, extent to 0f, extent to extent,
+        )) {
             cover.put(x).put(y).put(color)
         }
         cover.rewind()
@@ -102,18 +124,27 @@ class GpuStencilExperimentTest {
             GLES20.glGenRenderbuffers(1, ids, 0)
             GLES20.glBindRenderbuffer(GLES20.GL_RENDERBUFFER, ids[0])
             if (context.activeSamples > 0) {
-                GLES30.glRenderbufferStorageMultisample(GLES20.GL_RENDERBUFFER,
-                    context.activeSamples, GLES30.GL_DEPTH24_STENCIL8, 512, 512)
+                GLES30.glRenderbufferStorageMultisample(
+                    GLES20.GL_RENDERBUFFER,
+                    context.activeSamples, GLES30.GL_DEPTH24_STENCIL8, 512, 512,
+                )
             } else {
-                GLES20.glRenderbufferStorage(GLES20.GL_RENDERBUFFER,
-                    GLES30.GL_DEPTH24_STENCIL8, 512, 512)
+                GLES20.glRenderbufferStorage(
+                    GLES20.GL_RENDERBUFFER,
+                    GLES30.GL_DEPTH24_STENCIL8, 512, 512,
+                )
             }
-            GLES20.glFramebufferRenderbuffer(GLES20.GL_FRAMEBUFFER, GLES20.GL_STENCIL_ATTACHMENT,
-                GLES20.GL_RENDERBUFFER, ids[0])
-            assertEquals(GLES20.GL_FRAMEBUFFER_COMPLETE,
-                GLES20.glCheckFramebufferStatus(GLES20.GL_FRAMEBUFFER))
+            GLES20.glFramebufferRenderbuffer(
+                GLES20.GL_FRAMEBUFFER, GLES20.GL_STENCIL_ATTACHMENT,
+                GLES20.GL_RENDERBUFFER, ids[0],
+            )
+            assertEquals(
+                GLES20.GL_FRAMEBUFFER_COMPLETE,
+                GLES20.glCheckFramebufferStatus(GLES20.GL_FRAMEBUFFER),
+            )
             SolidBatchRenderer().use { renderer ->
                 renderer.initialise()
+
                 fun draw(
                     stencil: Boolean,
                     geometry: FloatBuffer = if (stencil) fans else reference,
@@ -151,7 +182,11 @@ class GpuStencilExperimentTest {
                     assertEquals(GLES20.GL_NO_ERROR, GLES20.glGetError())
                     return pixels
                 }
-                fun save(name: String, pixels: ByteBuffer) {
+
+                fun save(
+                    name: String,
+                    pixels: ByteBuffer,
+                ) {
                     val bitmap = Bitmap.createBitmap(512, 512, Bitmap.Config.ARGB_8888)
                     pixels.rewind()
                     bitmap.copyPixelsFromBuffer(pixels)
@@ -168,14 +203,18 @@ class GpuStencilExperimentTest {
                 val stitched = ByteBuffer.allocateDirect(512 * 512 * 4)
                 for (ty in 0..1) {
                     for (tx in 0..1) {
-                        val shifted = ByteBuffer.allocateDirect(fans.capacity() * 4)
-                            .order(ByteOrder.nativeOrder()).asFloatBuffer()
+                        val shifted =
+                            ByteBuffer
+                                .allocateDirect(fans.capacity() * 4)
+                                .order(ByteOrder.nativeOrder())
+                                .asFloatBuffer()
                         for (i in 0 until fans.capacity()) {
-                            val shift = when (i % 6) {
-                                0 -> tx * extent / 2
-                                1 -> ty * extent / 2
-                                else -> 0f
-                            }
+                            val shift =
+                                when (i % 6) {
+                                    0 -> tx * extent / 2
+                                    1 -> ty * extent / 2
+                                    else -> 0f
+                                }
                             shifted.put(fans.get(i) - shift)
                         }
                         shifted.rewind()
@@ -221,18 +260,21 @@ class GpuStencilExperimentTest {
                     draw(true)
                     times.add(ms(start))
                 }
-                val message = "MSAA=" + context.activeSamples + " packing=" + packingMs +
-                    "ms stencil upload+GPU+read median=" + times.sorted()[3] +
-                    "ms earcut prepared upload+GPU+read median=" + referenceTimes.sorted()[3] +
-                    "ms differentPixels=" + different + " meanAlphaError=" + meanAlphaError +
-                    " fanTriangles=" + triangles + " seamPixels=" + seamPixels
+                val message =
+                    "MSAA=" + context.activeSamples + " packing=" + packingMs +
+                        "ms stencil upload+GPU+read median=" + times.sorted()[3] +
+                        "ms earcut prepared upload+GPU+read median=" + referenceTimes.sorted()[3] +
+                        "ms differentPixels=" + different + " meanAlphaError=" + meanAlphaError +
+                        " fanTriangles=" + triangles + " seamPixels=" + seamPixels
                 Log.i("GpuStencilExperiment", message)
                 File(output, "results.txt").writeText(message)
                 assertTrue("coverage differs: " + message, meanAlphaError < 1.0)
             }
             context.bindDrawTarget()
-            GLES20.glFramebufferRenderbuffer(GLES20.GL_FRAMEBUFFER,
-                GLES20.GL_STENCIL_ATTACHMENT, GLES20.GL_RENDERBUFFER, 0)
+            GLES20.glFramebufferRenderbuffer(
+                GLES20.GL_FRAMEBUFFER,
+                GLES20.GL_STENCIL_ATTACHMENT, GLES20.GL_RENDERBUFFER, 0,
+            )
             GLES20.glDeleteRenderbuffers(1, ids, 0)
         }
     }

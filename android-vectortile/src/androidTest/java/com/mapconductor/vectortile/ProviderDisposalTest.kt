@@ -18,23 +18,41 @@ class ProviderDisposalTest {
     @Test
     fun uiDisposalDoesNotWaitForAnInFlightNativeCallOrFreeItsHandle() {
         val instrumentation = InstrumentationRegistry.getInstrumentation()
-        val style = instrumentation.context.assets.open("demo-style.json").use { it.readBytes().decodeToString() }
-        val provider = VectorTileProvider.create(styleJson = style, renderMode = VectorTileProvider.RenderMode.GPU, fetchTile = { null })
-        val renderer = VectorTileProvider::class.java.getDeclaredField("renderer").apply { isAccessible = true }.get(provider)
-        val lock = VectorTileRenderer::class.java.getDeclaredField("liveCalls").apply { isAccessible = true }.get(renderer) as ReentrantReadWriteLock
-        val handle = VectorTileRenderer::class.java.getDeclaredField("handle").apply { isAccessible = true }.get(renderer) as AtomicLong
+        val style =
+            instrumentation.context.assets
+                .open("demo-style.json")
+                .use { it.readBytes().decodeToString() }
+        val provider =
+            VectorTileProvider
+                .create(styleJson = style, renderMode = VectorTileProvider.RenderMode.GPU, fetchTile = { null })
+        val renderer =
+            VectorTileProvider::class.java
+                .getDeclaredField("renderer")
+                .apply { isAccessible = true }
+                .get(provider)
+        val lock =
+            VectorTileRenderer::class.java
+                .getDeclaredField("liveCalls")
+                .apply { isAccessible = true }
+                .get(renderer) as ReentrantReadWriteLock
+        val handle =
+            VectorTileRenderer::class.java
+                .getDeclaredField("handle")
+                .apply { isAccessible = true }
+                .get(renderer) as AtomicLong
         val entered = CountDownLatch(1)
         val release = CountDownLatch(1)
-        val reader = Thread {
-            lock.readLock().lock()
-            try {
-                entered.countDown()
-                // Watchdog ensures a broken synchronous disposal cannot hang the test.
-                release.await(3, TimeUnit.SECONDS)
-            } finally {
-                lock.readLock().unlock()
+        val reader =
+            Thread {
+                lock.readLock().lock()
+                try {
+                    entered.countDown()
+                    // Watchdog ensures a broken synchronous disposal cannot hang the test.
+                    release.await(3, TimeUnit.SECONDS)
+                } finally {
+                    lock.readLock().unlock()
+                }
             }
-        }
         reader.start()
         assertTrue(entered.await(3, TimeUnit.SECONDS))
         try {

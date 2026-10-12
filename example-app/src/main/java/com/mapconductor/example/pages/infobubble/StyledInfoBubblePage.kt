@@ -92,7 +92,10 @@ private fun SwatchRow(
 }
 
 @Composable
-fun StyledInfoBubblePage(modifier: Modifier = Modifier, onToggleSidebar: () -> Unit = {}) {
+fun StyledInfoBubblePage(
+    modifier: Modifier = Modifier,
+    onToggleSidebar: () -> Unit = {},
+) {
     val initCameraPosition =
         remember {
             MapCameraPosition(

@@ -86,8 +86,11 @@ fun OfflineMapPage(
     val initCameraPosition =
         remember {
             val requested =
-                (context as? android.app.Activity)?.intent?.getStringExtra("offlineCenter")
-                    ?.split(',')?.takeIf { it.size == 2 }
+                (context as? android.app.Activity)
+                    ?.intent
+                    ?.getStringExtra("offlineCenter")
+                    ?.split(',')
+                    ?.takeIf { it.size == 2 }
                     ?.let { runCatching { GeoPoint(it[0].trim().toDouble(), it[1].trim().toDouble()) }.getOrNull() }
             MapCameraPosition(
                 position = requested ?: GeoPoint.fromLatLong(latitude = 35.6805, longitude = 139.7675),
@@ -120,6 +123,7 @@ fun OfflineMapPage(
                 zIndex = 10_000,
             )
         }
+
     fun cornerMoved(dragged: MarkerState) {
         val point = GeoPoint.from(dragged.position)
         if (dragged.id == "sw") southWest = point else northEast = point
@@ -147,7 +151,13 @@ fun OfflineMapPage(
                 position = southWest,
                 draggable = true,
                 clickable = false,
-                icon = ColorDefaultIcon(fillColor = Color(0xFF1D4ED8), strokeColor = Color.White, label = "SW", labelTextColor = Color.White),
+                icon =
+                    ColorDefaultIcon(
+                        fillColor = Color(0xFF1D4ED8),
+                        strokeColor = Color.White,
+                        label = "SW",
+                        labelTextColor = Color.White,
+                    ),
                 onDrag = ::cornerMoved,
                 onDragEnd = ::cornerMoved,
             )
@@ -159,7 +169,13 @@ fun OfflineMapPage(
                 position = northEast,
                 draggable = true,
                 clickable = false,
-                icon = ColorDefaultIcon(fillColor = Color(0xFFB91C1C), strokeColor = Color.White, label = "NE", labelTextColor = Color.White),
+                icon =
+                    ColorDefaultIcon(
+                        fillColor = Color(0xFFB91C1C),
+                        strokeColor = Color.White,
+                        label = "NE",
+                        labelTextColor = Color.White,
+                    ),
                 onDrag = ::cornerMoved,
                 onDragEnd = ::cornerMoved,
             )
@@ -264,7 +280,10 @@ fun OfflineMapPage(
                         .padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 28.dp),
             ) {
                 Column(modifier = Modifier.padding(8.dp)) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
                         if (selecting) {
                             Button(
                                 onClick = ::download,
@@ -285,7 +304,14 @@ fun OfflineMapPage(
                             FilterChip(
                                 selected = airplane,
                                 onClick = { airplane = !airplane },
-                                label = { Text(if (airplane) "✈ Airplane mode ON" else "✈ Airplane mode", fontSize = 12.sp) },
+                                label = {
+                                    Text(
+                                        if (airplane) "✈ Airplane mode ON" else "✈ Airplane mode",
+                                        fontSize =
+                                            12
+                                                .sp,
+                                    )
+                                },
                                 colors = FilterChipDefaults.filterChipColors(),
                                 modifier = Modifier.testTag("airplaneToggle"),
                             )
@@ -307,7 +333,8 @@ fun OfflineMapPage(
                             pkg == null -> "no package: Select area…, then Download"
                             else ->
                                 "package: ${pkg.manifest.tiles} tiles, ${pkg.manifest.glyphs} glyph ranges, " +
-                                    "${pkg.manifest.sprites} sprite files, z${pkg.manifest.minZoom}-${pkg.manifest.maxZoom}, " +
+                                    "${pkg.manifest.sprites} sprite files, " +
+                                    "z${pkg.manifest.minZoom}-${pkg.manifest.maxZoom}, " +
                                     "${pkg.manifest.bytes / 1024} KB"
                         }
                     Text(status, fontSize = 12.sp, modifier = Modifier.testTag("offlineStatus"))

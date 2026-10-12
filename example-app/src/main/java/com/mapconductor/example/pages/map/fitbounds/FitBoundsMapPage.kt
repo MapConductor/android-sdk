@@ -15,7 +15,10 @@ import com.mapconductor.example.ui.DemoMapPageScaffold
 import com.mapconductor.example.ui.MessageCard
 
 @Composable
-fun FitBoundsMapPage(modifier: Modifier = Modifier, onToggleSidebar: () -> Unit = {}) {
+fun FitBoundsMapPage(
+    modifier: Modifier = Modifier,
+    onToggleSidebar: () -> Unit = {},
+) {
     val viewModel: FitBoundsPageViewModelInterface = remember { FitBoundsPageViewModel() }
 
     DemoMapPageScaffold(

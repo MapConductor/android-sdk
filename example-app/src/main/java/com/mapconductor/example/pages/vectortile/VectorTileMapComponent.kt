@@ -8,6 +8,7 @@ import com.mapconductor.core.OnMapLoadedHandler
 import com.mapconductor.core.map.MapViewStateInterface
 import com.mapconductor.core.map.VectorStyleSupportKey
 import com.mapconductor.example.MapViewContainer
+import com.mapconductor.vectorstyle.StyleRules
 import com.mapconductor.vectortile.VectorTileLayer
 
 @Composable
@@ -15,6 +16,7 @@ fun VectorTileMapComponent(
     mapViewState: MapViewStateInterface<*>?,
     styleJson: String?,
     opacity: Float,
+    rules: StyleRules = StyleRules.NONE,
     asBasemap: Boolean = false,
     tileSize: Int? = null,
     modifier: Modifier = Modifier,
@@ -47,6 +49,7 @@ fun VectorTileMapComponent(
             if (styleJson != null) {
                 VectorTileLayer(
                     styleJson = styleJson,
+                    rules = rules,
                     tileSize = tileSize,
                     opacity = opacity,
                     diskCacheDir = diskCacheDir,

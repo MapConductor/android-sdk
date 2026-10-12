@@ -1,6 +1,5 @@
 package com.mapconductor.vectortile
 
-import android.graphics.BitmapFactory
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.mapconductor.core.tileserver.TileRequest
@@ -8,6 +7,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.io.File
+import android.graphics.BitmapFactory
 
 @RunWith(AndroidJUnit4::class)
 class GroundResolutionTest {
@@ -26,14 +26,18 @@ class GroundResolutionTest {
         val request = TileRequest(x = 0, y = 0, z = 0)
         try {
             for (ratio in 1..3) {
-                val provider = VectorTileProvider.create(
-                    styleJson = style,
-                    tileSize = 512,
-                    renderMode = VectorTileProvider.RenderMode.GPU,
-                    diskCacheDir = cache,
-                    renderScale = ratio,
-                    fetchTile = { url -> urls.add(url); tile },
-                )
+                val provider =
+                    VectorTileProvider.create(
+                        styleJson = style,
+                        tileSize = 512,
+                        renderMode = VectorTileProvider.RenderMode.GPU,
+                        diskCacheDir = cache,
+                        renderScale = ratio,
+                        fetchTile = { url ->
+                            urls.add(url)
+                            tile
+                        },
+                    )
                 try {
                     val png = provider.geometryTiles.renderTile(request)!!
                     val bitmap = BitmapFactory.decodeByteArray(png, 0, png.size)!!

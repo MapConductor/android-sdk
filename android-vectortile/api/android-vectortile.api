@@ -241,7 +241,7 @@ public final class com.mapconductor.vectortile.TileDiskCache$Companion {
   public final java.lang.String digest(java.lang.String...);
 }
 public final class com.mapconductor.vectortile.VectorTileLayerKt {
-  public static final void VectorTileLayer(com.mapconductor.compose.MapViewScope, java.lang.String, java.lang.Integer, float, boolean, int, java.util.Map<java.lang.String, java.lang.String>, com.mapconductor.vectortile.VectorTileProvider$RenderMode, java.lang.Integer, java.io.File, kotlin.jvm.functions.Function1<? super java.util.List<java.lang.String>, kotlin.Unit>, boolean, com.mapconductor.vectortile.OfflinePackage, boolean, kotlin.jvm.functions.Function1<? super com.mapconductor.vectortile.OfflinePackage$Stats, kotlin.Unit>, androidx.compose.runtime.Composer, int, int, int);
+  public static final void VectorTileLayer(com.mapconductor.compose.MapViewScope, java.lang.String, com.mapconductor.vectorstyle.StyleRules, java.lang.Integer, float, boolean, int, java.util.Map<java.lang.String, java.lang.String>, com.mapconductor.vectortile.VectorTileProvider$RenderMode, java.lang.Integer, java.io.File, kotlin.jvm.functions.Function1<? super java.util.List<java.lang.String>, kotlin.Unit>, boolean, com.mapconductor.vectortile.OfflinePackage, boolean, kotlin.jvm.functions.Function1<? super com.mapconductor.vectortile.OfflinePackage$Stats, kotlin.Unit>, androidx.compose.runtime.Composer, int, int, int);
 }
 public final class com.mapconductor.vectortile.VectorTileProvider implements com.mapconductor.core.tileserver.TileProviderInterface,java.io.Closeable {
   public static final com.mapconductor.vectortile.VectorTileProvider$Companion Companion;

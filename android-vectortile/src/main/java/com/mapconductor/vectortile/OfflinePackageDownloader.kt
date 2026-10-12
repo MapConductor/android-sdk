@@ -1,5 +1,7 @@
 package com.mapconductor.vectortile
 
+import org.json.JSONArray
+import org.json.JSONObject
 import java.io.File
 import java.io.IOException
 import java.net.HttpURLConnection
@@ -19,8 +21,6 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
-import org.json.JSONArray
-import org.json.JSONObject
 
 /**
  * Fetches everything a style needs to draw one area and writes an
@@ -96,10 +96,13 @@ object OfflinePackageDownloader {
                 directory.mkdirs()
                 File(directory, OfflinePackage.STYLE_FILE).writeText(normalizedStyleJson)
                 val index = java.util.concurrent.ConcurrentHashMap<String, String>()
-                val bytes = java.util.concurrent.atomic.AtomicLong()
+                val bytes =
+                    java.util.concurrent.atomic
+                        .AtomicLong()
 
                 // --- plan: which source tiles, for which display tiles ---
                 onProgress(Progress(Phase.PLANNING, 0, 0))
+
                 class DisplayTile(
                     val z: Int,
                     val x: Int,
@@ -151,27 +154,30 @@ object OfflinePackageDownloader {
 
                 // --- tiles ---
                 val total = wanted.size
-                val done = java.util.concurrent.atomic.AtomicInteger()
+                val done =
+                    java.util.concurrent.atomic
+                        .AtomicInteger()
                 onProgress(Progress(Phase.TILES, 0, total))
                 val gate = Semaphore(parallelism.coerceAtLeast(1))
                 coroutineScope {
-                    wanted.entries.map { (url, relative) ->
-                        async {
-                            gate.withPermit {
-                                ensureActive()
-                                when (val result = get(url)) {
-                                    is FetchResult.Success -> {
-                                        write(directory, relative, result.data)
-                                        index[url] = relative
-                                        bytes.addAndGet(result.data.size.toLong())
+                    wanted.entries
+                        .map { (url, relative) ->
+                            async {
+                                gate.withPermit {
+                                    ensureActive()
+                                    when (val result = get(url)) {
+                                        is FetchResult.Success -> {
+                                            write(directory, relative, result.data)
+                                            index[url] = relative
+                                            bytes.addAndGet(result.data.size.toLong())
+                                        }
+                                        FetchResult.NotFound -> Unit
+                                        is FetchResult.TemporaryFailure -> throw result.toIOException()
                                     }
-                                    FetchResult.NotFound -> Unit
-                                    is FetchResult.TemporaryFailure -> throw result.toIOException()
+                                    onProgress(Progress(Phase.TILES, done.incrementAndGet(), total))
                                 }
-                                onProgress(Progress(Phase.TILES, done.incrementAndGet(), total))
                             }
-                        }
-                    }.awaitAll()
+                        }.awaitAll()
                 }
 
                 // --- glyphs: what the fetched tiles' labels need ---
@@ -235,10 +241,17 @@ object OfflinePackageDownloader {
                 val style = JSONObject(normalizedStyleJson)
                 val sources = style.optJSONObject("sources") ?: JSONObject()
                 val templates =
-                    sources.keys().asSequence().mapNotNull { id ->
-                        sources.optJSONObject(id)?.optJSONArray("tiles")?.optString(0)
-                            ?.takeIf { it.isNotEmpty() }?.let { id to it }
-                    }.toMap()
+                    sources
+                        .keys()
+                        .asSequence()
+                        .mapNotNull { id ->
+                            sources
+                                .optJSONObject(id)
+                                ?.optJSONArray("tiles")
+                                ?.optString(0)
+                                ?.takeIf { it.isNotEmpty() }
+                                ?.let { id to it }
+                        }.toMap()
                 val manifest =
                     OfflinePackage.Manifest(
                         bounds = bounds,
@@ -262,7 +275,9 @@ object OfflinePackageDownloader {
         }
 
     private sealed class FetchResult {
-        class Success(val data: ByteArray) : FetchResult()
+        class Success(
+            val data: ByteArray,
+        ) : FetchResult()
 
         object NotFound : FetchResult()
 
@@ -297,8 +312,9 @@ object OfflinePackageDownloader {
                     is FetchResult.TemporaryFailure -> throw result.toIOException()
                 }
             val tileJson = JSONObject(String(data, Charsets.UTF_8))
-            val tiles = tileJson.optJSONArray("tiles")
-                ?: throw IOException("offline package TileJSON has no tiles: $tileJsonUrl")
+            val tiles =
+                tileJson.optJSONArray("tiles")
+                    ?: throw IOException("offline package TileJSON has no tiles: $tileJsonUrl")
             val resolvedTiles = JSONArray()
             for (i in 0 until tiles.length()) {
                 resolvedTiles.put(resolveUrl(tileJsonUrl, tiles.getString(i)))

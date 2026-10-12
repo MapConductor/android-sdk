@@ -1,7 +1,5 @@
 package com.mapconductor.vectortile
 
-import android.content.res.Resources
-import kotlin.math.roundToInt
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -23,11 +21,15 @@ import com.mapconductor.core.raster.RasterLayerState
 import com.mapconductor.core.raster.RasterTilePreferenceKey
 import com.mapconductor.core.raster.TileScheme
 import com.mapconductor.core.tileserver.TileServerRegistry
+import com.mapconductor.vectorstyle.StyleRules
+import com.mapconductor.vectorstyle.VectorStyleRules
+import org.json.JSONObject
 import java.io.File
 import java.util.UUID
+import kotlin.math.roundToInt
+import android.content.res.Resources
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.json.JSONObject
 
 /**
  * Draws a MapLibre vector style on any map backend, by rendering it to raster
@@ -83,6 +85,27 @@ import org.json.JSONObject
 fun MapViewScope.VectorTileLayer(
     styleJson: String,
     /**
+     * スタイルを描く前に当てる調整。`VectorStyle` が取るものと同じ [StyleRules]
+     * なので、「道路は白」「建物は描かない」がどこに書いても同じ意味になる。
+     *
+     * 文書を自分で書き換えるのではなくこれを使う理由は、role を隠す規則が
+     * 書けること: 渡す文書の側でレイヤーを落とすので、**描画そのものが
+     * 起きない**。
+     *
+     * ```kotlin
+     * VectorTileLayer(
+     *     styleJson = style,
+     *     rules = buildStyleRules {
+     *         role(LayerRole.BUILDING) { visible = false }
+     *         role(LayerRole.ROAD) { visible = false }
+     *     },
+     * )
+     * ```
+     *
+     * 省略すれば作者が書いたままの文書が描かれ、コンパイラは一度も走らない。
+     */
+    rules: StyleRules = StyleRules.NONE,
+    /**
      * タイル 1 枚の一辺（dp）。null なら地図 SDK の好みに従う。
      *
      * 既定を null にしてあるのは、良い値が**載せる地図による**から。1 枚あたりの
@@ -123,7 +146,7 @@ fun MapViewScope.VectorTileLayer(
      *
      * Matches `renderScale` on iOS.
      */
-    renderScale: Int ? = null,
+    renderScale: Int? = null,
     /**
      * Where to keep rendered tiles across app launches, e.g.
      * `context.cacheDir.resolve("vectortile")`. Null disables it.
@@ -169,10 +192,41 @@ fun MapViewScope.VectorTileLayer(
     val groupId = remember(renderScale) { "vectortile-${UUID.randomUUID()}" }
     val tileServer = remember { TileServerRegistry.get() }
 
+    /**
+     * 実際に描かれる文書 — 作者のスタイルに [rules] を当てたもの。
+     *
+     * 差分ではなく文書に当てる。この下の二つの経路（ラスタライズと、スタイルを
+     * 自分で描く地図への受け渡し）はどちらも文書を取るからで、一度当てれば
+     * 両方が同じものを見る。
+     *
+     * 規則が無ければ最初から作者のスタイルそのもの。あるときだけ、コンパイルが
+     * 終わるまで null = 何も載せない（先に素のスタイルを載せると、消したはずの
+     * 建物が一瞬出る）。
+     */
+    var drawnStyle by
+        remember(styleJson, rules.json) {
+            mutableStateOf(if (rules.json == StyleRules.NONE.json) styleJson else null)
+        }
+    LaunchedEffect(styleJson, rules.json) {
+        if (rules.json == StyleRules.NONE.json) return@LaunchedEffect
+        // 324 レイヤーのスタイルを当てるのはフレームの中でやる仕事ではない。
+        val compiled =
+            withContext(Dispatchers.Default) { runCatching { VectorStyleRules.compile(styleJson, rules.json) } }
+        compiled
+            .onSuccess {
+                if (it.diagnostics.isNotEmpty()) onDiagnostics?.invoke(it.diagnostics)
+                drawnStyle = it.styleJson
+            }.onFailure {
+                onDiagnostics?.invoke(listOf("the rules could not be applied: ${it.message}"))
+                drawnStyle = styleJson
+            }
+    }
+    val drawn = drawnStyle ?: return
+
     val direct = if (asBasemap) LocalMapServiceRegistry.current.get(VectorStyleSupportKey) else null
     if (direct != null) {
         DirectVectorStyle(
-            styleJson = styleJson,
+            styleJson = drawn,
             support = direct,
             tileServer = tileServer,
             onDiagnostics = onDiagnostics,
@@ -231,12 +285,12 @@ fun MapViewScope.VectorTileLayer(
         }
     }
 
-    LaunchedEffect(groupId, styleJson, tileSize) {
+    LaunchedEffect(groupId, drawn, tileSize) {
         val created =
             withContext(Dispatchers.Default) {
                 runCatching {
                     VectorTileProvider.create(
-                        styleJson = styleJson,
+                        styleJson = drawn,
                         tileSize = tileSize,
                         headers = headers,
                         diskCacheDir = diskCacheDir,
@@ -271,6 +325,16 @@ fun MapViewScope.VectorTileLayer(
     if (failure != null) return
 
     /**
+     * What goes in the tile URL so a restyle is noticed.
+     *
+     * Content, not a counter: the same document has to produce the same URL.
+     * A host that rebuilds its overlay content would otherwise mint a fresh
+     * URL on every rebuild and the map would refetch every tile for nothing
+     * -- the mistake `VectorStyleHandoff` documents on the other side.
+     */
+    val styleKey = remember(drawn) { "s${drawn.hashCode().toUInt().toString(16)}" }
+
+    /**
      * The credits the style's sources ask for, carried by the layer itself.
      *
      * The map's attribution overlay is fed from `resolveMapAttributions`,
@@ -300,12 +364,17 @@ fun MapViewScope.VectorTileLayer(
         // sources re-credits the map. Two styles with the same credits compare
         // equal and the layer is left alone, which is the ordinary case -- a
         // recolour keeps its data.
-        remember(groupId, tileSize, declaredTileSize, credits) {
+        //
+        // `styleKey` is a key for the opposite reason: the same data drawn
+        // differently. A map refetches a raster source whose URL changed and
+        // not otherwise, so a restyle has to reach the template -- without it
+        // the tiles with the buildings still on them are served forever.
+        remember(groupId, tileSize, declaredTileSize, credits, styleKey) {
             RasterLayerState(
                 id = "$groupId-geom",
                 source =
                     RasterLayerSource.UrlTemplate(
-                        template = tileServer.urlTemplate("$groupId-geom", tileSize, "static"),
+                        template = tileServer.urlTemplate("$groupId-geom", tileSize, styleKey),
                         tileSize = declaredTileSize,
                         maxZoom = maxZoom,
                         attributionRules = credits,
@@ -329,10 +398,10 @@ fun MapViewScope.VectorTileLayer(
      */
     fun labelStateFor(generation: Int) =
         RasterLayerState(
-            id = "$groupId-labels-g$generation",
+            id = "$groupId-labels-$styleKey-g$generation",
             source =
                 RasterLayerSource.UrlTemplate(
-                    template = tileServer.urlTemplate("$groupId-labels", tileSize, "g$generation"),
+                    template = tileServer.urlTemplate("$groupId-labels", tileSize, "$styleKey-g$generation"),
                     tileSize = declaredTileSize,
                     maxZoom = maxZoom,
                     // Both halves carry the credit. `resolveMapAttributions`
@@ -406,7 +475,9 @@ private fun DirectVectorStyle(
     // the URLs to be noticed.
     val filesRoute =
         remember(offlinePackage, online) {
-            offlinePackage?.let { "vectortile-package-${it.manifest.styleDigest.take(12)}-${if (online) "online" else "offline"}" }
+            offlinePackage?.let {
+                "vectortile-package-${it.manifest.styleDigest.take(12)}-${if (online) "online" else "offline"}"
+            }
         }
     DisposableEffect(filesRoute, offlinePackage) {
         if (filesRoute != null && offlinePackage != null) {
@@ -415,7 +486,9 @@ private fun DirectVectorStyle(
                 directory = offlinePackage.directory,
                 fallback =
                     if (online) {
-                        { relative -> offlinePackage.upstreamUrl(relative)?.let { VectorTileProvider.httpGet(it, headers) } }
+                        { relative ->
+                            offlinePackage.upstreamUrl(relative)?.let { VectorTileProvider.httpGet(it, headers) }
+                        }
                     } else {
                         null
                     },
@@ -425,7 +498,13 @@ private fun DirectVectorStyle(
     }
     val served =
         remember(styleJson, filesRoute) {
-            if (filesRoute != null && offlinePackage != null) offlinePackage.styleServedBy(tileServer.filesUrl(filesRoute)) else styleJson
+            if (filesRoute != null &&
+                offlinePackage != null
+            ) {
+                offlinePackage.styleServedBy(tileServer.filesUrl(filesRoute))
+            } else {
+                styleJson
+            }
         }
 
     // The id is the content and nothing else -- not the layer instance. The

@@ -1,10 +1,10 @@
 package com.mapconductor.vectortile
 
+import org.json.JSONArray
+import org.json.JSONObject
 import java.io.File
 import java.net.URLEncoder
 import java.util.concurrent.atomic.AtomicLong
-import org.json.JSONArray
-import org.json.JSONObject
 
 /**
  * A style and everything it needs to draw one area, on disk.
@@ -39,7 +39,11 @@ class OfflinePackage private constructor(
         val east: Double,
     ) {
         fun toJson(): JSONObject =
-            JSONObject().put("south", south).put("west", west).put("north", north).put("east", east)
+            JSONObject()
+                .put("south", south)
+                .put("west", west)
+                .put("north", north)
+                .put("east", east)
 
         companion object {
             fun fromJson(json: JSONObject): Bounds =

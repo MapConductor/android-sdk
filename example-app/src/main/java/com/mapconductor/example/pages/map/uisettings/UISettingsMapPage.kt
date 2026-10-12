@@ -35,7 +35,10 @@ import kotlinx.coroutines.delay
  * to touch the screen. On start it also cycles None -> Default automatically.
  */
 @Composable
-fun UISettingsMapPage(modifier: Modifier = Modifier, onToggleSidebar: () -> Unit = {}) {
+fun UISettingsMapPage(
+    modifier: Modifier = Modifier,
+    onToggleSidebar: () -> Unit = {},
+) {
     val viewModel = remember { UISettingsMapPageViewModel() }
     // A UI test presets the flags through an intent extra rather than tapping the
     // switches, which is far more reliable than driving a Compose Switch by coordinate.
@@ -116,7 +119,16 @@ private fun GestureSwitch(
     }
 }
 
-/** Reads the gesture flags back off the native map so logcat shows ground truth. */
+/**
+ * Reads the gesture flags back off the native map so logcat shows ground truth.
+ *
+ * TomTom marks `TomTomMap` as its own library group's, which is what Android
+ * Lint objects to. Reading a vendor's map object is the whole point here: the
+ * escape hatch `getMapViewHolder().map` exists so a sample can check what the
+ * SDK actually told the native map, and a diagnostic that trusted our own
+ * state instead would be worth nothing.
+ */
+@Suppress("RestrictedApi")
 private fun report(
     phase: String,
     state: Any,

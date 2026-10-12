@@ -37,6 +37,7 @@ import com.mapconductor.example.pages.marker.icons.MarkerBasicPage
 import com.mapconductor.example.pages.marker.postoffice.PostOfficePage
 import com.mapconductor.example.pages.marker.postofficecluster.MarkerClusterMapPage as PostOfficeClusterMapPage
 import com.mapconductor.example.pages.marker.streettree.StreetTreePage
+import com.mapconductor.example.pages.offlinemap.OfflineMapPage
 import com.mapconductor.example.pages.polygon.basic.PolygonMapPage
 import com.mapconductor.example.pages.polygon.click.PolygonClickPage
 import com.mapconductor.example.pages.polygon.geodesic.PolygonGeodesicPage
@@ -46,7 +47,6 @@ import com.mapconductor.example.pages.polyline.PolylineMapPage
 import com.mapconductor.example.pages.rasterlayer.RasterHeaderProbePage
 import com.mapconductor.example.pages.rasterlayer.RasterLayerMapPage
 import com.mapconductor.example.pages.startup.StartUpPage
-import com.mapconductor.example.pages.offlinemap.OfflineMapPage
 import com.mapconductor.example.pages.vectorstyle.VectorStylePage
 import com.mapconductor.example.pages.vectortile.VectorTilePage
 import com.mapconductor.example.ui.sidebar.Sidebar

@@ -1,10 +1,10 @@
 package com.mapconductor.streettree
 
-import com.mapconductor.core.ResourceProvider
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.marker.BitmapIcon
 import com.mapconductor.core.marker.MarkerIconInterface

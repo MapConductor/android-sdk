@@ -1,7 +1,5 @@
 package com.mapconductor.vectortile
 
-import android.content.res.Resources
-import kotlin.math.roundToInt
 import com.mapconductor.core.map.AttributionRule
 import com.mapconductor.core.map.MapStyleHost
 import com.mapconductor.core.raster.RasterLayerSource
@@ -15,6 +13,8 @@ import java.io.File
 import java.util.UUID
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.math.roundToInt
+import android.content.res.Resources
 import android.os.Handler
 import android.os.Looper
 
