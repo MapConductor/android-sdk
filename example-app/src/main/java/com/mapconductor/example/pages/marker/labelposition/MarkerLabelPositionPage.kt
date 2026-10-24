@@ -6,7 +6,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import com.mapconductor.compose.info.InfoBubble
@@ -36,7 +35,6 @@ private val POSITIONS =
 
 @Composable
 fun MarkerLabelPositionPage(
-    modifier: Modifier = Modifier,
     onToggleSidebar: () -> Unit = {},
 ) {
     val initCameraPosition =
@@ -73,7 +71,6 @@ fun MarkerLabelPositionPage(
 
     DemoMapPageScaffold(
         menuItems = DefaultMapViewItems(initCameraPosition),
-        modifier = modifier,
         onToggleSidebar = onToggleSidebar,
         onMapViewStateChanged = { state ->
             @Suppress("UNCHECKED_CAST")
