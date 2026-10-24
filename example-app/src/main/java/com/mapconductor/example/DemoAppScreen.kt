@@ -33,6 +33,7 @@ import com.mapconductor.example.pages.map.tilt.TiltMapPage
 import com.mapconductor.example.pages.map.uisettings.UISettingsMapPage
 import com.mapconductor.example.pages.map.visibleregion.VisibleRegionPage
 import com.mapconductor.example.pages.marker.animation.AnimationMapPage
+import com.mapconductor.example.pages.marker.labelposition.MarkerLabelPositionPage
 import com.mapconductor.example.pages.marker.icons.MarkerBasicPage
 import com.mapconductor.example.pages.marker.postoffice.PostOfficePage
 import com.mapconductor.example.pages.marker.postofficecluster.MarkerClusterMapPage as PostOfficeClusterMapPage
@@ -119,6 +120,7 @@ fun DemoAppScreen(initPage: String = "map") {
                 items =
                     listOf(
                         SidebarItem(id = "marker-basic", title = "Marker"),
+                        SidebarItem(id = "marker-label-position", title = "Marker Label Position"),
                         SidebarItem(id = "marker-animation", title = "Marker Animation"),
                         SidebarItem(id = "marker-postoffice", title = "Bunch of Markers"),
                         SidebarItem(id = "marker-postoffice-cluster", title = "Marker Clustering"),
@@ -259,6 +261,11 @@ fun DemoAppScreen(initPage: String = "map") {
                     }
                     "marker-basic" -> {
                         MarkerBasicPage(
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
+                    }
+                    "marker-label-position" -> {
+                        MarkerLabelPositionPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
