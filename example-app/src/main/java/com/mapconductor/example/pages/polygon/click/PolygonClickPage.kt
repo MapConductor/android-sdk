@@ -25,7 +25,10 @@ import com.mapconductor.example.ui.DemoMapPageScaffold
 import com.mapconductor.example.ui.MessageCard
 
 @Composable
-fun PolygonClickPage(onToggleSidebar: () -> Unit = {}) {
+fun PolygonClickPage(
+    modifier: Modifier = Modifier,
+    onToggleSidebar: () -> Unit = {},
+) {
     val viewModel = remember { PolygonClickPageViewModel() }
     val isDarkTheme = isSystemInDarkTheme()
 
@@ -42,6 +45,7 @@ fun PolygonClickPage(onToggleSidebar: () -> Unit = {}) {
         mapViewState.value?.let {
             MapViewContainer(
                 state = it,
+                modifier = modifier,
                 onMapClick = viewModel::onMapClicked,
             ) {
                 key(california) {

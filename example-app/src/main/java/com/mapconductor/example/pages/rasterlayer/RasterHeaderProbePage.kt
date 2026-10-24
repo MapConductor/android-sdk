@@ -1,6 +1,7 @@
 package com.mapconductor.example.pages.rasterlayer
 
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -31,7 +32,10 @@ import com.mapconductor.example.ui.DemoMapPageScaffold
  * （[DemoMapPageScaffold] が見る既存の仕組み）。
  */
 @Composable
-fun RasterHeaderProbePage(onToggleSidebar: () -> Unit = {}) {
+fun RasterHeaderProbePage(
+    modifier: Modifier = Modifier,
+    onToggleSidebar: () -> Unit = {},
+) {
     val camera =
         remember {
             MapCameraPosition(
@@ -59,11 +63,11 @@ fun RasterHeaderProbePage(onToggleSidebar: () -> Unit = {}) {
         menuItems = DefaultMapViewItems(camera),
         onToggleSidebar = onToggleSidebar,
         onMapViewStateChanged = { mapViewState = it },
-    ) {
+    ) { paddings ->
         RasterLayerMapComponent(
             mapViewState = mapViewState,
             rasterLayerState = rasterLayerState,
-            modifier = Modifier.fillMaxSize(),
+            modifier = modifier.fillMaxSize().padding(paddings),
         )
     }
 }

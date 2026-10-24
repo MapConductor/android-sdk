@@ -21,11 +21,13 @@ import com.mapconductor.example.ui.MessageCard
 
 @Composable
 fun AnimationMapPage(
+    modifier: Modifier = Modifier,
     viewModel: AnimationPageViewModelInterface = AnimationPageViewModel(),
     onToggleSidebar: () -> Unit = {},
 ) {
     DemoMapPageScaffold(
         menuItems = DefaultMapViewItems(viewModel.initCameraPosition),
+        modifier = modifier,
         onToggleSidebar = onToggleSidebar,
         onMapViewStateChanged = viewModel::onMapViewChanged,
     ) { paddingValues ->

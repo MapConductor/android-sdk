@@ -45,7 +45,10 @@ import kotlinx.coroutines.withContext
 private const val KML_ASSET = "sample.kml"
 
 @Composable
-fun KMLMapPage(onToggleSidebar: () -> Unit = {}) {
+fun KMLMapPage(
+    modifier: Modifier = Modifier,
+    onToggleSidebar: () -> Unit = {},
+) {
     val initCameraPosition =
         remember {
             MapCameraPosition(
@@ -57,10 +60,13 @@ fun KMLMapPage(onToggleSidebar: () -> Unit = {}) {
 
     DemoMapPageScaffold(
         menuItems = DefaultMapViewItems(initCameraPosition),
+        modifier = modifier,
         onToggleSidebar = onToggleSidebar,
         onMapViewStateChanged = { mapViewState = it },
     ) { paddingValues ->
-        KMLMapComponent(mapViewState = mapViewState)
+        KMLMapComponent(
+            mapViewState = mapViewState,
+        )
 
         MessageCard(
             title = "KML Layer",
@@ -79,7 +85,10 @@ fun KMLMapPage(onToggleSidebar: () -> Unit = {}) {
 }
 
 @Composable
-private fun KMLMapComponent(mapViewState: MapViewStateInterface<*>?) {
+private fun KMLMapComponent(
+    mapViewState: MapViewStateInterface<*>?,
+    modifier: Modifier = Modifier,
+) {
     val context = LocalContext.current
     var selectedFeature by remember { mutableStateOf<KMLFeature?>(null) }
     var tappedPosition by remember { mutableStateOf<GeoPoint?>(null) }
@@ -119,6 +128,7 @@ private fun KMLMapComponent(mapViewState: MapViewStateInterface<*>?) {
     mapViewState?.let { state ->
         MapViewContainer(
             state = state,
+            modifier = modifier,
             onMapClick = { clicked ->
                 if (!layerState.processClick(clicked, pixelTolerance = 12.0, zoom = state.cameraPosition.zoom)) {
                     tappedPosition = null

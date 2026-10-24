@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The SDK's tile server listens on loopback over plain HTTP, so the app has to
+  permit cleartext there. Scoped to 127.0.0.1/localhost only — the same shape
+  example-app and simple-map-app use.
+-->
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">127.0.0.1</domain>
+        <domain includeSubdomains="false">localhost</domain>
+    </domain-config>
+</network-security-config>

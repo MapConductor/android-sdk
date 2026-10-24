@@ -30,12 +30,14 @@ import com.mapconductor.example.ui.MessageCard
 @Composable
 fun FlyToMapPage(
     icons: FlyToMapIcons,
+    modifier: Modifier = Modifier,
     onToggleSidebar: () -> Unit = {},
 ) {
     val viewModel: FlyToPageViewModelInterface = remember { FlyToPageViewModel(icons) }
 
     DemoMapPageScaffold(
         menuItems = DefaultMapViewItems(viewModel.initCameraPosition),
+        modifier = modifier,
         onToggleSidebar = onToggleSidebar,
         onMapViewStateChanged = viewModel::onMapViewChanged,
     ) { paddingValues ->
@@ -45,6 +47,7 @@ fun FlyToMapPage(
             mapViewState = mapViewState.value,
             polylines = viewModel.polylines,
             markers = viewModel.markers,
+            modifier = Modifier.padding(paddingValues),
         )
 
         // Control Panel

@@ -48,6 +48,7 @@ import android.graphics.Rect
 @Composable
 fun MarkerClusterMapPage(
     postOfficeIcon: ImageIcon,
+    modifier: Modifier = Modifier,
     onToggleSidebar: () -> Unit = {},
 ) {
     val context = LocalContext.current
@@ -115,7 +116,7 @@ fun MarkerClusterMapPage(
 
     // Show loading dialog while map or data is loading; start data load once
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
         contentAlignment = Alignment.Center,
     ) {
         val selectedMarker = viewModel.selectedMarker.collectAsState().value

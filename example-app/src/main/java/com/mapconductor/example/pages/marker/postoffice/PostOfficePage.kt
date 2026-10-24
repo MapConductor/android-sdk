@@ -20,6 +20,7 @@ import com.mapconductor.utils.LoadingDialog
 @Composable
 fun PostOfficePage(
     postOfficeIcon: ImageIcon,
+    modifier: Modifier = Modifier,
     onToggleSidebar: () -> Unit = {},
 ) {
     val context = LocalContext.current
@@ -44,7 +45,7 @@ fun PostOfficePage(
 
     // Show loading dialog while map or data is loading; start data load once
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
         contentAlignment = Alignment.Center,
     ) {
         val selectedMarker = viewModel.selectedMarker.collectAsState().value

@@ -1,0 +1,92 @@
+diff --git a/shared/public/Textured2dLayerObject.h b/shared/public/Textured2dLayerObject.h
+index 9f53c05..da3f791 100644
+--- a/shared/public/Textured2dLayerObject.h
++++ b/shared/public/Textured2dLayerObject.h
+@@ -71,6 +71,7 @@ class Textured2dLayerObject : public LayerObjectInterface, public std::enable_sh
+ 
+     void setRectCoord(const ::RectCoord &rectCoord);
+     void setRectCoord(const ::RectCoord &rectCoord, double overlapFactor);
++    void setRectCoord(const ::RectCoord &rectCoord, double overlapFactor, bool preserveTextureScale);
+     void setPolygons(const std::vector<::PolygonCoord> &polygons, const ::RectCoord &textureBounds);
+     void setPolygons(const std::vector<::PolygonCoord> &polygons, const ::RectCoord &textureBounds, double overlapFactor);
+ 
+@@ -110,6 +111,7 @@ class Textured2dLayerObject : public LayerObjectInterface, public std::enable_sh
+ 
+   protected:
+     void setFrame(const ::Quad3dD &frame, const ::Vec3D & origin);
++    void setPositions(const ::QuadCoord &coords, const RectD &textureCoordinates);
+ 
+   private:
+     std::shared_ptr<Quad2dInterface> quad;
+diff --git a/shared/src/map/layers/objects/Textured2dLayerObject.cpp b/shared/src/map/layers/objects/Textured2dLayerObject.cpp
+index 76b17c6..daf1e59 100644
+--- a/shared/src/map/layers/objects/Textured2dLayerObject.cpp
++++ b/shared/src/map/layers/objects/Textured2dLayerObject.cpp
+@@ -89,6 +89,26 @@ void Textured2dLayerObject::setRectCoord(const ::RectCoord &rectCoord) {
+ }
+ 
+ void Textured2dLayerObject::setRectCoord(const ::RectCoord &rectCoord, double overlapFactor) {
++    setRectCoord(rectCoord, overlapFactor, false);
++}
++
++void Textured2dLayerObject::setRectCoord(const ::RectCoord &rectCoord, double overlapFactor, bool preserveTextureScale) {
++    if (preserveTextureScale) {
++        const double width = rectCoord.bottomRight.x - rectCoord.topLeft.x;
++        const double height = rectCoord.bottomRight.y - rectCoord.topLeft.y;
++        const double x = rectCoord.topLeft.x - width * overlapFactor;
++        const double y = rectCoord.topLeft.y - height * overlapFactor;
++        const double w = width * (1.0 + 2.0 * overlapFactor);
++        const double h = height * (1.0 + 2.0 * overlapFactor);
++        const auto system = rectCoord.topLeft.systemIdentifier;
++        const auto z = rectCoord.topLeft.z;
++        // Expand UVs with the geometry: the image inside the original bounds
++        // keeps its mapping, while CLAMP_TO_EDGE covers subpixel raster gaps.
++        setPositions(QuadCoord(Coord(system, x, y, z), Coord(system, x + w, y, z),
++                               Coord(system, x + w, y + h, z), Coord(system, x, y + h, z)),
++                     RectD(-overlapFactor, -overlapFactor, 1.0 + 2.0 * overlapFactor, 1.0 + 2.0 * overlapFactor));
++        return;
++    }
+     auto width = rectCoord.bottomRight.x - rectCoord.topLeft.x;
+     auto height = rectCoord.bottomRight.y - rectCoord.topLeft.y;
+     const double xOverlap = width * overlapFactor;
+@@ -106,6 +126,10 @@ void Textured2dLayerObject::setPosition(const ::Coord &coord, double width, doub
+ }
+ 
+ void Textured2dLayerObject::setPositions(const ::QuadCoord &coords) {
++    setPositions(coords, RectD(0, 0, 1, 1));
++}
++
++void Textured2dLayerObject::setPositions(const ::QuadCoord &coords, const RectD &textureCoordinates) {
+     QuadCoord renderCoords = conversionHelper->convertQuadToRenderSystem(coords);
+ 
+     const double cx = (renderCoords.bottomRight.x + renderCoords.topLeft.x) / 2.0;
+@@ -127,10 +151,9 @@ void Textured2dLayerObject::setPositions(const ::QuadCoord &coords) {
+         return Vec3D(x, y, z);
+     };
+ 
+-    setFrame(Quad3dD(transform(renderCoords.topLeft),
+-                     transform(renderCoords.topRight),
+-                     transform(renderCoords.bottomRight),
+-                     transform(renderCoords.bottomLeft)), origin);
++    quad->setFrame(Quad3dD(transform(renderCoords.topLeft), transform(renderCoords.topRight),
++                          transform(renderCoords.bottomRight), transform(renderCoords.bottomLeft)),
++                   textureCoordinates, origin, is3d);
+ }
+ 
+ void Textured2dLayerObject::setFrame(const ::Quad3dD &frame, const ::Vec3D & origin) {
+diff --git a/shared/src/map/layers/tiled/raster/Tiled2dMapRasterLayer.cpp b/shared/src/map/layers/tiled/raster/Tiled2dMapRasterLayer.cpp
+index 770d045..22b36c9 100644
+--- a/shared/src/map/layers/tiled/raster/Tiled2dMapRasterLayer.cpp
++++ b/shared/src/map/layers/tiled/raster/Tiled2dMapRasterLayer.cpp
+@@ -369,7 +369,10 @@ void Tiled2dMapRasterLayer::onTilesUpdated(const std::string &layerName, VectorS
+                                             is3D ? RASTER_TILE_RENDER_OVERLAP_FACTOR : 0.0);
+                     tileGeometryMaskHashes[tile.tileInfo] = hash;
+                 } else {
+-                    tileObject->setRectCoord(tile.tileInfo.tileInfo.bounds, RASTER_TILE_RENDER_OVERLAP_FACTOR);
++                    // Preserve the texture mapping inside the tile while still
++                    // covering subpixel gaps at adjacent stencil/quad edges.
++                    tileObject->setRectCoord(tile.tileInfo.tileInfo.bounds, RASTER_TILE_RENDER_OVERLAP_FACTOR,
++                                             !is3D && usesStencilTileMasking());
+                 }
+                 tilesToSetup.emplace_back(std::make_pair(tile, tileObject));
+ 

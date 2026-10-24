@@ -38,7 +38,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
-fun TiltMapPage(onToggleSidebar: () -> Unit = {}) {
+fun TiltMapPage(
+    modifier: Modifier = Modifier,
+    onToggleSidebar: () -> Unit = {},
+) {
     val coroutineScope = rememberCoroutineScope()
     val debounceMs = 80L
     val viewModel = remember { TiltMapPageViewModel() }
@@ -47,6 +50,7 @@ fun TiltMapPage(onToggleSidebar: () -> Unit = {}) {
 
     DemoMapPageScaffold(
         menuItems = DefaultMapViewItems(viewModel.initCameraPosition),
+        modifier = modifier,
         onToggleSidebar = onToggleSidebar,
         onMapViewStateChanged = viewModel::onMapViewChanged,
     ) { paddingValues ->
@@ -71,7 +75,7 @@ fun TiltMapPage(onToggleSidebar: () -> Unit = {}) {
                 Modifier
                     .align(Alignment.BottomStart)
                     .padding(
-                        bottom = paddingValues.calculateBottomPadding() + 16.dp,
+                        bottom = paddingValues.calculateBottomPadding(),
                         start = paddingValues.calculateStartPadding(LayoutDirection.Ltr) + 16.dp,
                         end = paddingValues.calculateEndPadding(LayoutDirection.Ltr) + 16.dp,
                     ).sizeIn(

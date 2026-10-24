@@ -34,10 +34,17 @@ mapLibreSdk = "13.7.1"
 mapLibreAnnotation = "3.0.2"
 maptilerSdk = "2.2.2"
 longdoSdk = "1.3.0"
+# 9.0.4 はクラッシュする。`MapView.<init>` → `EncryptionUtils.decryptPublicConfig`
+# → `Cipher.doFinal` で `IllegalArgumentException: Null input buffer`。
+# vector-style / vector-tile のページで再現し、9.0.3 では起きない（2026-10-09 実機）。
+# android-for-mappls の submodule は 9.0.4 を指しているので、**ここだけ据え置き**。
+# 上流が直るまで上げないこと。
 mapplsSdk = "9.0.3"
 materialVersion = "1.14.0"
 coroutines = "1.9.0"
 ui = "1.11.4"
+# material3 は compose-ui とは別のバージョン系列。composeLibs（ui 系）を流用すると
+# 存在しない material3:1.7.8 を要求してクラスパスごと解決に失敗する。
 material3 = "1.4.0"
 
 [libraries]

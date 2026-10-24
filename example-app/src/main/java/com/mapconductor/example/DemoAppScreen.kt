@@ -23,6 +23,7 @@ import com.mapconductor.example.pages.infobubble.SimpleTextBubblePage
 import com.mapconductor.example.pages.infobubble.StyledInfoBubblePage
 import com.mapconductor.example.pages.kml.KMLMapPage
 import com.mapconductor.example.pages.map.basic.StoreMapPage
+import com.mapconductor.example.pages.map.camerarestriction.CameraRestrictionMapPage
 import com.mapconductor.example.pages.map.camerasync.CameraSyncPage
 import com.mapconductor.example.pages.map.design.MapDesignMapPage
 import com.mapconductor.example.pages.map.fitbounds.FitBoundsMapPage
@@ -36,6 +37,8 @@ import com.mapconductor.example.pages.marker.labelposition.MarkerLabelPositionPa
 import com.mapconductor.example.pages.marker.icons.MarkerBasicPage
 import com.mapconductor.example.pages.marker.postoffice.PostOfficePage
 import com.mapconductor.example.pages.marker.postofficecluster.MarkerClusterMapPage as PostOfficeClusterMapPage
+import com.mapconductor.example.pages.marker.streettree.StreetTreePage
+import com.mapconductor.example.pages.offlinemap.OfflineMapPage
 import com.mapconductor.example.pages.polygon.basic.PolygonMapPage
 import com.mapconductor.example.pages.polygon.click.PolygonClickPage
 import com.mapconductor.example.pages.polygon.geodesic.PolygonGeodesicPage
@@ -45,6 +48,8 @@ import com.mapconductor.example.pages.polyline.PolylineMapPage
 import com.mapconductor.example.pages.rasterlayer.RasterHeaderProbePage
 import com.mapconductor.example.pages.rasterlayer.RasterLayerMapPage
 import com.mapconductor.example.pages.startup.StartUpPage
+import com.mapconductor.example.pages.vectorstyle.VectorStylePage
+import com.mapconductor.example.pages.vectortile.VectorTilePage
 import com.mapconductor.example.ui.sidebar.Sidebar
 import com.mapconductor.example.ui.sidebar.SidebarItem
 import com.mapconductor.example.ui.sidebar.SidebarSection
@@ -119,6 +124,7 @@ fun DemoAppScreen(initPage: String = "map") {
                         SidebarItem(id = "marker-animation", title = "Marker Animation"),
                         SidebarItem(id = "marker-postoffice", title = "Bunch of Markers"),
                         SidebarItem(id = "marker-postoffice-cluster", title = "Marker Clustering"),
+                        SidebarItem(id = "marker-streettree", title = "Street Trees"),
                     ),
             ),
             SidebarSection(
@@ -154,6 +160,15 @@ fun DemoAppScreen(initPage: String = "map") {
             SidebarSection(
                 title = "Heatmap Layer",
                 items = listOf(SidebarItem(id = "heatmap-overlay", title = "Heatmap Overlay")),
+            ),
+            SidebarSection(
+                title = "Vector Tile Layer",
+                items =
+                    listOf(
+                        SidebarItem(id = "vector-tile", title = "MapLibre Style"),
+                        SidebarItem(id = "vector-style", title = "Style Adjustments"),
+                        SidebarItem(id = "offline-map", title = "Offline Map"),
+                    ),
             ),
             SidebarSection(
                 title = "GeoJSON",
@@ -200,7 +215,7 @@ fun DemoAppScreen(initPage: String = "map") {
                         )
                     }
                     "camera-restriction" -> {
-                        com.mapconductor.example.pages.map.camerarestriction.CameraRestrictionMapPage(
+                        CameraRestrictionMapPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
@@ -271,6 +286,11 @@ fun DemoAppScreen(initPage: String = "map") {
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
+                    "marker-streettree" -> {
+                        StreetTreePage(
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
+                    }
                     "circle" -> {
                         CircleMapPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
@@ -325,6 +345,21 @@ fun DemoAppScreen(initPage: String = "map") {
                     }
                     "heatmap-overlay" -> {
                         HeatmapLayerPage(
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
+                    }
+                    "vector-tile" -> {
+                        VectorTilePage(
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
+                    }
+                    "vector-style" -> {
+                        VectorStylePage(
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
+                    }
+                    "offline-map" -> {
+                        OfflineMapPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
