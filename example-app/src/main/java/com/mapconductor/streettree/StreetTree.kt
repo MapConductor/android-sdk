@@ -1,20 +1,23 @@
 package com.mapconductor.streettree
 
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.graphics.Color as ComposeColor
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.core.graphics.drawable.toDrawable
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.marker.BitmapIcon
-import com.mapconductor.core.marker.MarkerIconInterface
+import com.mapconductor.core.marker.ImageIcon
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import kotlin.math.ceil
+import kotlin.math.max
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.Typeface
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -47,29 +50,80 @@ data class StreetTree(
     // the marker abstraction without knowing what it is.
 ) : java.io.Serializable
 
-/** A small coloured dot. One per species, shared by every tree of that species. */
-class TreeDotIcon(
-    bitmap: Bitmap,
-    /** ビットマップの実ピクセル。タイルレンダラはこれを canvas 上の大きさに使う。 */
-    sizePx: Float,
-    /** 同じ絵の dp での大きさ。ネイティブマーカー経路と当たり判定はこちらを見る。 */
-    sizeDp: Float,
-) : MarkerIconInterface {
-    override val scale: Float = 1.0f
-    override val anchor: Offset = Offset(0.5f, 0.5f)
-    override val iconSize: Dp = sizeDp.dp
-    override val infoAnchor: Offset = Offset(0.5f, 0.0f)
-    override val debug: Boolean = false
-
-    // Baked once. Building it per marker would measure icon generation rather
-    // than drawing.
-    private val icon =
-        BitmapIcon(bitmap = bitmap, size = Size(sizePx, sizePx), anchor = anchor)
-
-    override fun toBitmapIcon(): BitmapIcon = icon
-}
+/** 点のどちら側にラベルを描くか。 */
+enum class LabelSide { RIGHT, LEFT, TOP, BOTTOM }
 
 object StreetTreeIcons {
+    /** ラベルの文字の大きさ（sp）。ラベルの重なり判定もこの値で測る。 */
+    const val LABEL_TEXT_SP = 11f
+
+    /** 点とラベルのすき間（dp）。SDK の配置（縁取りの太さ 1dp）と同じ値。 */
+    const val LABEL_GAP_DP = 1f
+
+    /** 縁取りの太さ（dp）。SDK はラベルの幅と高さにこの 2 倍を足す。 */
+    private const val LABEL_OUTLINE_DP = 1f
+
+    private val labelTypeface: Typeface = Typeface.DEFAULT_BOLD
+
+    /** 点の上下に置くラベルは縦書きにする。横の通りでは点が横に詰まって並ぶので、横書きだと数本に 1 つしか名前を付けられない。 */
+    fun isVertical(side: LabelSide): Boolean = side == LabelSide.TOP || side == LabelSide.BOTTOM
+
+    private val labelSizes = java.util.concurrent.ConcurrentHashMap<String, Pair<Float, Float>>()
+
+    /**
+     * ラベルの幅と高さ（dp、縁取りを含む）。樹種名と向きごとに 1 回だけ測る。
+     * SDK と同じ測り方（縦書きは縦書き用の字形で 1 文字 1em に積む）。
+     */
+    fun labelSizeDp(
+        text: String,
+        vertical: Boolean,
+    ): Pair<Float, Float> =
+        labelSizes.getOrPut(if (vertical) "v/$text" else "h/$text") {
+            val density = ResourceProvider.dpToPxForBitmap(1f).toFloat()
+            val paint =
+                Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                    textSize = ResourceProvider.spToPx(LABEL_TEXT_SP).toFloat()
+                    typeface = labelTypeface
+                    if (vertical) fontFeatureSettings = "'vert' 1"
+                }
+            val outline = LABEL_OUTLINE_DP * 2
+            if (vertical) {
+                var column = paint.textSize
+                text.forEach { column = max(column, paint.measureText(it.toString())) }
+                ceil(column) / density + outline to text.length * paint.textSize / density + outline
+            } else {
+                val metrics = paint.fontMetrics
+                paint.measureText(text) / density + outline to (metrics.descent - metrics.ascent) / density + outline
+            }
+        }
+
+    /**
+     * 点の [side] 側に樹種名を添えたアイコン。
+     *
+     * SDK の [ImageIcon] のラベルを使う。画像は作らない -- タイル描画は点の画像と
+     * 文字を別々に描くので、ラベル付きのアイコンをいくつ作っても点の画像は 1 枚のまま。
+     */
+    fun labelled(
+        dot: ImageIcon,
+        text: String,
+        side: LabelSide,
+    ): ImageIcon =
+        dot.copy(
+            label = text,
+            labelTextColor = ComposeColor(0xFF282828),
+            labelTextSize = LABEL_TEXT_SP.sp,
+            labelTypeFace = labelTypeface,
+            labelStrokeColor = ComposeColor.White,
+            labelPosition =
+                when (side) {
+                    LabelSide.RIGHT -> "right"
+                    LabelSide.LEFT -> "left"
+                    LabelSide.TOP -> "top"
+                    LabelSide.BOTTOM -> "bottom"
+                },
+            labelWritingMode = if (isVertical(side)) "vertical-rl" else "horizontal-tb",
+        )
+
     /**
      * 種ごとの色分けドット。
      *
@@ -85,7 +139,8 @@ object StreetTreeIcons {
     fun palette(
         count: Int,
         sizeDp: Float,
-    ): List<TreeDotIcon> {
+    ): List<ImageIcon> {
+        val resources = ResourceProvider.getAppContext().resources
         val sizePx = ResourceProvider.dpToPxForBitmap(sizeDp).toInt().coerceAtLeast(1)
         val paint = Paint(Paint.ANTI_ALIAS_FLAG)
         return (0 until count).map { index ->
@@ -111,7 +166,12 @@ object StreetTreeIcons {
                 paint.strokeWidth = 1f
                 drawCircle(sizePx / 2f, sizePx / 2f, radius, paint)
             }
-            TreeDotIcon(bitmap, sizePx.toFloat(), sizeDp)
+            ImageIcon(
+                image = bitmap.toDrawable(resources),
+                iconSize = sizeDp.dp,
+                // 吹き出しは点の上端に出す。
+                infoAnchor = Offset(0.5f, 0.0f),
+            )
         }
     }
 }
