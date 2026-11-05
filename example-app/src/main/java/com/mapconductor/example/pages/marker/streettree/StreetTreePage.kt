@@ -16,6 +16,7 @@ import com.mapconductor.example.ui.DefaultMapViewItems
 import com.mapconductor.example.ui.DemoMapPageScaffold
 import com.mapconductor.streettree.StreetTreeDataLoader
 import com.mapconductor.utils.LoadingDialog
+import android.app.Activity
 
 /**
  * 144,183 street trees, one colour per species, drawn as raster tiles.
@@ -32,13 +33,17 @@ fun StreetTreePage(
 ) {
     val context = LocalContext.current
     val dataLoader = remember { StreetTreeDataLoader(context) }
+    // 再現用の入口。`adb shell am start ... --es camera "35.698,139.766,17.5"` のように渡すと、
+    // その場・そのズームで開く（ios-sdk の `MAPCONDUCTOR_SAMPLE_INIT_CAMERA` と同じ）。
+    val initCamera = remember { (context as? Activity)?.intent?.getStringExtra("camera") }
 
     val viewModel: StreetTreeViewModel =
         viewModel(
             factory =
                 object : ViewModelProvider.Factory {
                     @Suppress("UNCHECKED_CAST")
-                    override fun <T : ViewModel> create(modelClass: Class<T>): T = StreetTreeViewModel(dataLoader) as T
+                    override fun <T : ViewModel> create(modelClass: Class<T>): T =
+                        StreetTreeViewModel(dataLoader, initCamera = initCamera) as T
                 },
         )
 
@@ -63,6 +68,7 @@ fun StreetTreePage(
                     modifier = modifier.padding(paddingValues),
                     onMapLoaded = viewModel::onMapLoaded,
                     onMapClick = viewModel::onMapClick,
+                    onCameraMoveEnd = viewModel::onCameraMoveEnd,
                 )
             }
         }

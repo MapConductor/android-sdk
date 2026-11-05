@@ -6,6 +6,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.mapconductor.compose.info.InfoBubble
 import com.mapconductor.compose.marker.Markers
+import com.mapconductor.core.OnCameraMoveHandler
 import com.mapconductor.core.OnMapEventHandler
 import com.mapconductor.core.OnMapLoadedHandler
 import com.mapconductor.core.map.MapViewStateInterface
@@ -24,6 +25,7 @@ fun StreetTreeMapComponent(
     markerTiling: MarkerTilingOptions? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
+    onCameraMoveEnd: OnCameraMoveHandler? = null,
 ) {
     val bubbleColor = if (isSystemInDarkTheme()) Color.Black else Color.White
 
@@ -33,6 +35,7 @@ fun StreetTreeMapComponent(
         markerTiling = markerTiling,
         onMapLoaded = onMapLoaded,
         onMapClick = onMapClick,
+        onCameraMoveEnd = onCameraMoveEnd,
     ) {
         Markers(markers)
 
