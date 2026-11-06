@@ -1,10 +1,12 @@
 package com.mapconductor.example.pages.groundimage
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Slider
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -63,6 +65,13 @@ fun GroundImageMapPage(
             title = "GroundImage Example",
         ) {
             Column {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("image from URL", modifier = Modifier.weight(1f))
+                    Switch(
+                        checked = viewModel.useImageUrl,
+                        onCheckedChange = { viewModel.useImageUrl = it },
+                    )
+                }
                 Text("opacity: ${"%.2f".format(sliderOpacity)}")
                 Slider(
                     value = sliderOpacity,
