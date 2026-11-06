@@ -30,6 +30,9 @@ interface GroundImageMapPageViewModelInterface {
     val framePolyline: PolylineState
     val imageResources: GroundImageResources
     val image: Drawable
+
+    /** 画像を Drawable でなく URL で渡す（SDK が読む）。 */
+    var useImageUrl: Boolean
     var opacity: Float
     val groundImageState: GroundImageState
 
@@ -43,6 +46,10 @@ interface GroundImageMapPageViewModelInterface {
 
     fun removeToast(toastMessage: ToastMessage)
 }
+
+/** `useImageUrl` のときに貼る画像。res/drawable/university_of_eswatini.png と同じもの。 */
+private const val GROUND_IMAGE_URL =
+    "https://raw.githubusercontent.com/MapConductor/android-sdk/develop/example-app/src/main/res/drawable/university_of_eswatini.png"
 
 class GroundImageMapPageViewModel(
     override val imageResources: GroundImageResources,
@@ -171,6 +178,8 @@ class GroundImageMapPageViewModel(
 
     override var image by mutableStateOf(imageResources.image)
 
+    override var useImageUrl by mutableStateOf(false)
+
     private var bounds by mutableStateOf(
         GeoRectBounds(
             southWest = southWestPosition,
@@ -180,13 +189,23 @@ class GroundImageMapPageViewModel(
 
     override val groundImageState
         get() =
-            GroundImageState(
-                id = "groundImage",
-                bounds = bounds,
-                image = image,
-                opacity = opacity,
-                onClick = this::onGroundImageClick,
-            )
+            if (useImageUrl) {
+                GroundImageState(
+                    id = "groundImage",
+                    bounds = bounds,
+                    imageUrl = GROUND_IMAGE_URL,
+                    opacity = opacity,
+                    onClick = this::onGroundImageClick,
+                )
+            } else {
+                GroundImageState(
+                    id = "groundImage",
+                    bounds = bounds,
+                    image = image,
+                    opacity = opacity,
+                    onClick = this::onGroundImageClick,
+                )
+            }
 
     override fun onGroundImageClick(clicked: GroundImageEvent) {
         showToast("Ground image clicked.")
