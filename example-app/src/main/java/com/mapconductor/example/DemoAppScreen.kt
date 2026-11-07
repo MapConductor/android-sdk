@@ -41,6 +41,7 @@ import com.mapconductor.example.pages.marker.streettree.StreetTreePage
 import com.mapconductor.example.pages.offlinemap.OfflineMapPage
 import com.mapconductor.example.pages.polygon.basic.PolygonMapPage
 import com.mapconductor.example.pages.polygon.click.PolygonClickPage
+import com.mapconductor.example.pages.polygon.collection.PolygonsMapPage
 import com.mapconductor.example.pages.polygon.geodesic.PolygonGeodesicPage
 import com.mapconductor.example.pages.polygon.hole.HolePolygonMapPage
 import com.mapconductor.example.pages.polyline.PolylineClickMapPage
@@ -151,6 +152,7 @@ fun DemoAppScreen(initPage: String = "map") {
                         SidebarItem(id = "polygon-click", title = "Polygon Click"),
                         SidebarItem(id = "polygon-geodesic", title = "Geodesic Polygons"),
                         SidebarItem(id = "polygon-hole", title = "Hole Polygon"),
+                        SidebarItem(id = "polygons", title = "Polygons"),
                     ),
             ),
             SidebarSection(
@@ -323,6 +325,11 @@ fun DemoAppScreen(initPage: String = "map") {
                     }
                     "polygon-hole" -> {
                         HolePolygonMapPage(
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
+                    }
+                    "polygons" -> {
+                        PolygonsMapPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
