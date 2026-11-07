@@ -9,10 +9,12 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,15 +44,12 @@ fun UISettingsMapPage(
     val viewModel = remember { UISettingsMapPageViewModel() }
     // A UI test presets the flags through an intent extra rather than tapping the
     // switches, which is far more reliable than driving a Compose Switch by coordinate.
-    var settings by remember {
-        mutableStateOf(
-            if (com.mapconductor.example.MainActivity.gesturesExtra == "none") {
-                MapUISettings.None
-            } else {
-                MapUISettings.Default
-            },
-        )
-    }
+    val preset =
+        if (com.mapconductor.example.MainActivity.gesturesExtra == "none") {
+            MapUISettings.None
+        } else {
+            null
+        }
 
     DemoMapPageScaffold(
         menuItems = DefaultMapViewItems(viewModel.initCameraPosition),
@@ -60,7 +59,16 @@ fun UISettingsMapPage(
         val mapViewState = viewModel.mapViewState.collectAsState().value
 
         mapViewState?.let { state ->
-            state.uiSettings = settings
+            // The flags live on the map state, not in this page: rememberXxxMapViewState
+            // saves them, so they survive a rotation. A page-local `remember` would
+            // come back all-true and overwrite the restored state.
+            // The intent preset is applied once per state (rememberSaveable keyed by its
+            // id), so a rotation does not re-apply it over what the user toggled since.
+            var presetApplied by rememberSaveable(state.id) { mutableStateOf(false) }
+            LaunchedEffect(state) {
+                if (!presetApplied && preset != null) state.uiSettings = preset
+                presetApplied = true
+            }
             MapViewContainer(
                 state = state,
                 modifier = modifier,
@@ -70,9 +78,9 @@ fun UISettingsMapPage(
             )
 
             // Read back after every change, so manual toggles are verifiable too.
-            androidx.compose.runtime.LaunchedEffect(settings, state) {
+            LaunchedEffect(state.uiSettings, state) {
                 delay(800.milliseconds)
-                report("settings=$settings", state)
+                report("settings=${state.uiSettings}", state)
             }
         }
 
@@ -87,17 +95,20 @@ fun UISettingsMapPage(
                     ).sizeIn(maxWidth = 360.dp),
         ) {
             Column(modifier = Modifier.padding(12.dp)) {
+                val state = mapViewState
+                val settings = state?.uiSettings ?: MapUISettings.Default
+                val update: (MapUISettings) -> Unit = { state?.uiSettings = it }
                 GestureSwitch("scrollGesture", settings.scrollGesture) {
-                    settings = settings.copy(scrollGesture = it)
+                    update(settings.copy(scrollGesture = it))
                 }
                 GestureSwitch("zoomGesture", settings.zoomGesture) {
-                    settings = settings.copy(zoomGesture = it)
+                    update(settings.copy(zoomGesture = it))
                 }
                 GestureSwitch("rotateGesture", settings.rotateGesture) {
-                    settings = settings.copy(rotateGesture = it)
+                    update(settings.copy(rotateGesture = it))
                 }
                 GestureSwitch("tiltGesture", settings.tiltGesture) {
-                    settings = settings.copy(tiltGesture = it)
+                    update(settings.copy(tiltGesture = it))
                 }
             }
         }
