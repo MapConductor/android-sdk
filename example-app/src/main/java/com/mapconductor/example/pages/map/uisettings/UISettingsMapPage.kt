@@ -147,7 +147,7 @@ private fun report(
     val holder = (state as? com.mapconductor.core.map.MapViewStateInterface<*>)?.getMapViewHolder()
     val map = holder?.map
     val actual =
-        when (map) {
+        when (state) {
             is TomTomMapViewState -> {
                 val ttMap = map as? com.tomtom.sdk.map.display.TomTomMap
                 if (ttMap == null) {
