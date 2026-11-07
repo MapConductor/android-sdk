@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Button
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Text
@@ -134,6 +135,8 @@ fun BostonBuildingsPage(
             modifier =
                 Modifier
                     .align(Alignment.BottomStart)
+                    // On a tablet the card would otherwise run under the whole map.
+                    .widthIn(max = PANEL_MAX_WIDTH)
                     .padding(
                         bottom = paddingValues.calculateBottomPadding() + 16.dp,
                         start = paddingValues.calculateStartPadding(LayoutDirection.Ltr) + 16.dp,
@@ -164,3 +167,6 @@ fun BostonBuildingsPage(
         }
     }
 }
+
+/** Wide enough for the title and two legend columns without wrapping. */
+private val PANEL_MAX_WIDTH = 480.dp
