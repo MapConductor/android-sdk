@@ -1,6 +1,6 @@
 package com.mapconductor.example.pages.polygon.boston
 
-import android.content.res.AssetManager
+import android.content.Context
 import android.os.SystemClock
 import android.util.Log
 import androidx.compose.ui.graphics.Color
@@ -18,9 +18,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.json.JSONObject
 
-private const val ASSET = "boston/boston-buildings.json"
 private const val TAP_LOG_TAG = "BostonTap"
 private val TAPPED = Color(0xD92563EB)
 
@@ -44,25 +42,29 @@ data class Tap(
 data class BuildingStats(
     val polygons: Int,
     val vertices: Int,
+    val loadMillis: Long,
     val buildMillis: Long,
 )
 
 /**
- * Building footprints of central Boston from the Overture Maps buildings theme,
- * drawn on top of the real map. Three nested areas — 0.8 x 1.1 km, 1.6 x 2.2 km
- * and 3.2 x 4.4 km — make the page double as a load test.
+ * Polygons of Boston drawn on top of the real map: Overture building footprints
+ * of downtown in three nested areas (0.8 x 1.1 km, 1.6 x 2.2 km, 3.2 x 4.4 km),
+ * or the whole city's buildings or parcels (about 100,000 polygons each, see
+ * [Dataset]) as a load test.
  *
  * Tapping a building highlights it and names it; tapping elsewhere says nothing
  * was hit. Every tap is also logged under `BostonTap`, which is how the hit
  * testing is checked from outside.
  *
- * `camera` ("lat,lng,zoom") and `area` (0, 1 or 2) come from the intent extras,
- * so a measurement opens the same view on every provider.
+ * `camera` ("lat,lng,zoom"), `data` (downtown, buildings or parcels) and `area`
+ * (0, 1 or 2) come from the intent extras, so a measurement opens the same view
+ * on every provider.
  */
 class BostonBuildingsViewModel(
-    private val assets: AssetManager,
+    private val context: Context,
     initCamera: String?,
     initArea: Int?,
+    initDataset: Dataset?,
 ) : ViewModel() {
     private val _mapViewState = MutableStateFlow<MapViewStateInterface<*>?>(null)
     val mapViewState: StateFlow<MapViewStateInterface<*>?> = _mapViewState.asStateFlow()
@@ -78,6 +80,12 @@ class BostonBuildingsViewModel(
     private val _area = MutableStateFlow(initArea?.takeIf { it in AREAS.indices } ?: 0)
     val area: StateFlow<Int> = _area.asStateFlow()
 
+    private val _dataset = MutableStateFlow(initDataset ?: Dataset.DOWNTOWN)
+    val dataset: StateFlow<Dataset> = _dataset.asStateFlow()
+
+    private val _loadError = MutableStateFlow<String?>(null)
+    val loadError: StateFlow<String?> = _loadError.asStateFlow()
+
     private val _polygonStates = MutableStateFlow<List<PolygonState>>(emptyList())
     val polygonStates: StateFlow<List<PolygonState>> = _polygonStates.asStateFlow()
 
@@ -92,16 +100,41 @@ class BostonBuildingsViewModel(
 
     private var buildings: List<Building> = emptyList()
     private var states: List<PolygonState> = emptyList()
+    private var loadMillis = 0L
     private var buildMillis = 0L
     private var highlighted: Pair<PolygonState, Color>? = null
 
     init {
+        load()
+    }
+
+    fun setDataset(dataset: Dataset) {
+        if (_dataset.value == dataset) return
+        _dataset.value = dataset
+        load()
+    }
+
+    private fun load() {
+        val dataset = _dataset.value
+        _polygonStates.value = emptyList()
+        _stats.value = null
+        _loadError.value = null
+        highlighted = null
         viewModelScope.launch {
             val started = SystemClock.elapsedRealtime()
-            val loaded = withContext(Dispatchers.IO) { load() }
-            buildings = loaded
-            states = withContext(Dispatchers.Default) { loaded.map(::toState) }
-            buildMillis = SystemClock.elapsedRealtime() - started
+            val loaded =
+                try {
+                    withContext(Dispatchers.IO) { loadBostonData(context, dataset) }
+                } catch (e: Exception) {
+                    _loadError.value = e.message
+                    return@launch
+                }
+            loadMillis = SystemClock.elapsedRealtime() - started
+            _attribution.value = loaded.attribution
+            val built = SystemClock.elapsedRealtime()
+            buildings = loaded.buildings
+            states = withContext(Dispatchers.Default) { loaded.buildings.map { toState(it, dataset) } }
+            buildMillis = SystemClock.elapsedRealtime() - built
             show()
         }
     }
@@ -124,7 +157,8 @@ class BostonBuildingsViewModel(
         val level = _area.value
         val shown = states.filterIndexed { i, _ -> buildings[i].level <= level }
         val vertices = shown.sumOf { state -> state.points.size + state.holes.sumOf { it.size } }
-        _stats.value = BuildingStats(shown.size, vertices, buildMillis)
+        _stats.value = BuildingStats(shown.size, vertices, loadMillis, buildMillis)
+        Log.i(TAP_LOG_TAG, "shown dataset=${_dataset.value} polygons=${shown.size} vertices=$vertices load=$loadMillis build=$buildMillis")
         _polygonStates.value = shown
     }
 
@@ -142,39 +176,21 @@ class BostonBuildingsViewModel(
         Log.i(TAP_LOG_TAG, "seq=$seq id=${building?.id ?: ""} lat=${point?.latitude ?: ""} lng=${point?.longitude ?: ""}")
     }
 
-    private fun toState(building: Building): PolygonState {
+    private fun toState(
+        building: Building,
+        dataset: Dataset,
+    ): PolygonState {
         val rings = building.rings.map(::toPoints)
         return PolygonState(
             points = rings.first(),
             holes = rings.drop(1),
             id = building.id,
-            strokeColor = Color(0xCC44403C),
+            strokeColor = if (dataset == Dataset.CITY_PARCELS) Color(0xCC15803D) else Color(0xCC44403C),
             strokeWidth = 1.dp,
-            fillColor = fillForHeight(building.height),
+            fillColor = if (dataset == Dataset.CITY_PARCELS) Color(0x4022C55E) else fillForHeight(building.height),
             extra = building.id,
             onClick = { event -> onTap(event.state, building) },
         )
-    }
-
-    private fun load(): List<Building> {
-        val json = JSONObject(assets.open(ASSET).bufferedReader().use { it.readText() })
-        _attribution.value = "${json.getString("attribution")} (${json.getString("license")})"
-        val buildings = json.getJSONArray("buildings")
-        return List(buildings.length()) { i ->
-            val building = buildings.getJSONObject(i)
-            val rings = building.getJSONArray("rings")
-            Building(
-                id = building.getString("id"),
-                level = building.getInt("l"),
-                height = if (building.isNull("h")) null else building.getDouble("h"),
-                name = building.optString("n").takeIf { it.isNotEmpty() },
-                rings =
-                    List(rings.length()) { r ->
-                        val ring = rings.getJSONArray(r)
-                        DoubleArray(ring.length()) { ring.getDouble(it) }
-                    },
-            )
-        }
     }
 }
 

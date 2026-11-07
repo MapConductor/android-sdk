@@ -2,6 +2,7 @@ package com.mapconductor.example.pages.polygon.boston
 
 import android.app.Activity
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
@@ -36,9 +37,15 @@ fun BostonBuildingsPage(
         remember {
             val intent = (context as? Activity)?.intent
             BostonBuildingsViewModel(
-                assets = context.assets,
+                context = context.applicationContext,
                 initCamera = intent?.getStringExtra("camera"),
                 initArea = intent?.getStringExtra("area")?.toIntOrNull(),
+                initDataset =
+                    when (intent?.getStringExtra("data")) {
+                        "buildings" -> Dataset.CITY_BUILDINGS
+                        "parcels" -> Dataset.CITY_PARCELS
+                        else -> null
+                    },
             )
         }
 
@@ -50,6 +57,8 @@ fun BostonBuildingsPage(
         val mapViewState = viewModel.mapViewState.collectAsState()
         val states = viewModel.polygonStates.collectAsState()
         val area = viewModel.area.collectAsState()
+        val dataset = viewModel.dataset.collectAsState()
+        val loadError = viewModel.loadError.collectAsState()
         val stats = viewModel.stats.collectAsState()
         val attribution = viewModel.attribution.collectAsState()
         val tap = viewModel.tap.collectAsState()
@@ -64,26 +73,39 @@ fun BostonBuildingsPage(
             }
         }
 
-        Row(
+        Column(
             modifier =
                 Modifier
                     .align(Alignment.TopStart)
                     .padding(top = paddingValues.calculateTopPadding() + 16.dp, start = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            AREAS.forEachIndexed { level, label ->
-                if (level == area.value) {
-                    Button(onClick = {}) { Text(label) }
-                } else {
-                    FilledTonalButton(onClick = { viewModel.setArea(level) }) { Text(label) }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Dataset.entries.forEach { entry ->
+                    if (entry == dataset.value) {
+                        Button(onClick = {}) { Text(entry.label) }
+                    } else {
+                        FilledTonalButton(onClick = { viewModel.setDataset(entry) }) { Text(entry.label) }
+                    }
+                }
+            }
+            if (dataset.value == Dataset.DOWNTOWN) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    AREAS.forEachIndexed { level, label ->
+                        if (level == area.value) {
+                            Button(onClick = {}) { Text(label) }
+                        } else {
+                            FilledTonalButton(onClick = { viewModel.setArea(level) }) { Text(label) }
+                        }
+                    }
                 }
             }
         }
 
         MessageCard(
             title =
-                stats.value?.let { "Boston buildings: ${it.polygons} polygons, ${it.vertices} vertices" }
-                    ?: "Boston buildings",
+                stats.value?.let { "Boston ${dataset.value.label}: ${it.polygons} polygons, ${it.vertices} vertices" }
+                    ?: "Boston ${dataset.value.label}",
             isCardOpen = true,
             maxHeight = 160.dp,
             modifier =
@@ -95,7 +117,8 @@ fun BostonBuildingsPage(
                         end = paddingValues.calculateEndPadding(LayoutDirection.Ltr) + 16.dp,
                     ),
         ) {
-            stats.value?.let { Text("States built in ${it.buildMillis} ms") }
+            loadError.value?.let { Text(it) }
+            stats.value?.let { Text("Loaded in ${it.loadMillis} ms, states built in ${it.buildMillis} ms") }
             tap.value?.let { tap ->
                 val building = tap.building
                 Text(
