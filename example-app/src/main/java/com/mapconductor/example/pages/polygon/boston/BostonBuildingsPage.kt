@@ -30,7 +30,7 @@ fun BostonBuildingsPage(
     onToggleSidebar: () -> Unit = {},
 ) {
     val context = LocalContext.current
-    // `adb shell am start ... --es camera "42.3406,-71.0458,14.3" --es grid 4` opens
+    // `adb shell am start ... --es camera "42.35545,-71.0605,17" --es area 2` opens
     // a fixed view, so a measurement sees the same thing on every provider.
     val viewModel =
         remember {
@@ -38,7 +38,7 @@ fun BostonBuildingsPage(
             BostonBuildingsViewModel(
                 assets = context.assets,
                 initCamera = intent?.getStringExtra("camera"),
-                initGrid = intent?.getStringExtra("grid")?.toIntOrNull(),
+                initArea = intent?.getStringExtra("area")?.toIntOrNull(),
             )
         }
 
@@ -49,15 +49,16 @@ fun BostonBuildingsPage(
     ) { paddingValues ->
         val mapViewState = viewModel.mapViewState.collectAsState()
         val states = viewModel.polygonStates.collectAsState()
-        val grid = viewModel.grid.collectAsState()
+        val area = viewModel.area.collectAsState()
         val stats = viewModel.stats.collectAsState()
         val attribution = viewModel.attribution.collectAsState()
-        val tapped = viewModel.tapped.collectAsState()
+        val tap = viewModel.tap.collectAsState()
 
         mapViewState.value?.let {
             MapViewContainer(
                 state = it,
                 modifier = modifier.padding(paddingValues),
+                onMapClick = viewModel::onMapClick,
             ) {
                 Polygons(states.value)
             }
@@ -70,12 +71,11 @@ fun BostonBuildingsPage(
                     .padding(top = paddingValues.calculateTopPadding() + 16.dp, start = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            GRID_SIZES.forEach { size ->
-                val label = if (size == 1) "×1" else "$size×$size"
-                if (size == grid.value) {
+            AREAS.forEachIndexed { level, label ->
+                if (level == area.value) {
                     Button(onClick = {}) { Text(label) }
                 } else {
-                    FilledTonalButton(onClick = { viewModel.setGrid(size) }) { Text(label) }
+                    FilledTonalButton(onClick = { viewModel.setArea(level) }) { Text(label) }
                 }
             }
         }
@@ -96,7 +96,17 @@ fun BostonBuildingsPage(
                     ),
         ) {
             stats.value?.let { Text("States built in ${it.buildMillis} ms") }
-            tapped.value?.let { Text(if (it.height == null) "Height unknown" else "Height ${it.height} m") }
+            tap.value?.let { tap ->
+                val building = tap.building
+                Text(
+                    if (building == null) {
+                        "No building here"
+                    } else {
+                        val height = building.height?.let { "$it m" } ?: "height unknown"
+                        "${building.name ?: "Building"} · $height · ${building.id.take(8)}"
+                    },
+                )
+            }
             Text(attribution.value, fontSize = 11.sp)
         }
     }
