@@ -49,6 +49,8 @@ data class BuildingStats(
     val buildMillis: Long,
     /** From handing the list to Polygons() until two frames later; null until then. */
     val frameMillis: Long? = null,
+    /** From handing the list to Polygons() until the map had all of it (every onAdded); null until then. */
+    val addedMillis: Long? = null,
 )
 
 /**
@@ -61,7 +63,9 @@ data class BuildingStats(
  * the tap; tapping elsewhere closes it and says nothing was hit. Every tap is
  * also logged under `BostonTap`, which is how the hit testing is checked from
  * outside. Parcels are coloured by land use. A loading overlay shows how far
- * reading, decoding, building the states and drawing have got.
+ * reading, decoding, building the states and drawing have got; it stays up
+ * until every polygon shown has been added to the map ([PolygonState.onAdded]),
+ * not just until the list has been handed over.
  *
  * `camera` ("lat,lng,zoom"), `data` (downtown, buildings or parcels) and `area`
  * (0, 1 or 2) come from the intent extras, so a measurement opens the same view
@@ -111,6 +115,16 @@ class BostonBuildingsViewModel(
 
     private var shownAt = 0L
 
+    /**
+     * Which load the polygons' onAdded belongs to. A callback from an earlier
+     * dataset (its polygons may still be arriving when the next one is picked)
+     * is ignored.
+     */
+    private var generation = 0
+
+    /** How many polygons of this load the map has yet to take in; 0 when nothing is awaited. */
+    private var awaitingAdds = 0
+
     private var buildings: List<Building> = emptyList()
     private var states: List<PolygonState> = emptyList()
     private var loadMillis = 0L
@@ -129,6 +143,8 @@ class BostonBuildingsViewModel(
 
     private fun load() {
         val dataset = _dataset.value
+        val gen = ++generation
+        awaitingAdds = 0
         _polygonStates.value = emptyList()
         _stats.value = null
         _loadError.value = null
@@ -152,9 +168,22 @@ class BostonBuildingsViewModel(
             _progress.value = LoadPhase.Build
             val built = SystemClock.elapsedRealtime()
             buildings = loaded.buildings
-            states = withContext(Dispatchers.Default) { loaded.buildings.map { toState(it, dataset) } }
+            // One callback for the whole load; it knows which load it belongs to.
+            val onAdded: (PolygonState) -> Unit = { onPolygonAdded(gen) }
+            val level = _area.value
+            val (newStates, toAdd) =
+                withContext(Dispatchers.Default) {
+                    val made = loaded.buildings.map { toState(it, dataset, onAdded) }
+                    // The map holds one polygon per id (the downtown data has a duplicate id).
+                    val ids =
+                        loaded.buildings
+                            .filter { it.level <= level }
+                            .mapTo(HashSet()) { it.id }
+                    made to ids.size
+                }
+            states = newStates
             buildMillis = SystemClock.elapsedRealtime() - built
-            show()
+            show(awaitAdds = toAdd)
         }
     }
 
@@ -172,7 +201,8 @@ class BostonBuildingsViewModel(
         onTap(null, null, point)
     }
 
-    private fun show() {
+    /** [awaitAdds]: how many polygons to wait for before the loading overlay goes; 0 for none. */
+    private fun show(awaitAdds: Int = 0) {
         val level = _area.value
         val shown = states.filterIndexed { i, _ -> buildings[i].level <= level }
         val vertices = shown.sumOf { state -> state.points.size + state.holes.sumOf { it.size } }
@@ -183,15 +213,37 @@ class BostonBuildingsViewModel(
         )
         if (_progress.value != null) _progress.value = LoadPhase.Draw
         shownAt = SystemClock.elapsedRealtime()
+        awaitingAdds = awaitAdds
         _polygonStates.value = shown
+        // Nothing to wait for (an area switch, or no polygons): the overlay, if up, can go.
+        if (awaitAdds == 0) _progress.value = null
     }
 
-    /** The page calls this two frames after the list reached Polygons(). */
+    // Runs on the main thread, once per polygon each time the map takes it in.
+    private fun onPolygonAdded(gen: Int) {
+        if (gen != generation || awaitingAdds == 0) return
+        if (--awaitingAdds == 0) onAllAdded()
+    }
+
+    /** Every polygon shown is on the map: tiles handed over or native objects made. */
+    private fun onAllAdded() {
+        val shown = _polygonStates.value
+        if (shown.isEmpty()) return
+        val added = SystemClock.elapsedRealtime() - shownAt
+        _stats.value = _stats.value?.copy(addedMillis = added)
+        _progress.value = null
+        Log.i(TAP_LOG_TAG, "added dataset=${_dataset.value} polygons=${shown.size} added=$added")
+    }
+
+    /**
+     * The page calls this two frames after the list reached Polygons(). The
+     * loading overlay stays up: the map is still taking the polygons in
+     * (see [onAllAdded]).
+     */
     fun onDrawn(states: List<PolygonState>) {
         if (states.isEmpty() || states !== _polygonStates.value) return
         val frame = SystemClock.elapsedRealtime() - shownAt
         _stats.value = _stats.value?.copy(frameMillis = frame)
-        _progress.value = null
         Log.i(TAP_LOG_TAG, "drawn dataset=${_dataset.value} polygons=${states.size} frame=$frame")
     }
 
@@ -215,6 +267,7 @@ class BostonBuildingsViewModel(
     private fun toState(
         building: Building,
         dataset: Dataset,
+        onAdded: (PolygonState) -> Unit,
     ): PolygonState {
         val rings = building.rings.map(::toPoints)
         return PolygonState(
@@ -233,6 +286,7 @@ class BostonBuildingsViewModel(
                 },
             extra = building.id,
             onClick = { event -> onTap(event.state, building, event.clicked) },
+            onAdded = onAdded,
         )
     }
 }
