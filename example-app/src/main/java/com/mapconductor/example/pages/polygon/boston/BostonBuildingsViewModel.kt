@@ -1,8 +1,5 @@
 package com.mapconductor.example.pages.polygon.boston
 
-import android.content.Context
-import android.os.SystemClock
-import android.util.Log
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
@@ -12,6 +9,9 @@ import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewStateInterface
 import com.mapconductor.core.polygon.PolygonState
+import android.content.Context
+import android.os.SystemClock
+import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -31,12 +31,15 @@ class Building(
     val height: Double?,
     val name: String?,
     val rings: List<DoubleArray>,
+    /** A parcel's land use, from the City of Boston's Property Assessment. */
+    val use: LandUse? = null,
 )
 
-/** What the last tap hit: a building, or nothing. */
+/** What the last tap hit: a building, or nothing (`building` null), and where it landed. */
 data class Tap(
     val seq: Int,
     val building: Building?,
+    val point: GeoPoint?,
 )
 
 data class BuildingStats(
@@ -44,6 +47,8 @@ data class BuildingStats(
     val vertices: Int,
     val loadMillis: Long,
     val buildMillis: Long,
+    /** From handing the list to Polygons() until two frames later; null until then. */
+    val frameMillis: Long? = null,
 )
 
 /**
@@ -52,9 +57,11 @@ data class BuildingStats(
  * or the whole city's buildings or parcels (about 100,000 polygons each, see
  * [Dataset]) as a load test.
  *
- * Tapping a building highlights it and names it; tapping elsewhere says nothing
- * was hit. Every tap is also logged under `BostonTap`, which is how the hit
- * testing is checked from outside.
+ * Tapping a polygon highlights it and shows what it carries in an InfoBubble at
+ * the tap; tapping elsewhere closes it and says nothing was hit. Every tap is
+ * also logged under `BostonTap`, which is how the hit testing is checked from
+ * outside. Parcels are coloured by land use. A loading overlay shows how far
+ * reading, decoding, building the states and drawing have got.
  *
  * `camera` ("lat,lng,zoom"), `data` (downtown, buildings or parcels) and `area`
  * (0, 1 or 2) come from the intent extras, so a measurement opens the same view
@@ -98,6 +105,12 @@ class BostonBuildingsViewModel(
     private val _tap = MutableStateFlow<Tap?>(null)
     val tap: StateFlow<Tap?> = _tap.asStateFlow()
 
+    /** Non-null while a dataset is on its way; drives the loading overlay. */
+    private val _progress = MutableStateFlow<LoadPhase?>(null)
+    val progress: StateFlow<LoadPhase?> = _progress.asStateFlow()
+
+    private var shownAt = 0L
+
     private var buildings: List<Building> = emptyList()
     private var states: List<PolygonState> = emptyList()
     private var loadMillis = 0L
@@ -119,18 +132,24 @@ class BostonBuildingsViewModel(
         _polygonStates.value = emptyList()
         _stats.value = null
         _loadError.value = null
+        _tap.value = null
         highlighted = null
+        _progress.value = LoadPhase.Read(0, null)
         viewModelScope.launch {
             val started = SystemClock.elapsedRealtime()
             val loaded =
                 try {
-                    withContext(Dispatchers.IO) { loadBostonData(context, dataset) }
+                    withContext(Dispatchers.IO) {
+                        loadBostonData(context, dataset) { phase -> _progress.value = phase }
+                    }
                 } catch (e: Exception) {
+                    _progress.value = null
                     _loadError.value = e.message
                     return@launch
                 }
             loadMillis = SystemClock.elapsedRealtime() - started
             _attribution.value = loaded.attribution
+            _progress.value = LoadPhase.Build
             val built = SystemClock.elapsedRealtime()
             buildings = loaded.buildings
             states = withContext(Dispatchers.Default) { loaded.buildings.map { toState(it, dataset) } }
@@ -158,8 +177,22 @@ class BostonBuildingsViewModel(
         val shown = states.filterIndexed { i, _ -> buildings[i].level <= level }
         val vertices = shown.sumOf { state -> state.points.size + state.holes.sumOf { it.size } }
         _stats.value = BuildingStats(shown.size, vertices, loadMillis, buildMillis)
-        Log.i(TAP_LOG_TAG, "shown dataset=${_dataset.value} polygons=${shown.size} vertices=$vertices load=$loadMillis build=$buildMillis")
+        Log.i(
+            TAP_LOG_TAG,
+            "shown dataset=${_dataset.value} polygons=${shown.size} vertices=$vertices load=$loadMillis build=$buildMillis",
+        )
+        if (_progress.value != null) _progress.value = LoadPhase.Draw
+        shownAt = SystemClock.elapsedRealtime()
         _polygonStates.value = shown
+    }
+
+    /** The page calls this two frames after the list reached Polygons(). */
+    fun onDrawn(states: List<PolygonState>) {
+        if (states.isEmpty() || states !== _polygonStates.value) return
+        val frame = SystemClock.elapsedRealtime() - shownAt
+        _stats.value = _stats.value?.copy(frameMillis = frame)
+        _progress.value = null
+        Log.i(TAP_LOG_TAG, "drawn dataset=${_dataset.value} polygons=${states.size} frame=$frame")
     }
 
     // Moves the highlight to `state` (or clears it) and records the tap.
@@ -172,8 +205,11 @@ class BostonBuildingsViewModel(
         highlighted = state?.let { it to it.fillColor }
         state?.fillColor = TAPPED
         val seq = (_tap.value?.seq ?: 0) + 1
-        _tap.value = Tap(seq, building)
-        Log.i(TAP_LOG_TAG, "seq=$seq id=${building?.id ?: ""} lat=${point?.latitude ?: ""} lng=${point?.longitude ?: ""}")
+        _tap.value = Tap(seq, building, point?.let { GeoPoint(it.latitude, it.longitude) })
+        Log.i(
+            TAP_LOG_TAG,
+            "seq=$seq id=${building?.id ?: ""} lat=${point?.latitude ?: ""} lng=${point?.longitude ?: ""}",
+        )
     }
 
     private fun toState(
@@ -185,16 +221,26 @@ class BostonBuildingsViewModel(
             points = rings.first(),
             holes = rings.drop(1),
             id = building.id,
-            strokeColor = if (dataset == Dataset.CITY_PARCELS) Color(0xCC15803D) else Color(0xCC44403C),
+            strokeColor = if (dataset == Dataset.CITY_PARCELS) Color(0xB3475569) else Color(0xCC44403C),
             strokeWidth = 1.dp,
-            fillColor = if (dataset == Dataset.CITY_PARCELS) Color(0x4022C55E) else fillForHeight(building.height),
+            fillColor =
+                if (dataset ==
+                    Dataset.CITY_PARCELS
+                ) {
+                    LandUse.of(building.use?.key).fill
+                } else {
+                    fillForHeight(building.height)
+                },
             extra = building.id,
-            onClick = { event -> onTap(event.state, building) },
+            onClick = { event -> onTap(event.state, building, event.clicked) },
         )
     }
 }
 
-private fun toPoints(ring: DoubleArray): List<GeoPoint> = List(ring.size / 2) { GeoPoint(ring[it * 2 + 1], ring[it * 2]) }
+private fun toPoints(ring: DoubleArray): List<GeoPoint> =
+    List(ring.size / 2) {
+        GeoPoint(ring[it * 2 + 1], ring[it * 2])
+    }
 
 // Darker for taller buildings; grey when the height is unknown.
 private fun fillForHeight(height: Double?): Color =

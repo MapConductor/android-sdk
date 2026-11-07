@@ -1,6 +1,5 @@
 package com.mapconductor.example.pages.polygon.boston
 
-import android.app.Activity
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,19 +10,24 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.mapconductor.compose.info.InfoBubble
 import com.mapconductor.compose.polygon.Polygons
 import com.mapconductor.example.MapViewContainer
 import com.mapconductor.example.ui.DefaultMapViewItems
 import com.mapconductor.example.ui.DemoMapPageScaffold
 import com.mapconductor.example.ui.MessageCard
+import android.app.Activity
 
 @Composable
 fun BostonBuildingsPage(
@@ -62,6 +66,15 @@ fun BostonBuildingsPage(
         val stats = viewModel.stats.collectAsState()
         val attribution = viewModel.attribution.collectAsState()
         val tap = viewModel.tap.collectAsState()
+        val progress = viewModel.progress.collectAsState()
+
+        // Two frames after the list reaches Polygons(): the polygons are registered with the map by then.
+        LaunchedEffect(states.value) {
+            val shown = states.value
+            withFrameNanos {}
+            withFrameNanos {}
+            viewModel.onDrawn(shown)
+        }
 
         mapViewState.value?.let {
             MapViewContainer(
@@ -70,8 +83,18 @@ fun BostonBuildingsPage(
                 onMapClick = viewModel::onMapClick,
             ) {
                 Polygons(states.value)
+                val shownTap = tap.value
+                val building = shownTap?.building
+                val point = shownTap?.point
+                if (building != null && point != null) {
+                    InfoBubble(position = point, borderWidth = 1.dp, borderColor = Color(0x33000000)) {
+                        PolygonInfo(building)
+                    }
+                }
             }
         }
+
+        progress.value?.let { LoadingOverlay(it, modifier = Modifier.padding(paddingValues)) }
 
         Column(
             modifier =
@@ -107,7 +130,7 @@ fun BostonBuildingsPage(
                 stats.value?.let { "Boston ${dataset.value.label}: ${it.polygons} polygons, ${it.vertices} vertices" }
                     ?: "Boston ${dataset.value.label}",
             isCardOpen = true,
-            maxHeight = 160.dp,
+            maxHeight = 260.dp,
             modifier =
                 Modifier
                     .align(Alignment.BottomStart)
@@ -118,15 +141,22 @@ fun BostonBuildingsPage(
                     ),
         ) {
             loadError.value?.let { Text(it) }
-            stats.value?.let { Text("Loaded in ${it.loadMillis} ms, states built in ${it.buildMillis} ms") }
+            if (dataset.value == Dataset.CITY_PARCELS) LandUseLegend(modifier = Modifier.padding(vertical = 4.dp))
+            stats.value?.let {
+                val frame = it.frameMillis?.let { ms -> ", next frame $ms ms" } ?: ""
+                Text("Load ${it.loadMillis} ms, states ${it.buildMillis} ms$frame")
+            }
             tap.value?.let { tap ->
                 val building = tap.building
+                val use = building?.use
                 Text(
-                    if (building == null) {
-                        "No building here"
-                    } else {
-                        val height = building.height?.let { "$it m" } ?: "height unknown"
-                        "${building.name ?: "Building"} · $height · ${building.id.take(8)}"
+                    when {
+                        building == null -> "No building here"
+                        use != null -> "${building.name} · ${use.label}"
+                        else -> {
+                            val height = building.height?.let { "$it m" } ?: "height unknown"
+                            "${building.name ?: "Building"} · $height · ${building.id.take(8)}"
+                        }
                     },
                 )
             }
