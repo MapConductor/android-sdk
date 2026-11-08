@@ -122,8 +122,29 @@ class BostonBuildingsViewModel(
      */
     private var generation = 0
 
-    /** How many polygons of this load the map has yet to take in; 0 when nothing is awaited. */
-    private var awaitingAdds = 0
+    /**
+     * Which ids of this load have reached the map, from their states' onAdded.
+     * The loading overlay stays up until every id of the list now handed to the
+     * map is here. By id, not by state: the map keeps one polygon per id, and
+     * the downtown data lists three buildings twice.
+     *
+     * An id stays recorded when its building leaves the list (the area shrank).
+     * The SDK calls onAdded again only for a polygon it saw leave, and a list
+     * replaced before the SDK got to it is never seen: forgetting the id there
+     * left the overlay up for good when the area was switched mid-load. So the
+     * count is redone against each new list ([show]), and an id already on the
+     * map counts for it.
+     */
+    private var addedIds = HashSet<String>()
+
+    /** The distinct ids of the list now handed to the map. */
+    private var listIds: Set<String> = emptySet()
+
+    /** How many of [listIds] are in [addedIds]. */
+    private var onMapCount = 0
+
+    /** True from handing this load's first list to the map until all of it is there. */
+    private var waitingForAdds = false
 
     private var buildings: List<Building> = emptyList()
     private var states: List<PolygonState> = emptyList()
@@ -144,7 +165,14 @@ class BostonBuildingsViewModel(
     private fun load() {
         val dataset = _dataset.value
         val gen = ++generation
-        awaitingAdds = 0
+        addedIds = HashSet()
+        listIds = emptySet()
+        onMapCount = 0
+        waitingForAdds = false
+        // Until this load's states are built there is nothing to show; an area
+        // switch meanwhile only records the area (see [setArea]).
+        buildings = emptyList()
+        states = emptyList()
         _polygonStates.value = emptyList()
         _stats.value = null
         _loadError.value = null
@@ -167,23 +195,19 @@ class BostonBuildingsViewModel(
             _attribution.value = loaded.attribution
             _progress.value = LoadPhase.Build
             val built = SystemClock.elapsedRealtime()
-            buildings = loaded.buildings
             // One callback for the whole load; it knows which load it belongs to.
-            val onAdded: (PolygonState) -> Unit = { onPolygonAdded(gen) }
-            val level = _area.value
-            val (newStates, toAdd) =
+            val onAdded: (PolygonState) -> Unit = { state -> onPolygonAdded(gen, state.id) }
+            val newStates =
                 withContext(Dispatchers.Default) {
-                    val made = loaded.buildings.map { toState(it, dataset, onAdded) }
-                    // The map holds one polygon per id (the downtown data has a duplicate id).
-                    val ids =
-                        loaded.buildings
-                            .filter { it.level <= level }
-                            .mapTo(HashSet()) { it.id }
-                    made to ids.size
+                    loaded.buildings.map { toState(it, dataset, onAdded) }
                 }
+            // A newer load started meanwhile; its states are the ones to show.
+            if (gen != generation) return@launch
+            buildings = loaded.buildings
             states = newStates
             buildMillis = SystemClock.elapsedRealtime() - built
-            show(awaitAdds = toAdd)
+            waitingForAdds = true
+            show()
         }
     }
 
@@ -201,8 +225,15 @@ class BostonBuildingsViewModel(
         onTap(null, null, point)
     }
 
-    /** [awaitAdds]: how many polygons to wait for before the loading overlay goes; 0 for none. */
-    private fun show(awaitAdds: Int = 0) {
+    /**
+     * Hands the area's polygons to the map. While this load waits for its
+     * polygons ([waitingForAdds]) the loading overlay stays up until every id of
+     * this list has reported onAdded, whichever list it first arrived for.
+     */
+    private fun show() {
+        // An area switch while the dataset is still being read or built: the
+        // load shows the area picked by then.
+        if (states.isEmpty()) return
         val level = _area.value
         val shown = states.filterIndexed { i, _ -> buildings[i].level <= level }
         val vertices = shown.sumOf { state -> state.points.size + state.holes.sumOf { it.size } }
@@ -211,27 +242,40 @@ class BostonBuildingsViewModel(
             TAP_LOG_TAG,
             "shown dataset=${_dataset.value} polygons=${shown.size} vertices=$vertices load=$loadMillis build=$buildMillis",
         )
-        if (_progress.value != null) _progress.value = LoadPhase.Draw
         shownAt = SystemClock.elapsedRealtime()
-        awaitingAdds = awaitAdds
+        // Counted against the new list from here on.
+        listIds = shown.mapTo(HashSet()) { it.id }
+        onMapCount = listIds.count { it in addedIds }
+        if (waitingForAdds && _progress.value != null) _progress.value = LoadPhase.Draw
         _polygonStates.value = shown
-        // Nothing to wait for (an area switch, or no polygons): the overlay, if up, can go.
-        if (awaitAdds == 0) _progress.value = null
+        finishIfAllAdded()
     }
 
     // Runs on the main thread, once per polygon each time the map takes it in.
-    private fun onPolygonAdded(gen: Int) {
-        if (gen != generation || awaitingAdds == 0) return
-        if (--awaitingAdds == 0) onAllAdded()
+    private fun onPolygonAdded(
+        gen: Int,
+        id: String,
+    ) {
+        if (gen != generation || !addedIds.add(id)) return
+        // A building of a list since replaced: on the map, but not one waited for now.
+        if (id !in listIds) return
+        onMapCount++
+        finishIfAllAdded()
+    }
+
+    private fun finishIfAllAdded() {
+        if (!waitingForAdds || onMapCount < listIds.size) return
+        waitingForAdds = false
+        onAllAdded()
     }
 
     /** Every polygon shown is on the map: tiles handed over or native objects made. */
     private fun onAllAdded() {
         val shown = _polygonStates.value
+        _progress.value = null
         if (shown.isEmpty()) return
         val added = SystemClock.elapsedRealtime() - shownAt
         _stats.value = _stats.value?.copy(addedMillis = added)
-        _progress.value = null
         Log.i(TAP_LOG_TAG, "added dataset=${_dataset.value} polygons=${shown.size} added=$added")
     }
 
