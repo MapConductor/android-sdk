@@ -4,7 +4,6 @@ import androidx.compose.ui.graphics.Color
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.spherical.Spherical
 import java.io.ByteArrayOutputStream
-import java.io.File
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import android.content.Context
@@ -12,20 +11,19 @@ import android.content.Context
 /**
  * The polygons the Boston page draws.
  *
- * - [DOWNTOWN]: Overture building footprints of downtown in three nested areas,
- *   bundled (assets).
- * - [CITY_BUILDINGS] / [CITY_PARCELS]: the whole city. Those files are too large
- *   for the APK; push them to the app's external files directory:
- *   `adb push boston-city-parcels.bin /sdcard/Android/data/com.mapconductor.example/files/boston/`
+ * - [DOWNTOWN]: Overture building footprints of downtown in three nested areas.
+ * - [CITY_BUILDINGS] / [CITY_PARCELS]: the whole city: Overture buildings, and
+ *   Analyze Boston Parcels 2025 joined with the FY2026 Property Assessment land use.
  *
- * They are built from the official sources (Overture buildings, Analyze Boston
- * Parcels 2025 joined with the FY2026 Property Assessment land use) and are not
- * committed. The files carry no ids: this is a polygon demo, and a polygon's id
- * on the map is its index in the file.
+ * All three are bundled (assets/boston). The React sample's
+ * `examples/basic/tools/boston/` builds them from the official sources (see its
+ * README). The files carry no ids: this is a polygon demo, and a polygon's id on
+ * the map is its index in the file.
  *
  * The binary layout is the same as the React sample's (bostonData.ts), MCPG v2:
- *   'MCPG' u32 version=2 u32 count u8 fields   (little-endian)
+ *   'MCPG' u32 version=2 u32 count u8 fields u8 digits   (little-endian)
  *     fields: 1 = height, 2 = land use, 4 = area, 8 = name (what the file carries)
+ *     digits: coordinates are integers of 10^-digits degree (buildings 6, parcels 5)
  *   per polygon, only the fields present, in this order:
  *     height    varint, 0 = unknown, else the height in 0.1 m plus 1
  *     land use  u8, the index in [LandUse] (family … unknown)
@@ -33,23 +31,21 @@ import android.content.Context
  *     name      varint byte length (0 = none), UTF-8
  *     varint ringCount, per ring: varint n, n x (svarint dLat, svarint dLng)
  *   varint is LEB128 (7 bits at a time, low first); svarint is a zigzag varint.
- *   Coordinates are 1e-6 degree integers, each the difference from the previous
- *   vertex across the whole file. A ring's closing vertex (the same as its first)
+ *   Coordinates are integers of 10^-digits degree, each the difference from the
+ *   previous vertex across the whole file. A ring's closing vertex (the same as its first)
  *   is not stored: n counts the others, and the reader closes the ring again.
  */
 enum class Dataset(
     val label: String,
+    /** The file in assets. */
     val file: String,
-    /** Whether [file] is bundled (assets) or pushed to the external files directory. */
-    val bundled: Boolean,
     val attribution: String,
 ) {
-    DOWNTOWN("Downtown", "boston/boston-downtown.bin", true, OVERTURE_ATTRIBUTION),
-    CITY_BUILDINGS("City buildings", "boston/boston-city-buildings.bin", false, OVERTURE_ATTRIBUTION),
+    DOWNTOWN("Downtown", "boston/boston-downtown.bin", OVERTURE_ATTRIBUTION),
+    CITY_BUILDINGS("City buildings", "boston/boston-city-buildings.bin", OVERTURE_ATTRIBUTION),
     CITY_PARCELS(
         "City parcels",
         "boston/boston-city-parcels.bin",
-        false,
         "City of Boston, Parcels 2025 and FY2026 Property Assessment (Analyze Boston) (ODC PDDL)",
     ),
 }
@@ -101,15 +97,9 @@ fun loadBostonData(
     dataset: Dataset,
     onProgress: (LoadPhase) -> Unit = {},
 ): BostonData {
-    val bytes =
-        if (dataset.bundled) {
-            val length = runCatching { context.assets.openFd(dataset.file).use { it.length } }.getOrNull()
-            readWithProgress(context.assets.open(dataset.file), length, onProgress)
-        } else {
-            val path = File(context.getExternalFilesDir(null), dataset.file)
-            require(path.exists()) { "Missing ${path.path}; push it with adb (see BostonData.kt)" }
-            readWithProgress(path.inputStream(), path.length(), onProgress)
-        }
+    // openFd works only on an uncompressed asset; without it the progress has no total.
+    val length = runCatching { context.assets.openFd(dataset.file).use { it.length } }.getOrNull()
+    val bytes = readWithProgress(context.assets.open(dataset.file), length, onProgress)
     onProgress(LoadPhase.Decode)
     return BostonData(dataset.attribution, decodeMcpg(bytes, dataset.name.lowercase()))
 }
@@ -149,7 +139,8 @@ internal fun decodeMcpg(
     require(magic == "MCPG" && header.getInt(4) == 2) { "not an MCPG v2 file" }
     val count = header.getInt(8)
     val fields = bytes[12].toInt() and 0xFF
-    var offset = 13
+    val scale = Math.pow(10.0, (bytes[13].toInt() and 0xFF).toDouble())
+    var offset = 14
 
     fun varint(): Int {
         var value = 0
@@ -190,8 +181,8 @@ internal fun decodeMcpg(
                 for (v in 0 until n) {
                     lat += svarint()
                     lng += svarint()
-                    ring[v * 2] = lng / 1e6
-                    ring[v * 2 + 1] = lat / 1e6
+                    ring[v * 2] = lng / scale
+                    ring[v * 2 + 1] = lat / scale
                 }
                 ring[n * 2] = ring[0]
                 ring[n * 2 + 1] = ring[1]

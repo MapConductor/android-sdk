@@ -3,23 +3,41 @@ package com.mapconductor.example.pages.polygon.boston
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
 
 class BostonDataTest {
     /**
      * Two polygons with every field (fields = 15), written by the generator
-     * (pack.py write_v2). The same bytes are decoded by the React and iOS tests.
+     * (the React sample's tools/boston/fixture.py): the same polygons at 1e-6 and
+     * at 1e-5 degree. The same bytes are decoded by the React and iOS tests.
      */
     private val fixture =
-        (
-            "4d43504702000000020000000f7c020109436166c3a920e298950204f4abb228a7b0e24300d00fd00f0000cf0f03db0bd804" +
-                "d8040000a006000802000103ffea068ff40414142700"
-        ).chunked(2).map { it.toInt(16).toByte() }.toByteArray()
+        hex(
+            "4d43504702000000020000000f067c020109436166c3a920e298950204f4abb228a7b0e24300d00fd00f0000cf0f03db0bd804" +
+                "d8040000a006000802000103ffea068ff40414142700",
+        )
+    private val fixture5 =
+        hex(
+            "4d43504702000000020000000f057c020109436166c3a920e298950204b284850483b8e30600c801c8010000c7010395013c3c" +
+                "000050000802000103bf57e73e02020300",
+        )
+
+    private fun hex(text: String) = text.chunked(2).map { it.toInt(16).toByte() }.toByteArray()
 
     @Test
     fun `decodes every field and closes each ring again`() {
-        val polygons = decodeMcpg(fixture, "t")
+        assertDecodesEveryField(fixture)
+    }
+
+    @Test
+    fun `decodes every field at 1e-5 degree`() {
+        assertDecodesEveryField(fixture5)
+    }
+
+    private fun assertDecodesEveryField(bytes: ByteArray) {
+        val polygons = decodeMcpg(bytes, "t")
         assertEquals(2, polygons.size)
 
         val first = polygons[0]
@@ -70,6 +88,25 @@ class BostonDataTest {
         assertEquals(2, first.level)
         assertArrayEquals(doubleArrayOf(-71.076105, 42.373684), first.rings[0].copyOfRange(0, 2), 1e-9)
         assertArrayEquals(first.rings[0].copyOfRange(0, 2), first.rings[0].copyOfRange(16, 18), 0.0)
+    }
+
+    @Test
+    fun `the bundled city buildings file has every building, at 1e-6 degree`() {
+        val bytes = File("src/main/assets/boston/boston-city-buildings.bin").readBytes()
+        assertEquals(6, bytes[13].toInt())
+        val polygons = decodeMcpg(bytes, "buildings")
+        assertEquals(105599, polygons.size)
+        assertEquals(722875, polygons.sumOf { b -> b.rings.sumOf { it.size / 2 } })
+    }
+
+    @Test
+    fun `the bundled city parcels file has every parcel with a land use, at 1e-5 degree`() {
+        val bytes = File("src/main/assets/boston/boston-city-parcels.bin").readBytes()
+        assertEquals(5, bytes[13].toInt())
+        val polygons = decodeMcpg(bytes, "parcels")
+        assertEquals(98815, polygons.size)
+        assertEquals(774844, polygons.sumOf { b -> b.rings.sumOf { it.size / 2 } })
+        assertTrue(polygons.all { b -> b.use != null && b.rings.all { it.size >= 8 } })
     }
 
     @Test
