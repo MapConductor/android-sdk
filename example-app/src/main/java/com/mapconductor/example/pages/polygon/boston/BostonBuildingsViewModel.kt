@@ -33,6 +33,8 @@ class Building(
     val rings: List<DoubleArray>,
     /** A parcel's land use, from the City of Boston's Property Assessment. */
     val use: LandUse? = null,
+    /** A road's class (the roads file): the index in [com.mapconductor.example.pages.polyline.boston.RoadClass]. */
+    val roadClass: Int? = null,
 )
 
 /** What the last tap hit: a building, or nothing (`building` null), and where it landed. */

@@ -22,18 +22,22 @@ import android.content.Context
  *
  * The binary layout is the same as the React sample's (bostonData.ts), MCPG v2:
  *   'MCPG' u32 version=2 u32 count u8 fields u8 digits   (little-endian)
- *     fields: 1 = height, 2 = land use, 4 = area, 8 = name (what the file carries)
+ *     fields: 1 = height, 2 = land use, 4 = area, 8 = name, 16 = road class (what the file carries),
+ *             32 = lines: the shapes are polylines, not polygons (the roads file, see BostonRoadsData)
  *     digits: coordinates are integers of 10^-digits degree (buildings 6, parcels 5)
  *   per polygon, only the fields present, in this order:
  *     height    varint, 0 = unknown, else the height in 0.1 m plus 1
  *     land use  u8, the index in [LandUse] (family … unknown)
  *     area      u8, the smallest downtown area (0, 1 or 2) the building fits in
  *     name      varint byte length (0 = none), UTF-8
+ *     road class u8, the index in RoadClass (highway … path)
  *     varint ringCount, per ring: varint n, n x (svarint dLat, svarint dLng)
  *   varint is LEB128 (7 bits at a time, low first); svarint is a zigzag varint.
  *   Coordinates are integers of 10^-digits degree, each the difference from the
  *   previous vertex across the whole file. A ring's closing vertex (the same as its first)
  *   is not stored: n counts the others, and the reader closes the ring again.
+ *   With the lines bit a "ring" is an open polyline: every vertex is stored and
+ *   the reader does not close it.
  */
 enum class Dataset(
     val label: String,
@@ -128,8 +132,10 @@ private const val FIELD_HEIGHT = 1
 private const val FIELD_USE = 2
 private const val FIELD_AREA = 4
 private const val FIELD_NAME = 8
+private const val FIELD_CLASS = 16
+private const val FIELD_LINES = 32
 
-/** Decodes an MCPG v2 file (see the top of this file); polygon `i` gets the id "<idPrefix>-<i>". */
+/** Decodes an MCPG v2 file (see the top of this file); shape `i` gets the id "<idPrefix>-<i>". */
 internal fun decodeMcpg(
     bytes: ByteArray,
     idPrefix: String,
@@ -141,6 +147,7 @@ internal fun decodeMcpg(
     val fields = bytes[12].toInt() and 0xFF
     val scale = Math.pow(10.0, (bytes[13].toInt() and 0xFF).toDouble())
     var offset = 14
+    val lines = (fields and FIELD_LINES) != 0
 
     fun varint(): Int {
         var value = 0
@@ -165,6 +172,7 @@ internal fun decodeMcpg(
         var use: LandUse? = null
         var level = 0
         var name: String? = null
+        var roadClass: Int? = null
         if ((fields and FIELD_HEIGHT) != 0) height = varint().takeIf { it > 0 }?.let { (it - 1) / 10.0 }
         if ((fields and FIELD_USE) != 0) use = LandUse.entries[bytes[offset++].toInt() and 0xFF]
         if ((fields and FIELD_AREA) != 0) level = bytes[offset++].toInt() and 0xFF
@@ -173,22 +181,25 @@ internal fun decodeMcpg(
             if (length > 0) name = String(bytes, offset, length, Charsets.UTF_8)
             offset += length
         }
+        if ((fields and FIELD_CLASS) != 0) roadClass = bytes[offset++].toInt() and 0xFF
         val rings =
             List(varint()) {
                 val n = varint()
-                // The closing vertex is not stored; it is the first one again.
-                val ring = DoubleArray((n + 1) * 2)
+                // The closing vertex is not stored; it is the first one again. A line is open.
+                val ring = DoubleArray((if (lines) n else n + 1) * 2)
                 for (v in 0 until n) {
                     lat += svarint()
                     lng += svarint()
                     ring[v * 2] = lng / scale
                     ring[v * 2 + 1] = lat / scale
                 }
-                ring[n * 2] = ring[0]
-                ring[n * 2 + 1] = ring[1]
+                if (!lines) {
+                    ring[n * 2] = ring[0]
+                    ring[n * 2 + 1] = ring[1]
+                }
                 ring
             }
-        Building(id = "$idPrefix-$i", level = level, height = height, name = name, rings = rings, use = use)
+        Building(id = "$idPrefix-$i", level = level, height = height, name = name, rings = rings, use = use, roadClass = roadClass)
     }
 }
 

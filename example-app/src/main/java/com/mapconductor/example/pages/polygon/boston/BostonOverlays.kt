@@ -54,6 +54,8 @@ private const val MB = 1024.0 * 1024.0
 fun LoadingOverlay(
     phase: LoadPhase,
     modifier: Modifier = Modifier,
+    /** What is loading, for the text: "polygons" or "roads". */
+    shapes: String = "polygons",
 ) {
     var fraction: Float? = null
     val text =
@@ -68,8 +70,8 @@ fun LoadingOverlay(
                     "Loading data… $loaded MB"
                 }
             }
-            LoadPhase.Decode -> "Reading the polygons…"
-            LoadPhase.Build -> "Preparing the polygons…"
+            LoadPhase.Decode -> "Reading the $shapes…"
+            LoadPhase.Build -> "Preparing the $shapes…"
             LoadPhase.Draw -> "Drawing the map…"
         }
     Box(
