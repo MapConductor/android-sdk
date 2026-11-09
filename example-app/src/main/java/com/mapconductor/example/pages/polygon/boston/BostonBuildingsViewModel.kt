@@ -125,8 +125,7 @@ class BostonBuildingsViewModel(
     /**
      * Which ids of this load have reached the map, from their states' onAdded.
      * The loading overlay stays up until every id of the list now handed to the
-     * map is here. By id, not by state: the map keeps one polygon per id, and
-     * the downtown data lists three buildings twice.
+     * map is here.
      *
      * An id stays recorded when its building leaves the list (the area shrank).
      * The SDK calls onAdded again only for a polygon it saw leave, and a list
@@ -324,7 +323,7 @@ class BostonBuildingsViewModel(
                 if (dataset ==
                     Dataset.CITY_PARCELS
                 ) {
-                    LandUse.of(building.use?.key).fill
+                    (building.use ?: LandUse.UNKNOWN).fill
                 } else {
                     fillForHeight(building.height)
                 },

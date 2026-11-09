@@ -156,10 +156,10 @@ fun BostonBuildingsPage(
                 Text(
                     when {
                         building == null -> "No building here"
-                        use != null -> "${building.name} · ${use.label}"
+                        use != null -> "Parcel · ${use.label} · ${formatArea(areaSquareMetres(building))}"
                         else -> {
                             val height = building.height?.let { "$it m" } ?: "height unknown"
-                            "${building.name ?: "Building"} · $height · ${building.id.take(8)}"
+                            "${building.name ?: "Building"} · $height · ${formatArea(areaSquareMetres(building))}"
                         }
                     },
                 )

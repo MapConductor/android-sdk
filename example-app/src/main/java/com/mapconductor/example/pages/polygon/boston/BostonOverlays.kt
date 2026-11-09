@@ -102,13 +102,12 @@ fun PolygonInfo(building: Building) {
     val rows = mutableListOf<Pair<String, String>>()
     val use = building.use
     if (use != null) {
-        rows += "Parcel" to (building.name?.removePrefix("Parcel ") ?: "—")
         rows += "Land use" to use.label
     } else {
         building.name?.let { rows += "Name" to it }
         rows += "Height" to (building.height?.let { "$it m" } ?: "unknown")
-        rows += "Overture ID" to if (building.id.length > 13) "${building.id.take(13)}…" else building.id
     }
+    rows += "Area" to formatArea(areaSquareMetres(building))
     val vertices = building.rings.sumOf { it.size / 2 }
     rows += "Vertices" to (if (building.rings.size > 1) "$vertices (holes ${building.rings.size - 1})" else "$vertices")
     Column {
@@ -126,3 +125,11 @@ fun PolygonInfo(building: Building) {
         }
     }
 }
+
+/** "1,234 m²", or hectares from 10,000 m² up. */
+fun formatArea(squareMetres: Double): String =
+    if (squareMetres >= 10_000) {
+        String.format(Locale.US, "%.2f ha", squareMetres / 10_000)
+    } else {
+        String.format(Locale.US, "%,.0f m²", squareMetres)
+    }
