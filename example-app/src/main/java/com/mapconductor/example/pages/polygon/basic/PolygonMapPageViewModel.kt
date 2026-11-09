@@ -1,7 +1,6 @@
 package com.mapconductor.example.pages.polygon.basic
 
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
@@ -38,9 +37,11 @@ class PolygonMapPageViewModel :
     private val _mapViewState = MutableStateFlow<MapViewStateInterface<*>?>(null)
     override val mapViewState: StateFlow<MapViewStateInterface<*>?> = _mapViewState.asStateFlow()
 
-    // Polygon vertices
-    private val polygonVertices =
-        mutableStateListOf(
+    // Polygon vertices. Kept as a read-only list and replaced as a whole on every
+    // drag: PolygonState only hears assignments to its fields, so editing a list
+    // it already holds in place would never reach the map.
+    private var polygonVertices: List<GeoPoint> =
+        listOf(
             GeoPoint(41.79883, 140.75675),
             GeoPoint(41.799240000000005, 140.75875000000002),
             GeoPoint(41.797650000000004, 140.75905),
@@ -61,8 +62,30 @@ class PolygonMapPageViewModel :
             zoom = 16.0,
         )
 
-    override var fillOpacity by mutableStateOf(0.3f)
-    override var strokeWidth by mutableStateOf(3.0.dp)
+    private var fillOpacityValue by mutableStateOf(0.3f)
+
+    override var fillOpacity: Float
+        get() = fillOpacityValue
+        set(value) {
+            fillOpacityValue = value
+            polygonState.fillColor = fillColorFor(value)
+        }
+
+    override var strokeWidth: Dp
+        get() = polygonState.strokeWidth
+        set(value) {
+            polygonState.strokeWidth = value
+        }
+
+    override val polygonState =
+        PolygonState(
+            points = polygonVertices,
+            id = "example_polygon",
+            strokeColor = Color.Red,
+            strokeWidth = 3.0.dp,
+            fillColor = fillColorFor(fillOpacityValue),
+            geodesic = false,
+        )
 
     override val polygonVertexMarkers: List<MarkerState> =
         polygonVertices.mapIndexed { index, point ->
@@ -81,26 +104,20 @@ class PolygonMapPageViewModel :
             )
         }
 
-    override val polygonState: PolygonState
-        get() =
-            PolygonState(
-                points = polygonVertices,
-                id = "example_polygon",
-                strokeColor = Color.Red,
-                strokeWidth = strokeWidth,
-                fillColor = Color.Blue.copy(alpha = fillOpacity),
-                geodesic = false,
-            )
-
     override fun onMapViewChanged(state: MapViewStateInterface<*>) {
         _mapViewState.value = state
     }
 
     override fun onMarkerDrag(dragged: MarkerState) {
         (dragged.extra as? Int)?.let { index ->
-            if (index >= 0 && index < polygonVertices.size) {
-                polygonVertices[index] = GeoPoint.from(dragged.position)
-            }
+            if (index !in polygonVertices.indices) return
+            polygonVertices =
+                polygonVertices.mapIndexed { i, point ->
+                    if (i == index) GeoPoint.from(dragged.position) else point
+                }
+            polygonState.points = polygonVertices
         }
     }
+
+    private fun fillColorFor(opacity: Float): Color = Color.Blue.copy(alpha = opacity)
 }
