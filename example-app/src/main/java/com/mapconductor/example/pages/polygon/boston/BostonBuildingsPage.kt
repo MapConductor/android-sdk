@@ -69,7 +69,7 @@ fun BostonBuildingsPage(
         val tap = viewModel.tap.collectAsState()
         val progress = viewModel.progress.collectAsState()
 
-        // Two frames after the list reaches Polygons(): the polygons are registered with the map by then.
+        // Two frames after the list reaches Polygons(), for the stats. The loading overlay waits for onAdded.
         LaunchedEffect(states.value) {
             val shown = states.value
             withFrameNanos {}
@@ -147,7 +147,8 @@ fun BostonBuildingsPage(
             if (dataset.value == Dataset.CITY_PARCELS) LandUseLegend(modifier = Modifier.padding(vertical = 4.dp))
             stats.value?.let {
                 val frame = it.frameMillis?.let { ms -> ", next frame $ms ms" } ?: ""
-                Text("Load ${it.loadMillis} ms, states ${it.buildMillis} ms$frame")
+                val added = it.addedMillis?.let { ms -> ", on the map $ms ms" } ?: ""
+                Text("Load ${it.loadMillis} ms, states ${it.buildMillis} ms$frame$added")
             }
             tap.value?.let { tap ->
                 val building = tap.building
@@ -155,10 +156,10 @@ fun BostonBuildingsPage(
                 Text(
                     when {
                         building == null -> "No building here"
-                        use != null -> "${building.name} · ${use.label}"
+                        use != null -> "Parcel · ${use.label} · ${formatArea(areaSquareMetres(building))}"
                         else -> {
                             val height = building.height?.let { "$it m" } ?: "height unknown"
-                            "${building.name ?: "Building"} · $height · ${building.id.take(8)}"
+                            "${building.name ?: "Building"} · $height · ${formatArea(areaSquareMetres(building))}"
                         }
                     },
                 )

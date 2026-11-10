@@ -47,6 +47,7 @@ import com.mapconductor.example.pages.polygon.geodesic.PolygonGeodesicPage
 import com.mapconductor.example.pages.polygon.hole.HolePolygonMapPage
 import com.mapconductor.example.pages.polyline.PolylineClickMapPage
 import com.mapconductor.example.pages.polyline.PolylineMapPage
+import com.mapconductor.example.pages.polyline.boston.BostonRoadsPage
 import com.mapconductor.example.pages.rasterlayer.RasterHeaderProbePage
 import com.mapconductor.example.pages.rasterlayer.RasterLayerMapPage
 import com.mapconductor.example.pages.startup.StartUpPage
@@ -143,6 +144,7 @@ fun DemoAppScreen(initPage: String = "map") {
                     listOf(
                         SidebarItem(id = "polyline", title = "Polyline"),
                         SidebarItem(id = "polyline-click", title = "Polyline Click"),
+                        SidebarItem(id = "boston-roads", title = "Boston Roads"),
                     ),
             ),
             SidebarSection(
@@ -337,6 +339,11 @@ fun DemoAppScreen(initPage: String = "map") {
                     }
                     "boston-buildings" -> {
                         BostonBuildingsPage(
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
+                    }
+                    "boston-roads" -> {
+                        BostonRoadsPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }

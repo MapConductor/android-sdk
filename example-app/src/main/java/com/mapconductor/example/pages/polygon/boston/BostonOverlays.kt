@@ -54,6 +54,8 @@ private const val MB = 1024.0 * 1024.0
 fun LoadingOverlay(
     phase: LoadPhase,
     modifier: Modifier = Modifier,
+    /** What is loading, for the text: "polygons" or "roads". */
+    shapes: String = "polygons",
 ) {
     var fraction: Float? = null
     val text =
@@ -68,8 +70,8 @@ fun LoadingOverlay(
                     "Loading data… $loaded MB"
                 }
             }
-            LoadPhase.Decode -> "Reading the polygons…"
-            LoadPhase.Build -> "Preparing the polygons…"
+            LoadPhase.Decode -> "Reading the $shapes…"
+            LoadPhase.Build -> "Preparing the $shapes…"
             LoadPhase.Draw -> "Drawing the map…"
         }
     Box(
@@ -102,13 +104,12 @@ fun PolygonInfo(building: Building) {
     val rows = mutableListOf<Pair<String, String>>()
     val use = building.use
     if (use != null) {
-        rows += "Parcel" to (building.name?.removePrefix("Parcel ") ?: "—")
         rows += "Land use" to use.label
     } else {
         building.name?.let { rows += "Name" to it }
         rows += "Height" to (building.height?.let { "$it m" } ?: "unknown")
-        rows += "Overture ID" to if (building.id.length > 13) "${building.id.take(13)}…" else building.id
     }
+    rows += "Area" to formatArea(areaSquareMetres(building))
     val vertices = building.rings.sumOf { it.size / 2 }
     rows += "Vertices" to (if (building.rings.size > 1) "$vertices (holes ${building.rings.size - 1})" else "$vertices")
     Column {
@@ -126,3 +127,11 @@ fun PolygonInfo(building: Building) {
         }
     }
 }
+
+/** "1,234 m²", or hectares from 10,000 m² up. */
+fun formatArea(squareMetres: Double): String =
+    if (squareMetres >= 10_000) {
+        String.format(Locale.US, "%.2f ha", squareMetres / 10_000)
+    } else {
+        String.format(Locale.US, "%,.0f m²", squareMetres)
+    }
