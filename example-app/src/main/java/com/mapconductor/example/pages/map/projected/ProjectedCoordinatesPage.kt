@@ -16,12 +16,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.mapconductor.compose.marker.Marker
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewHolderInterface
 import com.mapconductor.core.map.MapViewStateInterface
+import com.mapconductor.core.marker.DefaultMarkerIcon
+import com.mapconductor.core.marker.MarkerAnimation
+import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.projection.MapCoordinateSystem
 import com.mapconductor.core.spherical.Spherical
 import com.mapconductor.example.MapViewContainer
@@ -72,6 +77,7 @@ private fun ProjectedCoordinatesMapComponent(mapViewState: MapViewStateInterface
     // 起きず（onMapLoaded の中心が初期値と同じだと state が変わらない）表示が
     // 取り残されるので、地図の通知で取り直して state に持つ。
     var holder by remember(mapViewState) { mutableStateOf(mapViewState.getMapViewHolder()) }
+    var markers by remember(mapViewState) { mutableStateOf(emptyList<MarkerState>()) }
 
     Box(modifier = Modifier.fillMaxSize()) {
         MapViewContainer(
@@ -85,8 +91,14 @@ private fun ProjectedCoordinatesMapComponent(mapViewState: MapViewStateInterface
                 holder = mapViewState.getMapViewHolder()
                 center = position.position
             },
-            onMapClick = { point -> tapped = point },
-        )
+            onMapClick = { point ->
+                holder = mapViewState.getMapViewHolder()
+                tapped = point
+                markers = dropMarkers(point, holder)
+            },
+        ) {
+            markers.forEach { Marker(it) }
+        }
 
         Card(
             modifier =
@@ -104,12 +116,44 @@ private fun ProjectedCoordinatesMapComponent(mapViewState: MapViewStateInterface
                     modifier = Modifier.padding(bottom = 8.dp),
                 )
                 InfoLine("Tap the map to project the tapped point.")
+                InfoLine("Markers: red T = tapped, blue P = back from the projected point.")
                 InfoLine("Coordinate system: ${holder?.coordinateSystem?.let(::formatSystem) ?: UNAVAILABLE}")
                 ProjectionLines("Center", center, holder)
                 ProjectionLines("Tapped", tapped, holder)
             }
         }
     }
+}
+
+/**
+ * タップした地点（赤）と、その投影座標を緯度経度へ戻した地点（青・小）に落とすマーカー。
+ *
+ * 青を小さくするのは `scale` ではなく `iconSize` で行う。`scale` はビットマップの
+ * 大きさを変えずに絵だけを縮めるので、ピン先がアンカーからずれて見える。
+ *
+ * 投影と逆投影が合っていれば、青は赤のピン先に重なる。タップのたびに新しい
+ * マーカーにするので、Drop がそのつど再生される。同じ地点なら後から足した青が
+ * 手前に描かれる。
+ */
+private fun dropMarkers(
+    tapped: GeoPointInterface,
+    holder: MapViewHolderInterface<*, *>?,
+): List<MarkerState> {
+    val back = holder?.toProjectedPoint(tapped)?.let { holder.fromProjectedPoint(it) }
+    return listOfNotNull(
+        MarkerState(
+            position = tapped,
+            icon = DefaultMarkerIcon(fillColor = Color(0xFFE53935), label = "T"),
+            animation = MarkerAnimation.Drop,
+        ),
+        back?.let {
+            MarkerState(
+                position = it,
+                icon = DefaultMarkerIcon(fillColor = Color(0xFF1E88E5), label = "P", iconSize = 28.dp),
+                animation = MarkerAnimation.Drop,
+            )
+        },
+    )
 }
 
 /** 1 地点ぶん: 緯度経度、投影座標、戻した緯度経度と元とのずれ。 */
