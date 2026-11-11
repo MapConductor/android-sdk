@@ -128,12 +128,9 @@ private fun ProjectedCoordinatesMapComponent(mapViewState: MapViewStateInterface
 /**
  * タップした地点（赤）と、その投影座標を緯度経度へ戻した地点（青・小）に落とすマーカー。
  *
- * 青を小さくするのは `scale` ではなく `iconSize` で行う。`scale` はビットマップの
- * 大きさを変えずに絵だけを縮めるので、ピン先がアンカーからずれて見える。
- *
- * 投影と逆投影が合っていれば、青は赤のピン先に重なる。タップのたびに新しい
- * マーカーにするので、Drop がそのつど再生される。同じ地点なら後から足した青が
- * 手前に描かれる。
+ * 投影と逆投影が合っていれば、青は赤のピン先に重なる。青は `iconSize` で小さくし、
+ * `zIndex = 1` で赤より手前に描く（重なり順は追加した順ではなく zIndex で決まる）。
+ * タップのたびに新しいマーカーにするので、Drop がそのつど再生される。
  */
 private fun dropMarkers(
     tapped: GeoPointInterface,
@@ -151,6 +148,7 @@ private fun dropMarkers(
                 position = it,
                 icon = DefaultMarkerIcon(fillColor = Color(0xFF1E88E5), label = "P", iconSize = 28.dp),
                 animation = MarkerAnimation.Drop,
+                zIndex = 1,
             )
         },
     )
