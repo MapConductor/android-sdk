@@ -1,0 +1,31 @@
+{
+  "source": "https://opencellid.org",
+  "license": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "attribution": "Cell tower data from OpenCellID \u00b7 CC BY-SA 4.0",
+  "inputs": [
+    "310.csv.gz",
+    "311.csv.gz",
+    "312.csv.gz",
+    "313.csv.gz",
+    "314.csv.gz"
+  ],
+  "count": 723800,
+  "carrier_counts": [
+    199569,
+    372599,
+    147164,
+    4468
+  ],
+  "mcc_counts": {
+    "310": 567764,
+    "311": 150228,
+    "312": 199,
+    "313": 5349,
+    "314": 260
+  },
+  "file_sha256": "eda2bc13c14fe4d29ee94b4e6a92d6b8be14566ef04a95cb6aaf2954b456acec",
+  "bytes": 11580808,
+  "format": "MCCE + u32 count + records (i32 latitude_e5, i32 longitude_e5, f32 range_m, u32 carrier*1000+MNC), little endian",
+  "classification_source": "https://imsiadmin.com/assignments/hni/",
+  "coverage": "Supplied MCC 310-314 files; not a complete inventory of physical towers"
+}

@@ -47,6 +47,7 @@ import com.mapconductor.example.pages.polygon.geodesic.PolygonGeodesicPage
 import com.mapconductor.example.pages.polygon.hole.HolePolygonMapPage
 import com.mapconductor.example.pages.polyline.PolylineClickMapPage
 import com.mapconductor.example.pages.polyline.PolylineMapPage
+import com.mapconductor.example.pages.circle.AntennaHorizonsPage
 import com.mapconductor.example.pages.polyline.boston.BostonRoadsPage
 import com.mapconductor.example.pages.rasterlayer.RasterHeaderProbePage
 import com.mapconductor.example.pages.rasterlayer.RasterLayerMapPage
@@ -132,7 +133,7 @@ fun DemoAppScreen(initPage: String = "map") {
             ),
             SidebarSection(
                 title = "Circle",
-                items = listOf(SidebarItem(id = "circle", title = "Circle")),
+                items = listOf(SidebarItem(id = "circle", title = "Circle"), SidebarItem(id = "antenna-horizons", title = "US Antenna Horizons")),
             ),
             SidebarSection(
                 title = "Ground Image",
@@ -342,6 +343,7 @@ fun DemoAppScreen(initPage: String = "map") {
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
+                    "antenna-horizons" -> { AntennaHorizonsPage(onToggleSidebar = navigationViewModel::toggleSidebar) }
                     "boston-roads" -> {
                         BostonRoadsPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
