@@ -384,3 +384,17 @@ Feedback, issues, and contributions are welcome.
 ## License
 
 MapConductor Android SDK is released under the Apache License 2.0.
+
+## Bulk circles and raster tiles
+
+Inside map content, use `Circles(states)` from `com.mapconductor.compose.circle` to register a collection in one operation. Each collection removes only its own IDs. Use `CircleTiling(CircleTilingOptions.Disabled)` to keep native rendering, or `CircleTiling(CircleTilingOptions(minCircleCount = 5000))` to customize the threshold. Options are in `com.mapconductor.core.circle`.
+
+By default, raster tiling starts above 2,000 tileable circles. Large collections keep their drawing geometry in a disk-backed cache. Circle radius remains a ground distance in metres and stroke width remains a screen distance. Clicks and `onAdded` use the original states. `onAdded` indicates that the tile layer was handed to the map.
+
+Circles crossing the antimeridian, reaching Mercator's latitude limit, or having invalid radii stay native. Circle tiles stack above polygons and below polylines.
+
+## US antenna horizons example
+
+Choose **US Antenna Horizons** in the example sidebar. It bundles 723,800 OpenCellID records (MCC 310–314), with carrier filters and US and Alaska camera presets. Each estimated cell position is drawn as a 500 m geodesic circle. The radius is a display setting and does not model signal coverage.
+
+Cell tower data from [OpenCellID](https://opencellid.org) · [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).
