@@ -31,6 +31,7 @@ import com.mapconductor.example.pages.map.flyto.FlyToMapIcons
 import com.mapconductor.example.pages.map.flyto.FlyToMapPage
 import com.mapconductor.example.pages.map.tilt.TiltMapPage
 import com.mapconductor.example.pages.map.uisettings.UISettingsMapPage
+import com.mapconductor.example.pages.map.projected.ProjectedCoordinatesPage
 import com.mapconductor.example.pages.map.visibleregion.VisibleRegionPage
 import com.mapconductor.example.pages.marker.animation.AnimationMapPage
 import com.mapconductor.example.pages.marker.labelposition.MarkerLabelPositionPage
@@ -105,6 +106,7 @@ fun DemoAppScreen(initPage: String = "map") {
                         SidebarItem(id = "map-fitBounds", title = "Fit Bounds"),
                         SidebarItem(id = "map-design", title = "Map Design"),
                         SidebarItem(id = "map-visibleregion", title = "Visible Region"),
+                        SidebarItem(id = "map-projected", title = "Projected Coordinates"),
                         SidebarItem(id = "map-camerasync", title = "Camera Sync"),
                         SidebarItem(id = "camera-restriction", title = "Camera Restriction"),
                     ),
@@ -249,6 +251,11 @@ fun DemoAppScreen(initPage: String = "map") {
 //                        ZoomCalibrationPage(
 //                            onToggleSidebar = navigationViewModel::toggleSidebar,
 //                        )
+                    }
+                    "map-projected" -> {
+                        ProjectedCoordinatesPage(
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
                     }
                     "map-camerasync" -> {
                         CameraSyncPage(
