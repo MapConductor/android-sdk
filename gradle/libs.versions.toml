@@ -32,7 +32,7 @@ vectordrawable = "1.2.0"
 ktLint = "14.2.0"
 mapLibreSdk = "13.7.1"
 mapLibreAnnotation = "3.0.2"
-maptilerSdk = "2.2.2"
+maptilerSdk = "2.5.0"
 longdoSdk = "1.3.0"
 # 9.0.4 はクラッシュする。`MapView.<init>` → `EncryptionUtils.decryptPublicConfig`
 # → `Cipher.doFinal` で `IllegalArgumentException: Null input buffer`。
