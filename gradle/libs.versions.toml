@@ -24,7 +24,7 @@ okhttp = "5.5.1"
 runner = "1.7.0"
 
 mapboxAndroid = "11.33.0"
-tomtomMaps = "2.6.3"
+tomtomMaps = "2.7.2"
 playServicesMaps = "20.1.0"
 
 arcgisMapsKotlin = "300.1.0"
