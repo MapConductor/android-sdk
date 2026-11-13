@@ -26,8 +26,7 @@ fun BoxScope.MapViewStatePanel(camera: MapCameraPosition?) {
                         blue = 0.9f,
                         alpha = 0.75f,
                     ),
-                )
-                .wrapContentHeight()
+                ).wrapContentHeight()
                 .fillMaxWidth(),
     ) {
         Text("LatLng: (${camera?.position?.toUrlValue()})", color = Color.Black)

@@ -144,8 +144,7 @@ fun CameraRestrictionMapPage(
                     .padding(
                         bottom = paddingValues.calculateBottomPadding() + 16.dp,
                         start = 16.dp,
-                    )
-                    .sizeIn(maxWidth = 420.dp),
+                    ).sizeIn(maxWidth = 420.dp),
         ) {
             Column(modifier = Modifier.padding(12.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {

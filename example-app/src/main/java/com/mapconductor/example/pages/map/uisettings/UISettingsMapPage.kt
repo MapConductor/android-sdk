@@ -92,8 +92,7 @@ fun UISettingsMapPage(
                     .padding(
                         bottom = paddingValues.calculateBottomPadding() + 16.dp,
                         start = 16.dp,
-                    )
-                    .sizeIn(maxWidth = 360.dp),
+                    ).sizeIn(maxWidth = 360.dp),
         ) {
             Column(modifier = Modifier.padding(12.dp)) {
                 val state = mapViewState

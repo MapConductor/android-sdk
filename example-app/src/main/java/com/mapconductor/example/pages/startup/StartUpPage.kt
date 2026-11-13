@@ -33,8 +33,7 @@ fun StartUpPage(onToggleSidebar: () -> Unit = {}) {
                     .padding(
                         horizontal = paddingValues.calculateStartPadding(layoutDirection = LayoutDirection.Ltr) + 10.dp,
                         vertical = paddingValues.calculateBottomPadding(),
-                    )
-                    .verticalScroll(rememberScrollState()),
+                    ).verticalScroll(rememberScrollState()),
         ) {
             Image(
                 painter = painterResource(R.drawable.mapcat),

@@ -187,9 +187,10 @@ fun VectorStylePage(
         onMapViewStateChanged = { mapViewState = it },
     ) { paddings ->
         Box(
-            modifier = modifier
-                .fillMaxSize()
-                .padding(paddings),
+            modifier =
+                modifier
+                    .fillMaxSize()
+                    .padding(paddings),
             contentAlignment = Alignment.Center,
         ) {
             mapViewState?.let { state ->

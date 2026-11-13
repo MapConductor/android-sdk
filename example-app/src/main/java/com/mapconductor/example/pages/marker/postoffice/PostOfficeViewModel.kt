@@ -158,5 +158,4 @@ class PostOfficeViewModel(
         _mapViewState.value = mapViewState
         _isMapLoaded.value = false
     }
-
 }

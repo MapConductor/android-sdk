@@ -135,10 +135,11 @@ fun DemoAppScreen(initPage: String = "map") {
             ),
             SidebarSection(
                 title = "Circle",
-                items = listOf(
-                    SidebarItem(id = "circle", title = "Circle"),
-                    SidebarItem(id = "antenna-horizons", title = "US Antenna Horizons")
-                ),
+                items =
+                    listOf(
+                        SidebarItem(id = "circle", title = "Circle"),
+                        SidebarItem(id = "antenna-horizons", title = "US Antenna Horizons"),
+                    ),
             ),
             SidebarSection(
                 title = "Ground Image",
