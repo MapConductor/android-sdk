@@ -15,9 +15,9 @@ import androidx.test.runner.lifecycle.Stage
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.maplibre.android.camera.CameraUpdateFactory
 import org.maplibre.android.maps.MapLibreMap
 import org.maplibre.android.maps.MapView
-import org.maplibre.android.camera.CameraUpdateFactory
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import android.content.Intent
