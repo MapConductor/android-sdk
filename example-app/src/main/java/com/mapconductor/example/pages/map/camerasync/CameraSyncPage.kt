@@ -220,13 +220,17 @@ fun CameraSyncPage(onToggleSidebar: () -> Unit = {}) {
     }
 
     Scaffold { paddingValues ->
-        Column(modifier = Modifier
-            .fillMaxSize()
-            .padding(paddingValues)) {
+        Column(
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+        ) {
             Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(10.dp),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(10.dp),
                 elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
             ) {
                 Row(
@@ -299,9 +303,10 @@ fun CameraSyncPage(onToggleSidebar: () -> Unit = {}) {
                 if (stackVertically) {
                     Column(modifier = Modifier.fillMaxSize()) {
                         CameraSyncMapPane(
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxWidth(),
+                            modifier =
+                                Modifier
+                                    .weight(1f)
+                                    .fillMaxWidth(),
                             menuContent = {
                                 IconSelectMenu(
                                     itemList = leftMenuItems,
@@ -377,9 +382,10 @@ fun CameraSyncPage(onToggleSidebar: () -> Unit = {}) {
                         )
 
                         CameraSyncMapPane(
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxWidth(),
+                            modifier =
+                                Modifier
+                                    .weight(1f)
+                                    .fillMaxWidth(),
                             menuContent = {
                                 IconSelectMenu(
                                     itemList = rightMenuItems,
@@ -448,9 +454,10 @@ fun CameraSyncPage(onToggleSidebar: () -> Unit = {}) {
                 } else {
                     Row(modifier = Modifier.fillMaxSize()) {
                         CameraSyncMapPane(
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxHeight(),
+                            modifier =
+                                Modifier
+                                    .weight(1f)
+                                    .fillMaxHeight(),
                             menuContent = {
                                 IconSelectMenu(
                                     itemList = leftMenuItems,
@@ -525,9 +532,10 @@ fun CameraSyncPage(onToggleSidebar: () -> Unit = {}) {
                         )
 
                         CameraSyncMapPane(
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxHeight(),
+                            modifier =
+                                Modifier
+                                    .weight(1f)
+                                    .fillMaxHeight(),
                             menuContent = {
                                 IconSelectMenu(
                                     itemList = rightMenuItems,
@@ -619,9 +627,10 @@ private fun CameraSyncMapPane(
     Box(modifier = modifier) {
         // Base: Map (full available size). Overlays are drawn on top to maximize map area.
         MapViewContainer(
-            modifier = Modifier
-                .fillMaxSize()
-                .onSizeChanged { mapSize = it },
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .onSizeChanged { mapSize = it },
             state = mapViewState,
             providerKey = providerKey,
             onCameraMoveStart = { onCameraMoveStart?.invoke() },

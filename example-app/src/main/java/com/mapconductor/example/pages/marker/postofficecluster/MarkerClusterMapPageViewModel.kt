@@ -176,5 +176,4 @@ class MarkerClusterMapPageViewModel(
         _mapViewState.value = mapViewState
         _isMapLoaded.value = false
     }
-
 }

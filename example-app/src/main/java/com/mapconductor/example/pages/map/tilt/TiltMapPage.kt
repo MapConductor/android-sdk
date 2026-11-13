@@ -78,8 +78,7 @@ fun TiltMapPage(
                         bottom = paddingValues.calculateBottomPadding(),
                         start = paddingValues.calculateStartPadding(LayoutDirection.Ltr) + 16.dp,
                         end = paddingValues.calculateEndPadding(LayoutDirection.Ltr) + 16.dp,
-                    )
-                    .sizeIn(
+                    ).sizeIn(
                         maxWidth = 600.dp,
                     ),
         ) {

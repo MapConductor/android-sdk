@@ -34,9 +34,7 @@ private val POSITIONS =
     )
 
 @Composable
-fun MarkerLabelPositionPage(
-    onToggleSidebar: () -> Unit = {},
-) {
+fun MarkerLabelPositionPage(onToggleSidebar: () -> Unit = {}) {
     val initCameraPosition =
         MapCameraPosition(
             position = CENTER,

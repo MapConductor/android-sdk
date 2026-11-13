@@ -114,5 +114,4 @@ class PolylinePageViewModel :
             polylineState.points = polylinePoints
         }
     }
-
 }

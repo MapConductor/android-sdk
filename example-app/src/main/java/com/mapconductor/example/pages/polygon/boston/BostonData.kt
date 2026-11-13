@@ -206,7 +206,7 @@ internal fun decodeMcpg(
             name = name,
             rings = rings,
             use = use,
-            roadClass = roadClass
+            roadClass = roadClass,
         )
     }
 }

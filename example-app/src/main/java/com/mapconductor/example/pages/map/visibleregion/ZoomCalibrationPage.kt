@@ -220,7 +220,7 @@ fun ZoomCalibrationPage(onToggleSidebar: () -> Unit = {}) {
                             "ArcGIS data captured: ${String.format("%.2f", info.widthKm)} × ${
                                 String.format(
                                     "%.2f",
-                                    info.heightKm
+                                    info.heightKm,
                                 )
                             } km"
                         measurementInProgress = true
@@ -488,7 +488,7 @@ fun CalibrationRecommendations(
                         "ArcGIS shows ${
                             String.format(
                                 "%.1f",
-                                (1.0 - averageRatio) * 100
+                                (1.0 - averageRatio) * 100,
                             )
                         }% smaller area (zoom too high)"
                     },

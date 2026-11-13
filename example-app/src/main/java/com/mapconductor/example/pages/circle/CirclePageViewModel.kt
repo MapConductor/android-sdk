@@ -236,5 +236,4 @@ class CirclePageViewModel(
     override fun removeToast(toastMessage: ToastMessage) {
         this._messages.value = this._messages.value.filter { it != toastMessage }
     }
-
 }
