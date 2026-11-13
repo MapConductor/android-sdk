@@ -71,6 +71,7 @@ fun AntennaHorizonsPage(
     var states by remember { mutableStateOf<List<CircleState>>(emptyList()) }
     var allStates by remember { mutableStateOf<List<CircleState>>(emptyList()) }
     var tap by remember { mutableStateOf<Antenna?>(null) }
+    var adding by remember { mutableStateOf<Pair<Int, Int>?>(null) }
     LaunchedEffect(Unit) {
         try {
             rows = withContext(Dispatchers.IO) {
@@ -108,13 +109,19 @@ fun AntennaHorizonsPage(
         DemoMapPageScaffold(menuItems = DefaultMapViewItems(camera), onToggleSidebar = onToggleSidebar, onMapViewStateChanged = { mapState = it }) { padding ->
             mapState?.let { state ->
                 MapViewContainer(state = state, modifier = modifier.padding(padding), onMapClick = { tap = null }) {
-                    Circles(states)
+                    Circles(
+                        states,
+                        onAddStart = { total -> adding = 0 to total },
+                        onAddProgress = { added, total -> adding = added to total },
+                        onAddEnd = { adding = null },
+                    )
                     tap?.let { a -> InfoBubble(position = GeoPoint(a.lat, a.lon)) { Text("${carrierNames[a.carrier]}\nCell position · Display radius: 500 m") } }
                 }
             }
             Column(Modifier.padding(top = padding.calculateTopPadding() + 12.dp, start = 12.dp).widthIn(max = 350.dp).background(MaterialTheme.colorScheme.surface).padding(12.dp)) {
                 Text("US cell positions (MCC 310–314)", style = MaterialTheme.typography.titleMedium)
                 Text(error ?: if (rows.isEmpty()) "Loading OpenCellID data…" else "${states.size} / ${rows.size} circles")
+                adding?.let { (added, total) -> Text("Adding to the map… $added / $total") }
                 TextButton(onClick = { alaska = !alaska }) { Text(if (alaska) "US overview" else "Alaska") }
                 carrierNames.forEachIndexed { index, name ->
                     Row { Checkbox(index in carriers, { checked -> carriers = if (checked) carriers + index else carriers - index }); Text("$name (${(rows as? AntennaTable)?.carrierCounts?.get(index) ?: 0})") }
