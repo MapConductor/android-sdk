@@ -1,0 +1,275 @@
+public final class com.mapconductor.vectorstyle.CompiledStyle {
+  public com.mapconductor.vectorstyle.CompiledStyle(java.lang.String, java.util.List<? extends com.mapconductor.core.map.StyleMutation>, com.mapconductor.vectorstyle.StyleAffects, boolean, java.util.List<java.lang.String>);
+  public final java.lang.String getStyleJson();
+  public final java.util.List<com.mapconductor.core.map.StyleMutation> getMutations();
+  public final com.mapconductor.vectorstyle.StyleAffects getAffects();
+  public final boolean getPatchable();
+  public final java.util.List<java.lang.String> getDiagnostics();
+  public final java.lang.String component1();
+  public final java.util.List<com.mapconductor.core.map.StyleMutation> component2();
+  public final com.mapconductor.vectorstyle.StyleAffects component3();
+  public final boolean component4();
+  public final java.util.List<java.lang.String> component5();
+  public final com.mapconductor.vectorstyle.CompiledStyle copy(java.lang.String, java.util.List<? extends com.mapconductor.core.map.StyleMutation>, com.mapconductor.vectorstyle.StyleAffects, boolean, java.util.List<java.lang.String>);
+  public java.lang.String toString();
+  public int hashCode();
+  public boolean equals(java.lang.Object);
+}
+public final class com.mapconductor.vectorstyle.LayerRole {
+  public static final com.mapconductor.vectorstyle.LayerRole INSTANCE;
+  public static final java.lang.String BACKGROUND;
+  public static final java.lang.String WATER;
+  public static final java.lang.String WATERWAY;
+  public static final java.lang.String LAND;
+  public static final java.lang.String LANDUSE;
+  public static final java.lang.String PARK;
+  public static final java.lang.String BUILDING;
+  public static final java.lang.String ROAD;
+  public static final java.lang.String ROAD_CASING;
+  public static final java.lang.String RAIL;
+  public static final java.lang.String TRANSIT;
+  public static final java.lang.String BOUNDARY;
+  public static final java.lang.String AEROWAY;
+  public static final java.lang.String LABEL;
+  public static final java.lang.String POI;
+}
+public final class com.mapconductor.vectorstyle.NativeStyleCompiler {
+  public static final com.mapconductor.vectorstyle.NativeStyleCompiler INSTANCE;
+  public final native java.lang.String nativeCompile(java.lang.String, java.lang.String);
+  public final native java.lang.String nativeDescribe(java.lang.String);
+  public final native int nativeSchemaVersion();
+}
+public final class com.mapconductor.vectorstyle.StyleAffects extends java.lang.Enum<com.mapconductor.vectorstyle.StyleAffects> {
+  public static final com.mapconductor.vectorstyle.StyleAffects$Companion Companion;
+  public static final com.mapconductor.vectorstyle.StyleAffects NONE;
+  public static final com.mapconductor.vectorstyle.StyleAffects GROUND;
+  public static final com.mapconductor.vectorstyle.StyleAffects LABELS;
+  public static final com.mapconductor.vectorstyle.StyleAffects BOTH;
+  public static com.mapconductor.vectorstyle.StyleAffects[] values();
+  public static com.mapconductor.vectorstyle.StyleAffects valueOf(java.lang.String);
+  public static kotlin.enums.EnumEntries<com.mapconductor.vectorstyle.StyleAffects> getEntries();
+}
+public final class com.mapconductor.vectorstyle.StyleAffects$Companion {
+  public final com.mapconductor.vectorstyle.StyleAffects of(java.lang.String);
+}
+public final class com.mapconductor.vectorstyle.StyleLayerInfo {
+  public com.mapconductor.vectorstyle.StyleLayerInfo(java.lang.String, java.lang.String, java.lang.String, java.util.List<java.lang.String>, java.util.List<java.lang.String>);
+  public final java.lang.String getId();
+  public final java.lang.String getKind();
+  public final java.lang.String getSourceLayer();
+  public final java.util.List<java.lang.String> getRoles();
+  public final java.util.List<java.lang.String> getEvidence();
+  public final java.lang.String component1();
+  public final java.lang.String component2();
+  public final java.lang.String component3();
+  public final java.util.List<java.lang.String> component4();
+  public final java.util.List<java.lang.String> component5();
+  public final com.mapconductor.vectorstyle.StyleLayerInfo copy(java.lang.String, java.lang.String, java.lang.String, java.util.List<java.lang.String>, java.util.List<java.lang.String>);
+  public java.lang.String toString();
+  public int hashCode();
+  public boolean equals(java.lang.Object);
+}
+public final class com.mapconductor.vectorstyle.StyleLayerKind extends java.lang.Enum<com.mapconductor.vectorstyle.StyleLayerKind> {
+  public static final com.mapconductor.vectorstyle.StyleLayerKind BACKGROUND;
+  public static final com.mapconductor.vectorstyle.StyleLayerKind FILL;
+  public static final com.mapconductor.vectorstyle.StyleLayerKind LINE;
+  public static final com.mapconductor.vectorstyle.StyleLayerKind CIRCLE;
+  public static final com.mapconductor.vectorstyle.StyleLayerKind SYMBOL;
+  public static final com.mapconductor.vectorstyle.StyleLayerKind OTHER;
+  public static com.mapconductor.vectorstyle.StyleLayerKind[] values();
+  public static com.mapconductor.vectorstyle.StyleLayerKind valueOf(java.lang.String);
+  public static kotlin.enums.EnumEntries<com.mapconductor.vectorstyle.StyleLayerKind> getEntries();
+}
+public final class com.mapconductor.vectorstyle.StylePatchBuilder {
+  public com.mapconductor.vectorstyle.StylePatchBuilder();
+  public final java.lang.Boolean getVisible();
+  public final void setVisible(java.lang.Boolean);
+  public final androidx.compose.ui.graphics.Color getColor-QN2ZGVo();
+  public final void setColor-Y2TPw74(androidx.compose.ui.graphics.Color);
+  public final java.lang.Float getOpacity();
+  public final void setOpacity(java.lang.Float);
+  public final java.lang.Float getWidthScale();
+  public final void setWidthScale(java.lang.Float);
+  public final java.lang.Float getMinZoom();
+  public final void setMinZoom(java.lang.Float);
+  public final java.lang.Float getMaxZoom();
+  public final void setMaxZoom(java.lang.Float);
+  public final void desaturate(float);
+  public final void darken(float);
+  public final void lighten(float);
+  public final void invertLightness();
+  public final void mix-DxMtmZc(long, float);
+  public final void filter(java.lang.String);
+  public final void property(java.lang.String, java.lang.String);
+  public final void propertyText(java.lang.String, java.lang.String);
+}
+public final class com.mapconductor.vectorstyle.StyleRules {
+  public static final com.mapconductor.vectorstyle.StyleRules$Companion Companion;
+  public static final com.mapconductor.vectorstyle.StyleRules NONE;
+  public final java.lang.String getJson();
+  public boolean equals(java.lang.Object);
+  public int hashCode();
+  public java.lang.String toString();
+  public static final com.mapconductor.vectorstyle.StyleRules parse(java.lang.String);
+  public static final com.mapconductor.vectorstyle.StyleRules build(kotlin.jvm.functions.Function1<? super com.mapconductor.vectorstyle.StyleRulesBuilder, kotlin.Unit>);
+  public com.mapconductor.vectorstyle.StyleRules(java.lang.String, kotlin.jvm.internal.DefaultConstructorMarker);
+}
+public final class com.mapconductor.vectorstyle.StyleRules$Companion {
+  public final com.mapconductor.vectorstyle.StyleRules parse(java.lang.String);
+  public final com.mapconductor.vectorstyle.StyleRules build(kotlin.jvm.functions.Function1<? super com.mapconductor.vectorstyle.StyleRulesBuilder, kotlin.Unit>);
+}
+public final class com.mapconductor.vectorstyle.StyleRulesBuilder {
+  public com.mapconductor.vectorstyle.StyleRulesBuilder();
+  public final java.lang.String getSchema();
+  public final void setSchema(java.lang.String);
+  public final void customSchema(java.util.Map<java.lang.String, ? extends java.util.List<java.lang.String>>);
+  public final void all(kotlin.jvm.functions.Function1<? super com.mapconductor.vectorstyle.StylePatchBuilder, kotlin.Unit>);
+  public final void role(java.lang.String, kotlin.jvm.functions.Function1<? super com.mapconductor.vectorstyle.StylePatchBuilder, kotlin.Unit>);
+  public final void layerId(java.lang.String, kotlin.jvm.functions.Function1<? super com.mapconductor.vectorstyle.StylePatchBuilder, kotlin.Unit>);
+  public final void sourceLayer(java.lang.String, kotlin.jvm.functions.Function1<? super com.mapconductor.vectorstyle.StylePatchBuilder, kotlin.Unit>);
+  public final void kind(com.mapconductor.vectorstyle.StyleLayerKind, kotlin.jvm.functions.Function1<? super com.mapconductor.vectorstyle.StylePatchBuilder, kotlin.Unit>);
+  public final void where(com.mapconductor.vectorstyle.StyleSelector, kotlin.jvm.functions.Function1<? super com.mapconductor.vectorstyle.StylePatchBuilder, kotlin.Unit>);
+}
+public final class com.mapconductor.vectorstyle.StyleRulesKt {
+  public static final java.lang.String toJson(com.mapconductor.vectorstyle.StyleSelector);
+  public static final java.lang.String toStyleText-8_81llA(long);
+  public static final java.lang.String quote(java.lang.String);
+}
+public interface com.mapconductor.vectorstyle.StyleSelector {
+}
+public final class com.mapconductor.vectorstyle.StyleSelector$All implements com.mapconductor.vectorstyle.StyleSelector {
+  public static final com.mapconductor.vectorstyle.StyleSelector$All INSTANCE;
+}
+public final class com.mapconductor.vectorstyle.StyleSelector$AllOf implements com.mapconductor.vectorstyle.StyleSelector {
+  public final java.util.List<com.mapconductor.vectorstyle.StyleSelector> getOf();
+  public final java.util.List<com.mapconductor.vectorstyle.StyleSelector> component1();
+  public final com.mapconductor.vectorstyle.StyleSelector$AllOf copy(java.util.List<? extends com.mapconductor.vectorstyle.StyleSelector>);
+  public java.lang.String toString();
+  public int hashCode();
+  public boolean equals(java.lang.Object);
+}
+public final class com.mapconductor.vectorstyle.StyleSelector$AnyOf implements com.mapconductor.vectorstyle.StyleSelector {
+  public final java.util.List<com.mapconductor.vectorstyle.StyleSelector> getOf();
+  public final java.util.List<com.mapconductor.vectorstyle.StyleSelector> component1();
+  public final com.mapconductor.vectorstyle.StyleSelector$AnyOf copy(java.util.List<? extends com.mapconductor.vectorstyle.StyleSelector>);
+  public java.lang.String toString();
+  public int hashCode();
+  public boolean equals(java.lang.Object);
+}
+public final class com.mapconductor.vectorstyle.StyleSelector$Kind implements com.mapconductor.vectorstyle.StyleSelector {
+  public final com.mapconductor.vectorstyle.StyleLayerKind getKind();
+  public final com.mapconductor.vectorstyle.StyleLayerKind component1();
+  public final com.mapconductor.vectorstyle.StyleSelector$Kind copy(com.mapconductor.vectorstyle.StyleLayerKind);
+  public java.lang.String toString();
+  public int hashCode();
+  public boolean equals(java.lang.Object);
+}
+public final class com.mapconductor.vectorstyle.StyleSelector$LayerId implements com.mapconductor.vectorstyle.StyleSelector {
+  public final java.lang.String getGlob();
+  public final java.lang.String component1();
+  public final com.mapconductor.vectorstyle.StyleSelector$LayerId copy(java.lang.String);
+  public java.lang.String toString();
+  public int hashCode();
+  public boolean equals(java.lang.Object);
+}
+public final class com.mapconductor.vectorstyle.StyleSelector$Not implements com.mapconductor.vectorstyle.StyleSelector {
+  public final com.mapconductor.vectorstyle.StyleSelector getOf();
+  public final com.mapconductor.vectorstyle.StyleSelector component1();
+  public final com.mapconductor.vectorstyle.StyleSelector$Not copy(com.mapconductor.vectorstyle.StyleSelector);
+  public java.lang.String toString();
+  public int hashCode();
+  public boolean equals(java.lang.Object);
+}
+public final class com.mapconductor.vectorstyle.StyleSelector$Role implements com.mapconductor.vectorstyle.StyleSelector {
+  public final java.lang.String getRole();
+  public final java.lang.String component1();
+  public final com.mapconductor.vectorstyle.StyleSelector$Role copy(java.lang.String);
+  public java.lang.String toString();
+  public int hashCode();
+  public boolean equals(java.lang.Object);
+}
+public final class com.mapconductor.vectorstyle.StyleSelector$SourceLayer implements com.mapconductor.vectorstyle.StyleSelector {
+  public final java.lang.String getName();
+  public final java.lang.String component1();
+  public final com.mapconductor.vectorstyle.StyleSelector$SourceLayer copy(java.lang.String);
+  public java.lang.String toString();
+  public int hashCode();
+  public boolean equals(java.lang.Object);
+}
+public final class com.mapconductor.vectorstyle.UnsupportedPolicy extends java.lang.Enum<com.mapconductor.vectorstyle.UnsupportedPolicy> {
+  public static final com.mapconductor.vectorstyle.UnsupportedPolicy REPORT;
+  public static final com.mapconductor.vectorstyle.UnsupportedPolicy RELOAD;
+  public static com.mapconductor.vectorstyle.UnsupportedPolicy[] values();
+  public static com.mapconductor.vectorstyle.UnsupportedPolicy valueOf(java.lang.String);
+  public static kotlin.enums.EnumEntries<com.mapconductor.vectorstyle.UnsupportedPolicy> getEntries();
+}
+public final class com.mapconductor.vectorstyle.VectorStyle implements com.mapconductor.core.map.MapViewStyle {
+  public com.mapconductor.vectorstyle.VectorStyle(com.mapconductor.vectorstyle.VectorStyleSource, com.mapconductor.vectorstyle.StyleRules, com.mapconductor.vectorstyle.VectorStyleRasteriser, com.mapconductor.vectorstyle.UnsupportedPolicy, kotlin.jvm.functions.Function1<? super java.util.List<java.lang.String>, kotlin.Unit>);
+  public com.mapconductor.vectorstyle.VectorStyle(com.mapconductor.vectorstyle.VectorStyleSource, com.mapconductor.vectorstyle.StyleRules, com.mapconductor.vectorstyle.VectorStyleRasteriser, com.mapconductor.vectorstyle.UnsupportedPolicy, kotlin.jvm.functions.Function1, int, kotlin.jvm.internal.DefaultConstructorMarker);
+  public final com.mapconductor.vectorstyle.VectorStyleSource getDocument();
+  public final com.mapconductor.vectorstyle.StyleRules getRules();
+  public final com.mapconductor.vectorstyle.VectorStyleRasteriser getRasteriser();
+  public final com.mapconductor.vectorstyle.UnsupportedPolicy getOnUnsupported();
+  public final kotlin.jvm.functions.Function1<java.util.List<java.lang.String>, kotlin.Unit> getOnDiagnostics();
+  public java.lang.String getKey();
+  public com.mapconductor.core.map.MapStyleInstallation install(com.mapconductor.core.map.MapStyleHost);
+  public com.mapconductor.vectorstyle.VectorStyle();
+}
+final class com.mapconductor.vectorstyle.VectorStyle$Installation implements com.mapconductor.core.map.MapStyleInstallation {
+  public static final java.lang.String TAG;
+  public final void start();
+  public boolean update(com.mapconductor.core.map.MapViewStyle);
+  public void dispose();
+}
+final class com.mapconductor.vectorstyle.VectorStyle$Installation$Companion {
+  public final java.lang.String contentId(java.lang.String);
+  public final java.util.concurrent.ExecutorService getWorkers();
+  public final java.lang.String fetch(java.lang.String, java.util.Map<java.lang.String, java.lang.String>);
+  public final java.util.List<java.lang.String> attributionsOf(java.lang.String);
+}
+public final class com.mapconductor.vectorstyle.VectorStyleException extends java.lang.IllegalArgumentException {
+  public com.mapconductor.vectorstyle.VectorStyleException(java.lang.String);
+}
+public interface com.mapconductor.vectorstyle.VectorStyleRasterisation {
+  public abstract void restyle(java.lang.String, com.mapconductor.vectorstyle.StyleAffects);
+  public abstract void dispose();
+}
+public interface com.mapconductor.vectorstyle.VectorStyleRasteriser {
+  public abstract com.mapconductor.vectorstyle.VectorStyleRasterisation install(com.mapconductor.core.map.MapStyleHost, java.lang.String, com.mapconductor.vectorstyle.StyleAffects);
+}
+public final class com.mapconductor.vectorstyle.VectorStyleRules {
+  public static final com.mapconductor.vectorstyle.VectorStyleRules INSTANCE;
+  public static final int getSchemaVersion();
+  public static final com.mapconductor.vectorstyle.CompiledStyle compile(java.lang.String, java.lang.String);
+  public static final java.util.List<com.mapconductor.vectorstyle.StyleLayerInfo> describe(java.lang.String);
+}
+public interface com.mapconductor.vectorstyle.VectorStyleSource {
+  public abstract java.lang.String getKey();
+}
+public final class com.mapconductor.vectorstyle.VectorStyleSource$CurrentDesign implements com.mapconductor.vectorstyle.VectorStyleSource {
+  public static final com.mapconductor.vectorstyle.VectorStyleSource$CurrentDesign INSTANCE;
+  public java.lang.String getKey();
+  public java.lang.String toString();
+  public int hashCode();
+  public boolean equals(java.lang.Object);
+}
+public final class com.mapconductor.vectorstyle.VectorStyleSource$Text implements com.mapconductor.vectorstyle.VectorStyleSource {
+  public final java.lang.String getJson();
+  public java.lang.String getKey();
+  public final java.lang.String component1();
+  public final com.mapconductor.vectorstyle.VectorStyleSource$Text copy(java.lang.String);
+  public java.lang.String toString();
+  public int hashCode();
+  public boolean equals(java.lang.Object);
+}
+public final class com.mapconductor.vectorstyle.VectorStyleSource$Url implements com.mapconductor.vectorstyle.VectorStyleSource {
+  public final java.lang.String getUrl();
+  public final java.util.Map<java.lang.String, java.lang.String> getHeaders();
+  public java.lang.String getKey();
+  public final java.lang.String component1();
+  public final java.util.Map<java.lang.String, java.lang.String> component2();
+  public final com.mapconductor.vectorstyle.VectorStyleSource$Url copy(java.lang.String, java.util.Map<java.lang.String, java.lang.String>);
+  public java.lang.String toString();
+  public int hashCode();
+  public boolean equals(java.lang.Object);
+}

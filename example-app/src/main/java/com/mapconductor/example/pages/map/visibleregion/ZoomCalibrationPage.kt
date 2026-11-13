@@ -217,7 +217,12 @@ fun ZoomCalibrationPage(onToggleSidebar: () -> Unit = {}) {
                         val info = createVisibleRegionInfo(visibleRegion)
                         arcgisResults = arcgisResults + (currentZoomLevel to info)
                         measurementMessage =
-                            "ArcGIS data captured: ${String.format("%.2f", info.widthKm)} × ${String.format("%.2f", info.heightKm)} km"
+                            "ArcGIS data captured: ${String.format("%.2f", info.widthKm)} × ${
+                                String.format(
+                                    "%.2f",
+                                    info.heightKm,
+                                )
+                            } km"
                         measurementInProgress = true
                     } ?: run {
                         measurementMessage = "ArcGIS visible region not available yet. Please wait for map to load."
@@ -480,7 +485,12 @@ fun CalibrationRecommendations(
                     if (averageRatio > 1.0) {
                         "ArcGIS shows ${String.format("%.1f", (averageRatio - 1.0) * 100)}% larger area (zoom too low)"
                     } else {
-                        "ArcGIS shows ${String.format("%.1f", (1.0 - averageRatio) * 100)}% smaller area (zoom too high)"
+                        "ArcGIS shows ${
+                            String.format(
+                                "%.1f",
+                                (1.0 - averageRatio) * 100,
+                            )
+                        }% smaller area (zoom too high)"
                     },
                 fontSize = 12.sp,
                 color = MaterialTheme.colorScheme.onPrimaryContainer,

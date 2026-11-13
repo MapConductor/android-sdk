@@ -20,11 +20,11 @@ import com.mapconductor.postoffice.PostOfficeInfoView
 
 @Composable
 fun PostOfficeMapComponent(
-    modifier: Modifier = Modifier,
     mapViewState: MapViewStateInterface<*>,
-    markerTiling: MarkerTilingOptions? = null,
     selectedMarker: MarkerState?,
+    modifier: Modifier = Modifier,
     markers: List<MarkerState> = emptyList<MarkerState>(),
+    markerTiling: MarkerTilingOptions? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
     onInfoWndClick: ((PostOffice) -> Unit)? = null,

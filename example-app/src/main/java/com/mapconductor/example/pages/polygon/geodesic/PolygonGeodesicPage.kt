@@ -25,7 +25,10 @@ import com.mapconductor.example.ui.DemoMapPageScaffold
 import com.mapconductor.example.ui.MessageCard
 
 @Composable
-fun PolygonGeodesicPage(onToggleSidebar: () -> Unit = {}) {
+fun PolygonGeodesicPage(
+    modifier: Modifier = Modifier,
+    onToggleSidebar: () -> Unit = {},
+) {
     val viewModel = remember { PolygonGeodesicPageViewModel() }
     val isDarkTheme = isSystemInDarkTheme()
 
@@ -75,6 +78,7 @@ fun PolygonGeodesicPage(onToggleSidebar: () -> Unit = {}) {
         mapViewState.value?.let {
             MapViewContainer(
                 state = it,
+                modifier = modifier.padding(paddingValues),
             ) {
                 Polygon(polylineState)
                 Polygon(geodesicPolylineState)

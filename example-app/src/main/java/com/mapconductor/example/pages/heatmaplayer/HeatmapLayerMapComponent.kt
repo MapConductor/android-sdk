@@ -25,7 +25,7 @@ fun HeatmapLayerMapComponent(
                 )
             }
         }
-    mapViewState?.let { it ->
+    mapViewState?.let {
         MapViewContainer(
             modifier = modifier,
             state = it,

@@ -16,7 +16,7 @@ println("Polygon area: ${'$'}{areaKm2.toInt()} km²")
 
 // Signed area tells you orientation
 val signedArea = Spherical.computeSignedArea(polygonPoints)
-val orientation = if (signedArea > 0) "Counter-clockwise" else "Clockwise"
+val orientation = if (signedArea > 0) "Clockwise" else "Counter-clockwise"
 println("Polygon orientation: ${'$'}orientation")`;
 ---
 

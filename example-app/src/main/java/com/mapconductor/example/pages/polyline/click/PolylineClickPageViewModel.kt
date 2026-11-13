@@ -1,6 +1,5 @@
 package com.mapconductor.example.pages.polyline
 
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
@@ -42,7 +41,7 @@ class PolylineClickPageViewModel :
         )
 
     private val polylinePoints =
-        mutableStateListOf(
+        listOf(
             GeoPoint.fromLatLong(35.548852, 139.784086), // HND_AIR_PORT
             GeoPoint.fromLatLong(37.615223, -122.389979), // SFO_AIR_PORT
             GeoPoint.fromLatLong(21.324513, -157.925074), // HNL_AIR_PORT
@@ -52,16 +51,15 @@ class PolylineClickPageViewModel :
 
     override val markers: StateFlow<List<MarkerState>> = _markers.asStateFlow()
 
-    override val polylineState: PolylineState
-        get() =
-            PolylineState(
-                id = "example_polyline",
-                points = polylinePoints,
-                strokeColor = Color.Red,
-                strokeWidth = 4.dp,
-                geodesic = true,
-                onClick = this::onPolylineClicked,
-            )
+    override val polylineState =
+        PolylineState(
+            id = "example_polyline",
+            points = polylinePoints,
+            strokeColor = Color.Red,
+            strokeWidth = 4.dp,
+            geodesic = true,
+            onClick = this::onPolylineClicked,
+        )
 
     private val _mapViewState = MutableStateFlow<MapViewStateInterface<*>?>(null)
     override val mapViewState: StateFlow<MapViewStateInterface<*>?> = _mapViewState.asStateFlow()
@@ -84,9 +82,5 @@ class PolylineClickPageViewModel :
                         fillColor = clicked.state.strokeColor,
                     ),
             )
-    }
-
-    override fun onCleared() {
-        super.onCleared()
     }
 }

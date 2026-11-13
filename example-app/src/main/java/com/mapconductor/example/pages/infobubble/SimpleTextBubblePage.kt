@@ -1,6 +1,5 @@
 package com.mapconductor.example.pages.infobubble
 
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -24,7 +23,10 @@ import com.mapconductor.example.ui.DefaultMapViewItems
 import com.mapconductor.example.ui.DemoMapPageScaffold
 
 @Composable
-fun SimpleTextBubblePage(onToggleSidebar: () -> Unit = {}) {
+fun SimpleTextBubblePage(
+    modifier: Modifier = Modifier,
+    onToggleSidebar: () -> Unit = {},
+) {
     val initCameraPosition =
         MapCameraPosition(
             position = GeoPoint.fromLatLong(37.7749, -122.4194),
@@ -38,12 +40,13 @@ fun SimpleTextBubblePage(onToggleSidebar: () -> Unit = {}) {
                 position = GeoPoint.fromLatLong(37.7749, -122.4194),
                 icon = DefaultMarkerIcon(fillColor = Color.Blue, label = "SF"),
                 extra = "San Francisco - The Golden Gate City",
-                onClick = { it -> selectedMarker = it },
+                onClick = { selectedMarker = it },
             )
         }
 
     DemoMapPageScaffold(
         menuItems = DefaultMapViewItems(initCameraPosition),
+        modifier = modifier,
         onToggleSidebar = onToggleSidebar,
         onMapViewStateChanged = { state ->
             @Suppress("UNCHECKED_CAST")
@@ -52,7 +55,6 @@ fun SimpleTextBubblePage(onToggleSidebar: () -> Unit = {}) {
     ) {
         mapViewState?.let {
             MapViewContainer(
-                modifier = Modifier.fillMaxSize(),
                 state = mapViewState,
                 onMapClick = { selectedMarker = null },
                 onMapLoaded = {

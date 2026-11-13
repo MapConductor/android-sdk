@@ -1,0 +1,74 @@
+name: Test
+
+# JVM ユニットテストのゲート。
+#
+# これまで CI は lint.yml（変更モジュールの lint + apiCheck）と publish 系だけで、
+# **テストを走らせるワークフローが無かった。** apiCheck が見るのは公開 API の形
+# だけなので、シグネチャが同じまま中身が壊れる変更は素通りする。
+#
+# ## 何を走らせないか
+#
+# - `connectedAndroidTest`（実機/エミュレータ）。android-sdk-core だけでも
+#   TilePngEncoder や LocalTileServer の検証があるが、エミュレータは起動に数分
+#   かかるうえ不安定。別ワークフロー・別トリガにすること。
+# - `android-for-*`。HERE の aar、Mappls、GitHub Packages の資格情報を要する。
+#   ここが落ちる理由の大半は「鍵が無い」で、コードの問題ではない。
+#
+# 残した 5 モジュールは外部資格情報なしで通ることを確認済み。ロジックの大半は
+# android-sdk-core にある（テストファイル 33 本）。
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review]
+    branches:
+      - main
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unit-test:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    name: JVM unit tests
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          submodules: recursive
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: 17
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Test
+        run: |
+          ./gradlew --no-daemon \
+            :android-sdk-core:testDebugUnitTest \
+            :android-sdk-compose:testDebugUnitTest \
+            :android-kml:testDebugUnitTest \
+            :android-geojson-layer:testDebugUnitTest \
+            :android-icons:testDebugUnitTest
+
+      # 落ちたときに、どのテストがなぜ落ちたかをログを遡らずに読めるようにする。
+      - name: Upload reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: |
+            **/build/reports/tests/
+            **/build/test-results/
+          retention-days: 7

@@ -9,10 +9,12 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -22,6 +24,7 @@ import com.mapconductor.example.MapViewContainer
 import com.mapconductor.example.ui.DefaultMapViewItems
 import com.mapconductor.example.ui.DemoMapPageScaffold
 import com.mapconductor.tomtom.TomTomMapViewState
+import kotlin.time.Duration.Companion.milliseconds
 import android.util.Log
 import kotlinx.coroutines.delay
 
@@ -34,19 +37,19 @@ import kotlinx.coroutines.delay
  * to touch the screen. On start it also cycles None -> Default automatically.
  */
 @Composable
-fun UISettingsMapPage(onToggleSidebar: () -> Unit = {}) {
+fun UISettingsMapPage(
+    modifier: Modifier = Modifier,
+    onToggleSidebar: () -> Unit = {},
+) {
     val viewModel = remember { UISettingsMapPageViewModel() }
     // A UI test presets the flags through an intent extra rather than tapping the
     // switches, which is far more reliable than driving a Compose Switch by coordinate.
-    var settings by remember {
-        mutableStateOf(
-            if (com.mapconductor.example.MainActivity.gesturesExtra == "none") {
-                MapUISettings.None
-            } else {
-                MapUISettings.Default
-            },
-        )
-    }
+    val preset =
+        if (com.mapconductor.example.MainActivity.gesturesExtra == "none") {
+            MapUISettings.None
+        } else {
+            null
+        }
 
     DemoMapPageScaffold(
         menuItems = DefaultMapViewItems(viewModel.initCameraPosition),
@@ -56,18 +59,28 @@ fun UISettingsMapPage(onToggleSidebar: () -> Unit = {}) {
         val mapViewState = viewModel.mapViewState.collectAsState().value
 
         mapViewState?.let { state ->
-            state.uiSettings = settings
+            // The flags live on the map state, not in this page: rememberXxxMapViewState
+            // saves them, so they survive a rotation. A page-local `remember` would
+            // come back all-true and overwrite the restored state.
+            // The intent preset is applied once per state (rememberSaveable keyed by its
+            // id), so a rotation does not re-apply it over what the user toggled since.
+            var presetApplied by rememberSaveable(state.id) { mutableStateOf(false) }
+            LaunchedEffect(state) {
+                if (!presetApplied && preset != null) state.uiSettings = preset
+                presetApplied = true
+            }
             MapViewContainer(
                 state = state,
+                modifier = modifier,
                 onCameraMove = { c ->
                     Log.i("MCCamera", "%.5f,%.5f".format(c.position.latitude, c.position.longitude))
                 },
             )
 
             // Read back after every change, so manual toggles are verifiable too.
-            androidx.compose.runtime.LaunchedEffect(settings, state) {
-                delay(800)
-                report("settings=$settings", state)
+            LaunchedEffect(state.uiSettings, state) {
+                delay(800.milliseconds)
+                report("settings=${state.uiSettings}", state)
             }
         }
 
@@ -82,17 +95,20 @@ fun UISettingsMapPage(onToggleSidebar: () -> Unit = {}) {
                     ).sizeIn(maxWidth = 360.dp),
         ) {
             Column(modifier = Modifier.padding(12.dp)) {
+                val state = mapViewState
+                val settings = state?.uiSettings ?: MapUISettings.Default
+                val update: (MapUISettings) -> Unit = { state?.uiSettings = it }
                 GestureSwitch("scrollGesture", settings.scrollGesture) {
-                    settings = settings.copy(scrollGesture = it)
+                    update(settings.copy(scrollGesture = it))
                 }
                 GestureSwitch("zoomGesture", settings.zoomGesture) {
-                    settings = settings.copy(zoomGesture = it)
+                    update(settings.copy(zoomGesture = it))
                 }
                 GestureSwitch("rotateGesture", settings.rotateGesture) {
-                    settings = settings.copy(rotateGesture = it)
+                    update(settings.copy(rotateGesture = it))
                 }
                 GestureSwitch("tiltGesture", settings.tiltGesture) {
-                    settings = settings.copy(tiltGesture = it)
+                    update(settings.copy(tiltGesture = it))
                 }
             }
         }
@@ -114,7 +130,16 @@ private fun GestureSwitch(
     }
 }
 
-/** Reads the gesture flags back off the native map so logcat shows ground truth. */
+/**
+ * Reads the gesture flags back off the native map so logcat shows ground truth.
+ *
+ * TomTom marks `TomTomMap` as its own library group's, which is what Android
+ * Lint objects to. Reading a vendor's map object is the whole point here: the
+ * escape hatch `getMapViewHolder().map` exists so a sample can check what the
+ * SDK actually told the native map, and a diagnostic that trusted our own
+ * state instead would be worth nothing.
+ */
+@Suppress("RestrictedApi")
 private fun report(
     phase: String,
     state: Any,
@@ -132,6 +157,7 @@ private fun report(
                         "rotate=${ttMap.isRotationEnabled} tilt=${ttMap.isTiltEnabled}"
                 }
             }
+
             is com.mapconductor.googlemaps.GoogleMapViewState -> {
                 val ui = (map as? com.google.android.gms.maps.GoogleMap)?.uiSettings
                 if (ui == null) {
@@ -141,6 +167,7 @@ private fun report(
                         "rotate=${ui.isRotateGesturesEnabled} tilt=${ui.isTiltGesturesEnabled}"
                 }
             }
+
             is com.mapconductor.maplibre.MapLibreViewState -> {
                 val ui = (map as? org.maplibre.android.maps.MapLibreMap)?.uiSettings
                 if (ui == null) {
@@ -150,6 +177,7 @@ private fun report(
                         "rotate=${ui.isRotateGesturesEnabled} tilt=${ui.isTiltGesturesEnabled}"
                 }
             }
+
             else -> "applied (no native reader for ${state::class.simpleName})"
         }
     Log.i("MCUISettings", "$phase | ${state::class.simpleName} | $actual")

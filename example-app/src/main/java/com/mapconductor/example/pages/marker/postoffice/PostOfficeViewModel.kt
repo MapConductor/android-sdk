@@ -100,7 +100,7 @@ class PostOfficeViewModel(
             val postOffices = dataLoader.loadAllPostOffices()
 
             val markerStates =
-                postOffices.map { it ->
+                postOffices.map {
                     MarkerState(
                         position = it.position,
                         id = it.hashCode().toString(),
@@ -157,9 +157,5 @@ class PostOfficeViewModel(
         this._selectedMarker.value = null
         _mapViewState.value = mapViewState
         _isMapLoaded.value = false
-    }
-
-    override fun onCleared() {
-        super.onCleared()
     }
 }

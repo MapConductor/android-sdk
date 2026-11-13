@@ -95,7 +95,7 @@ class MarkerClusterMapPageViewModel(
                 val postOffices = dataLoader.loadAllPostOffices()
 
                 val markerStates =
-                    postOffices.map { it ->
+                    postOffices.map {
                         MarkerState(
                             position = it.position,
                             id = it.hashCode().toString(),
@@ -175,11 +175,5 @@ class MarkerClusterMapPageViewModel(
         this._selectedMarker.value = null
         _mapViewState.value = mapViewState
         _isMapLoaded.value = false
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        // Clean up remote strategy if it's being used
-//        (renderingStrategy as? RemoteSpatialMarkerStrategy<*>)?.destroy()
     }
 }

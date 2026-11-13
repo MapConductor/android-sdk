@@ -1,6 +1,5 @@
 package com.mapconductor.example.pages.polyline
 
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
@@ -42,8 +41,11 @@ class PolylinePageViewModel :
             paddings = null,
         )
 
-    private val polylinePoints =
-        mutableStateListOf(
+    // Kept as a read-only list and replaced as a whole on every drag: PolylineState
+    // only hears assignments to its fields, so editing a list it already holds in
+    // place would never reach the map.
+    private var polylinePoints: List<GeoPoint> =
+        listOf(
             GeoPoint.fromLatLong(21.382314, -157.933097), // Honolulu center
             GeoPoint.fromLatLong(21.385314, -157.930097), // Northeast
             GeoPoint.fromLatLong(21.387314, -157.935097), // Northwest
@@ -83,15 +85,14 @@ class PolylinePageViewModel :
             )
         }
 
-    override val polylineState: PolylineState
-        get() =
-            PolylineState(
-                id = "example_polyline",
-                points = polylinePoints,
-                strokeColor = Color.Red,
-                strokeWidth = 4.dp,
-                geodesic = true,
-            )
+    override val polylineState =
+        PolylineState(
+            id = "example_polyline",
+            points = polylinePoints,
+            strokeColor = Color.Red,
+            strokeWidth = 4.dp,
+            geodesic = true,
+        )
 
     private val _mapViewState = MutableStateFlow<MapViewStateInterface<*>?>(null)
     override val mapViewState: StateFlow<MapViewStateInterface<*>?> = _mapViewState.asStateFlow()
@@ -105,13 +106,12 @@ class PolylinePageViewModel :
 
     override fun onMarkerDrag(dragged: MarkerState) {
         (dragged.extra as? Int)?.let { index ->
-            if (index >= 0 && index < polylinePoints.size) {
-                polylinePoints[index] = GeoPoint.from(dragged.position)
-            }
+            if (index !in polylinePoints.indices) return
+            polylinePoints =
+                polylinePoints.mapIndexed { i, point ->
+                    if (i == index) GeoPoint.from(dragged.position) else point
+                }
+            polylineState.points = polylinePoints
         }
-    }
-
-    override fun onCleared() {
-        super.onCleared()
     }
 }

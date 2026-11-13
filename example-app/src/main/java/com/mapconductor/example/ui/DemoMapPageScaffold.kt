@@ -268,6 +268,7 @@ fun DefaultMapViewItems(initCameraPosition: MapCameraPositionInterface): List<Ic
 @Composable
 fun DemoMapPageScaffold(
     menuItems: List<IconItem<out MapViewState<out Any>>>,
+    modifier: Modifier = Modifier,
     initSelect: Int = 0,
     onToggleSidebar: () -> Unit,
     onMapViewStateChanged: (MapViewStateInterface<*>) -> Unit = {},
@@ -293,11 +294,13 @@ fun DemoMapPageScaffold(
         Scaffold { paddingValues ->
             Box(
                 modifier =
-                    Modifier.fillMaxSize().padding(
-                        start = paddingValues.calculateStartPadding(layoutDirection = LayoutDirection.Ltr),
-                        end = paddingValues.calculateStartPadding(layoutDirection = LayoutDirection.Ltr),
-                        bottom = paddingValues.calculateBottomPadding(),
-                    ),
+                    modifier
+                        .fillMaxSize()
+                        .padding(
+                            start = paddingValues.calculateStartPadding(layoutDirection = LayoutDirection.Ltr),
+                            end = paddingValues.calculateStartPadding(layoutDirection = LayoutDirection.Ltr),
+                            bottom = paddingValues.calculateBottomPadding(),
+                        ),
             ) {
                 content(paddingValues)
 

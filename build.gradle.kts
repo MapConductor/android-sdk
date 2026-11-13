@@ -92,7 +92,10 @@ val publishableModules = listOf(
     "android-for-here",
     "android-for-mapbox",
     "android-for-maplibre",
-    "android-for-tomtom"
+    "android-for-tomtom",
+    // ベクタースタイル。RN のラッパー基底が MavenLocal から読む（任意依存）ので、
+    // ここに載っていないと RN からは使えない。
+    "android-vectorstyle"
 )
 
 tasks.register("publishAllLocal") {

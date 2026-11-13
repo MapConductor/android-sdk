@@ -32,9 +32,10 @@ import com.mapconductor.tomtom.TomTomMapViewState
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RasterLayerMapPage(
-    onToggleSidebar: () -> Unit = {},
+    modifier: Modifier = Modifier,
     layers: List<GsiLayer> = DefaultGsiLayers.all,
     initialLayer: GsiLayer = DefaultGsiLayers.nasa,
+    onToggleSidebar: () -> Unit = {},
 ) {
     val viewModelFactory =
         remember(layers, initialLayer) {
@@ -64,6 +65,7 @@ fun RasterLayerMapPage(
         RasterLayerMapComponent(
             mapViewState = mapViewState.value,
             rasterLayerState = viewModel.rasterLayerState,
+            modifier = modifier,
         )
 
         MessageCard(

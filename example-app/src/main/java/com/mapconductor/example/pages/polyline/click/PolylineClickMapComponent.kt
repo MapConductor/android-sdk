@@ -17,7 +17,7 @@ fun PolylineClickMapComponent(
     markers: List<MarkerState>,
     modifier: Modifier = Modifier,
 ) {
-    mapViewState?.let { it ->
+    mapViewState?.let {
         MapViewContainer(
             modifier = modifier,
             state = it,

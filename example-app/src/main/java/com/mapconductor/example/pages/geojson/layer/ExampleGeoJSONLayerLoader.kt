@@ -33,6 +33,7 @@ class ExampleGeoJSONLayerLoader(
                                 // GeoJSONParser closes its input, so shield the ZIP stream itself.
                                 features = GeoJSONParser.parseStream(NonClosingInputStream(zipInput))
                             }
+
                             fileName.equals(STYLE_ENTRY, ignoreCase = true) -> {
                                 styleJson = zipInput.bufferedReader(Charsets.UTF_8).readText()
                             }

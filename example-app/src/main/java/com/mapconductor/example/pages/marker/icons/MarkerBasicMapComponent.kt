@@ -40,6 +40,10 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.drawable.BitmapDrawable
 
+/** `ImageIcon(imageUrl = …)` の見本に使う画像。example-app の assets と同じもの。 */
+private const val CLUSTER_ICON_URL =
+    "https://raw.githubusercontent.com/MapConductor/android-sdk/develop/example-app/src/main/assets/cluster_red.png"
+
 @Composable
 fun MarkerBasicMapComponent(
     mapViewState: MapViewStateInterface<*>,
@@ -261,6 +265,27 @@ fun MarkerBasicMapComponent(
                     """.trimIndent(),
             )
         }
+        // 画像を URL で渡す。SDK が読み、届くまでは透明（ラベルは先に出る）。
+        Marker(
+            position = GeoPoint.fromLatLong(0.002, 0.012),
+            icon =
+                ImageIcon(
+                    imageUrl = CLUSTER_ICON_URL,
+                    scale = 0.6f,
+                    label = "URL",
+                    labelPosition = "bottom",
+                ),
+            extra =
+                """
+                ImageIcon(
+                    imageUrl = "https://…/cluster_red.png",
+                    scale = 0.6f,
+                    label = "URL",
+                    labelPosition = "bottom",
+                )
+                """.trimIndent(),
+        )
+
         (selected?.extra as? String)?.let { snippet ->
             InfoBubble(
                 marker = selected!!,

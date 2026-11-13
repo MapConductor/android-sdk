@@ -16,7 +16,10 @@ import com.mapconductor.example.ui.DemoMapPageScaffold
 import com.mapconductor.example.ui.MessageCard
 
 @Composable
-fun PolylineClickMapPage(onToggleSidebar: () -> Unit = {}) {
+fun PolylineClickMapPage(
+    modifier: Modifier = Modifier,
+    onToggleSidebar: () -> Unit = {},
+) {
     val viewModel = remember { PolylineClickPageViewModel() }
     DemoMapPageScaffold(
         menuItems = DefaultMapViewItems(viewModel.initCameraPosition),
@@ -29,6 +32,7 @@ fun PolylineClickMapPage(onToggleSidebar: () -> Unit = {}) {
             polylineState = viewModel.polylineState,
             markers = markers.value,
             mapViewState = mapViewState.value,
+            modifier = modifier.padding(paddingValues),
         )
 
         MessageCard(

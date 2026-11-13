@@ -11,6 +11,7 @@ import com.mapconductor.core.OnMapEventHandler
 import com.mapconductor.core.OnMapLoadedHandler
 import com.mapconductor.core.map.CameraRestriction
 import com.mapconductor.core.map.MapViewStateInterface
+import com.mapconductor.core.map.MapViewStyle
 import com.mapconductor.core.marker.MarkerTilingOptions
 import com.mapconductor.example.ui.LocalSelectedProviderKey
 import com.mapconductor.googlemaps.GoogleMapView
@@ -50,6 +51,10 @@ fun MapViewContainer(
     onCameraMoveStart: OnCameraMoveHandler? = null,
     onCameraMove: OnCameraMoveHandler? = null,
     onCameraMoveEnd: OnCameraMoveHandler? = null,
+    // 1 か所でまとめて渡す。全プロバイダが同じ名前で受けるので、ここに分岐は無い
+    // ——「どのバックエンドで何が起きるか」はスタイル側とプロバイダの能力宣言が決める。
+    style: MapViewStyle? = null,
+    onStyleDiagnostics: ((List<String>) -> Unit)? = null,
     content: (@Composable MapViewScope.() -> Unit)? = null,
 ) {
     @Suppress("UNCHECKED_CAST")
@@ -66,6 +71,8 @@ fun MapViewContainer(
                 onCameraMoveStart = onCameraMoveStart,
                 onCameraMove = onCameraMove,
                 onCameraMoveEnd = onCameraMoveEnd,
+                style = style,
+                onStyleDiagnostics = onStyleDiagnostics,
                 content = content,
             )
 
@@ -81,6 +88,8 @@ fun MapViewContainer(
                 onCameraMoveStart = onCameraMoveStart,
                 onCameraMove = onCameraMove,
                 onCameraMoveEnd = onCameraMoveEnd,
+                style = style,
+                onStyleDiagnostics = onStyleDiagnostics,
                 content = content,
             )
 
@@ -96,6 +105,8 @@ fun MapViewContainer(
                 onCameraMoveStart = onCameraMoveStart,
                 onCameraMove = onCameraMove,
                 onCameraMoveEnd = onCameraMoveEnd,
+                style = style,
+                onStyleDiagnostics = onStyleDiagnostics,
                 content = content,
             )
 
@@ -112,6 +123,8 @@ fun MapViewContainer(
                     onCameraMoveStart = onCameraMoveStart,
                     onCameraMove = onCameraMove,
                     onCameraMoveEnd = onCameraMoveEnd,
+                    style = style,
+                    onStyleDiagnostics = onStyleDiagnostics,
                     content = content,
                 )
             } else {
@@ -126,6 +139,8 @@ fun MapViewContainer(
                     onCameraMoveStart = onCameraMoveStart,
                     onCameraMove = onCameraMove,
                     onCameraMoveEnd = onCameraMoveEnd,
+                    style = style,
+                    onStyleDiagnostics = onStyleDiagnostics,
                     content = content,
                 )
             }
@@ -142,6 +157,8 @@ fun MapViewContainer(
                 onCameraMoveStart = onCameraMoveStart,
                 onCameraMove = onCameraMove,
                 onCameraMoveEnd = onCameraMoveEnd,
+                style = style,
+                onStyleDiagnostics = onStyleDiagnostics,
                 content = content,
             )
 
@@ -157,6 +174,8 @@ fun MapViewContainer(
                 onCameraMoveStart = onCameraMoveStart,
                 onCameraMove = onCameraMove,
                 onCameraMoveEnd = onCameraMoveEnd,
+                style = style,
+                onStyleDiagnostics = onStyleDiagnostics,
                 content = content,
             )
 
@@ -172,6 +191,8 @@ fun MapViewContainer(
                 onCameraMoveStart = onCameraMoveStart,
                 onCameraMove = onCameraMove,
                 onCameraMoveEnd = onCameraMoveEnd,
+                style = style,
+                onStyleDiagnostics = onStyleDiagnostics,
                 content = content,
             )
 
@@ -187,6 +208,8 @@ fun MapViewContainer(
                 onCameraMoveStart = onCameraMoveStart,
                 onCameraMove = onCameraMove,
                 onCameraMoveEnd = onCameraMoveEnd,
+                style = style,
+                onStyleDiagnostics = onStyleDiagnostics,
                 content = content,
             )
 
@@ -202,6 +225,8 @@ fun MapViewContainer(
                 onCameraMoveStart = onCameraMoveStart,
                 onCameraMove = onCameraMove,
                 onCameraMoveEnd = onCameraMoveEnd,
+                style = style,
+                onStyleDiagnostics = onStyleDiagnostics,
                 content = content,
             )
 
@@ -217,6 +242,8 @@ fun MapViewContainer(
                 onCameraMoveStart = onCameraMoveStart,
                 onCameraMove = onCameraMove,
                 onCameraMoveEnd = onCameraMoveEnd,
+                style = style,
+                onStyleDiagnostics = onStyleDiagnostics,
                 content = content,
             )
 

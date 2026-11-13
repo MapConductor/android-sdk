@@ -88,8 +88,4 @@ class RasterLayerPageViewModel(
         }
         this._mapViewState.value = state
     }
-
-    override fun onCleared() {
-        super.onCleared()
-    }
 }

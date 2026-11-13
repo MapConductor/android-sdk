@@ -91,8 +91,4 @@ class HeatmapLayerPageViewModel(
         _mapViewState.value = mapViewState
         _isMapLoaded.value = false
     }
-
-    override fun onCleared() {
-        super.onCleared()
-    }
 }

@@ -53,6 +53,7 @@
         <meta-data
             android:name="longdo.map.key"
             android:value="${LONGDO_API_KEY}" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"

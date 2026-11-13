@@ -13,7 +13,7 @@ fun RasterLayerMapComponent(
     rasterLayerState: RasterLayerState,
     modifier: Modifier = Modifier,
 ) {
-    mapViewState?.let { it ->
+    mapViewState?.let {
         MapViewContainer(
             modifier = modifier,
             state = it,
