@@ -28,7 +28,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 private val carrierNames = listOf("AT&T", "T-Mobile / Sprint", "Verizon", "Others")
-private val carrierColors = listOf(Color(0xFF2563EB), Color(0xFFDB2777), Color(0xFFDC2626), Color(0xFF64748B))
+private val carrierColors = listOf(Color(0xFF2563EB), Color(0xFFDB2777), Color(0xFFD97706), Color(0xFF64748B))
 private data class Antenna(val lat: Double, val lon: Double, val radius: Double, val registration: Long, val carrier: Int)
 
 // Keep source records packed. CircleState.extra resolves a row on demand;
