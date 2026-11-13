@@ -11,6 +11,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import com.mapconductor.core.marker.ImageIcon
 import com.mapconductor.example.navigation.NavigationViewModel
+import com.mapconductor.example.pages.circle.AntennaHorizonsPage
 import com.mapconductor.example.pages.circle.CircleMapPage
 import com.mapconductor.example.pages.geojson.basic.BasicGeoJSONMapPage
 import com.mapconductor.example.pages.geojson.layer.GeoJSONLayerMapPage
@@ -29,13 +30,13 @@ import com.mapconductor.example.pages.map.design.MapDesignMapPage
 import com.mapconductor.example.pages.map.fitbounds.FitBoundsMapPage
 import com.mapconductor.example.pages.map.flyto.FlyToMapIcons
 import com.mapconductor.example.pages.map.flyto.FlyToMapPage
+import com.mapconductor.example.pages.map.projected.ProjectedCoordinatesPage
 import com.mapconductor.example.pages.map.tilt.TiltMapPage
 import com.mapconductor.example.pages.map.uisettings.UISettingsMapPage
-import com.mapconductor.example.pages.map.projected.ProjectedCoordinatesPage
 import com.mapconductor.example.pages.map.visibleregion.VisibleRegionPage
 import com.mapconductor.example.pages.marker.animation.AnimationMapPage
-import com.mapconductor.example.pages.marker.labelposition.MarkerLabelPositionPage
 import com.mapconductor.example.pages.marker.icons.MarkerBasicPage
+import com.mapconductor.example.pages.marker.labelposition.MarkerLabelPositionPage
 import com.mapconductor.example.pages.marker.postoffice.PostOfficePage
 import com.mapconductor.example.pages.marker.postofficecluster.MarkerClusterMapPage as PostOfficeClusterMapPage
 import com.mapconductor.example.pages.marker.streettree.StreetTreePage
@@ -48,7 +49,6 @@ import com.mapconductor.example.pages.polygon.geodesic.PolygonGeodesicPage
 import com.mapconductor.example.pages.polygon.hole.HolePolygonMapPage
 import com.mapconductor.example.pages.polyline.PolylineClickMapPage
 import com.mapconductor.example.pages.polyline.PolylineMapPage
-import com.mapconductor.example.pages.circle.AntennaHorizonsPage
 import com.mapconductor.example.pages.polyline.boston.BostonRoadsPage
 import com.mapconductor.example.pages.rasterlayer.RasterHeaderProbePage
 import com.mapconductor.example.pages.rasterlayer.RasterLayerMapPage
@@ -135,7 +135,10 @@ fun DemoAppScreen(initPage: String = "map") {
             ),
             SidebarSection(
                 title = "Circle",
-                items = listOf(SidebarItem(id = "circle", title = "Circle"), SidebarItem(id = "antenna-horizons", title = "US Antenna Horizons")),
+                items = listOf(
+                    SidebarItem(id = "circle", title = "Circle"),
+                    SidebarItem(id = "antenna-horizons", title = "US Antenna Horizons")
+                ),
             ),
             SidebarSection(
                 title = "Ground Image",
@@ -203,26 +206,31 @@ fun DemoAppScreen(initPage: String = "map") {
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
+
                     "simple-info-bubble" -> {
                         SimpleTextBubblePage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
+
                     "styled-info-bubble" -> {
                         StyledInfoBubblePage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
+
                     "rich-content-info-bubble" -> {
                         RichContentBubblePage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
+
                     "multiple-info-bubbles" -> {
                         MultipleBubblesPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
+
                     "camera-restriction" -> {
                         CameraRestrictionMapPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
@@ -234,16 +242,19 @@ fun DemoAppScreen(initPage: String = "map") {
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
+
                     "map-basic" -> {
                         StoreMapPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
+
                     "map-design" -> {
                         MapDesignMapPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
+
                     "map-visibleregion" -> {
                         VisibleRegionPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
@@ -252,116 +263,141 @@ fun DemoAppScreen(initPage: String = "map") {
 //                            onToggleSidebar = navigationViewModel::toggleSidebar,
 //                        )
                     }
+
                     "map-projected" -> {
                         ProjectedCoordinatesPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
+
                     "map-camerasync" -> {
                         CameraSyncPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
+
                     "map-flyTo" -> {
                         FlyToMapPage(
                             icons = flyToMapPageIcons,
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
+
                     "map-fitBounds" -> {
                         FitBoundsMapPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
+
                     "marker-basic" -> {
                         MarkerBasicPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
+
                     "marker-label-position" -> {
                         MarkerLabelPositionPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
+
                     "marker-animation" -> {
                         AnimationMapPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
+
                     "marker-postoffice" -> {
                         PostOfficePage(
                             postOfficeIcon = postOfficeIcon,
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
+
                     "marker-postoffice-cluster" -> {
                         PostOfficeClusterMapPage(
                             postOfficeIcon = postOfficeIcon,
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
+
                     "marker-streettree" -> {
                         StreetTreePage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
+
                     "circle" -> {
                         CircleMapPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
+
                     "polyline" -> {
                         PolylineMapPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
+
                     "polyline-click" -> {
                         PolylineClickMapPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
+
                     "polygon" -> {
                         PolygonMapPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
+
                     "polygon-click" -> {
                         PolygonClickPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
+
                     "polygon-geodesic" -> {
                         PolygonGeodesicPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
+
                     "polygon-hole" -> {
                         HolePolygonMapPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
+
                     "polygons" -> {
                         PolygonsMapPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
+
                     "boston-buildings" -> {
                         BostonBuildingsPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
-                    "antenna-horizons" -> { AntennaHorizonsPage(onToggleSidebar = navigationViewModel::toggleSidebar) }
+
+                    "antenna-horizons" -> {
+                        AntennaHorizonsPage(onToggleSidebar = navigationViewModel::toggleSidebar)
+                    }
+
                     "boston-roads" -> {
                         BostonRoadsPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
+
                     "groundImage" -> {
                         GroundImageMapPage(
                             groundImageResources = groundImageResources,
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
+
                     "raster-layer" -> {
                         RasterLayerMapPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
@@ -373,41 +409,49 @@ fun DemoAppScreen(initPage: String = "map") {
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
+
                     "heatmap-overlay" -> {
                         HeatmapLayerPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
+
                     "vector-tile" -> {
                         VectorTilePage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
+
                     "vector-style" -> {
                         VectorStylePage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
+
                     "offline-map" -> {
                         OfflineMapPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
+
                     "geojson-basic" -> {
                         BasicGeoJSONMapPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
+
                     "geojson-layer" -> {
                         GeoJSONLayerMapPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
+
                     "kml-layer" -> {
                         KMLMapPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
+
                     "tilt-map" -> {
                         TiltMapPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,

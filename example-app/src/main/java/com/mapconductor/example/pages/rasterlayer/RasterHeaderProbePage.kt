@@ -67,7 +67,9 @@ fun RasterHeaderProbePage(
         RasterLayerMapComponent(
             mapViewState = mapViewState,
             rasterLayerState = rasterLayerState,
-            modifier = modifier.fillMaxSize().padding(paddings),
+            modifier = modifier
+                .fillMaxSize()
+                .padding(paddings),
         )
     }
 }

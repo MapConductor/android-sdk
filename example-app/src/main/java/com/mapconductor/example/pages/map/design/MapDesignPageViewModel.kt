@@ -69,27 +69,35 @@ class MapDesignPageViewModel :
             is GoogleMapViewStateInterface -> {
                 _mapDesignOptions.value = googleMapDesigns
             }
+
             is HereViewStateInterface -> {
                 _mapDesignOptions.value = hereMapDesigns
             }
+
             is MapboxViewStateInterface -> {
                 _mapDesignOptions.value = mapboxMapDesigns
             }
+
             is ArcGISMapViewStateInterface -> {
                 _mapDesignOptions.value = arcGISMapDesigns
             }
+
             is MapLibreViewStateInterface -> {
                 _mapDesignOptions.value = mapLibreDesigns
             }
+
             is TomTomMapViewStateInterface -> {
                 _mapDesignOptions.value = tomTomMapDesigns
             }
+
             is MapTilerViewStateInterface -> {
                 _mapDesignOptions.value = mapTilerDesigns
             }
+
             is LongdoViewStateInterface -> {
                 _mapDesignOptions.value = longdoMapDesigns
             }
+
             is MapplsViewStateInterface -> {
                 _mapDesignOptions.value = mapplsDesigns
             }

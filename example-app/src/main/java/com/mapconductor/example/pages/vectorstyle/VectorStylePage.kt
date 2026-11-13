@@ -136,12 +136,14 @@ fun VectorStylePage(
                             widthScale = 1.4f
                         }
                     }
+
                 Preset.NIGHT ->
                     StyleRules.build {
                         all { darken(0.55f) }
                         role(LayerRole.ROAD) { color = roadColor }
                         role(LayerRole.WATER) { color = Color(0xFF0B1B2B) }
                     }
+
                 Preset.WATER_ONLY ->
                     StyleRules.build {
                         all { visible = false }
@@ -185,7 +187,9 @@ fun VectorStylePage(
         onMapViewStateChanged = { mapViewState = it },
     ) { paddings ->
         Box(
-            modifier = modifier.fillMaxSize().padding(paddings),
+            modifier = modifier
+                .fillMaxSize()
+                .padding(paddings),
             contentAlignment = Alignment.Center,
         ) {
             mapViewState?.let { state ->

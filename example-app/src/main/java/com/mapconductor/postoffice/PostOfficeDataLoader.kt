@@ -129,6 +129,7 @@ class PostOfficeDataLoader(
                         }
                         json.endArray()
                     }
+
                     else -> json.skipValue()
                 }
             }
@@ -164,6 +165,7 @@ class PostOfficeDataLoader(
                         latitude = coords.second
                     }
                 }
+
                 "properties" -> {
                     json.beginObject()
                     while (json.hasNext()) {
@@ -176,6 +178,7 @@ class PostOfficeDataLoader(
                                     } else {
                                         json.nextString()
                                     }
+
                             "address" ->
                                 address =
                                     if (json.peek() == JsonToken.NULL) {
@@ -184,11 +187,13 @@ class PostOfficeDataLoader(
                                     } else {
                                         json.nextString()
                                     }
+
                             else -> json.skipValue()
                         }
                     }
                     json.endObject()
                 }
+
                 else -> json.skipValue()
             }
         }
@@ -213,6 +218,7 @@ class PostOfficeDataLoader(
                     while (json.hasNext()) json.skipValue()
                     json.endArray()
                 }
+
                 else -> json.skipValue()
             }
         }

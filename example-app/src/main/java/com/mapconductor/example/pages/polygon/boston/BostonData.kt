@@ -199,7 +199,15 @@ internal fun decodeMcpg(
                 }
                 ring
             }
-        Building(id = "$idPrefix-$i", level = level, height = height, name = name, rings = rings, use = use, roadClass = roadClass)
+        Building(
+            id = "$idPrefix-$i",
+            level = level,
+            height = height,
+            name = name,
+            rings = rings,
+            use = use,
+            roadClass = roadClass
+        )
     }
 }
 

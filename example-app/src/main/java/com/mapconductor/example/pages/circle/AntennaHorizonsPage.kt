@@ -1,18 +1,16 @@
 package com.mapconductor.example.pages.circle
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.text.ClickableText
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.unit.dp
 import com.mapconductor.compose.circle.Circles
 import com.mapconductor.compose.info.InfoBubble
 import com.mapconductor.core.circle.CircleState
@@ -29,7 +27,14 @@ import kotlinx.coroutines.withContext
 
 private val carrierNames = listOf("AT&T", "T-Mobile / Sprint", "Verizon", "Others")
 private val carrierColors = listOf(Color(0xFF2563EB), Color(0xFFDB2777), Color(0xFFD97706), Color(0xFF64748B))
-private data class Antenna(val lat: Double, val lon: Double, val radius: Double, val registration: Long, val carrier: Int)
+
+private data class Antenna(
+    val lat: Double,
+    val lon: Double,
+    val radius: Double,
+    val registration: Long,
+    val carrier: Int
+)
 
 // Keep source records packed. CircleState.extra resolves a row on demand;
 // retaining another 723,800 JVM record objects would duplicate the source data.
@@ -37,6 +42,7 @@ private class AntennaTable(bytes: ByteArray) : AbstractList<Antenna>() {
     private val buffer = ByteBuffer.wrap(bytes).asReadOnlyBuffer().order(ByteOrder.LITTLE_ENDIAN)
     override val size: Int
     val carrierCounts = IntArray(4)
+
     init {
         require(bytes.size >= 8 && String(bytes, 0, 4, Charsets.US_ASCII) == "MCCE")
         size = buffer.getInt(4)
@@ -47,12 +53,16 @@ private class AntennaTable(bytes: ByteArray) : AbstractList<Antenna>() {
             carrierCounts[row.carrier]++
         }
     }
+
     override fun get(index: Int): Antenna {
         require(index in 0 until size)
         val p = 8 + index * 16
-        return Antenna(buffer.getInt(p) / 100000.0, buffer.getInt(p + 4) / 100000.0,
-            buffer.getFloat(p + 8).toDouble(), index.toLong(), buffer.getInt(p + 12) / 1000)
+        return Antenna(
+            buffer.getInt(p) / 100000.0, buffer.getInt(p + 4) / 100000.0,
+            buffer.getFloat(p + 8).toDouble(), index.toLong(), buffer.getInt(p + 12) / 1000
+        )
     }
+
     fun carrierAt(index: Int): Int = buffer.getInt(8 + index * 16 + 12) / 1000
 }
 
@@ -78,7 +88,9 @@ fun AntennaHorizonsPage(
                 val bytes = context.assets.open("antennas/us-antennas.bin").use { it.readBytes() }
                 AntennaTable(bytes)
             }
-        } catch (e: Exception) { error = e.message }
+        } catch (e: Exception) {
+            error = e.message
+        }
     }
     LaunchedEffect(rows) {
         tap = null
@@ -89,8 +101,18 @@ fun AntennaHorizonsPage(
             rows.map { a ->
                 val color = carrierColors[a.carrier]
                 val id = "asr-${a.registration}"
-                CircleState(center = GeoPoint(a.lat, a.lon), radiusMeters = 500.0, id = id, geodesic = true,
-                    zIndex = a.registration.toInt(), strokeWidth = 0.5.dp, strokeColor = color.copy(alpha = 0.35f), fillColor = color.copy(alpha = 0.65f), extra = id, onClick = onCellClick)
+                CircleState(
+                    center = GeoPoint(a.lat, a.lon),
+                    radiusMeters = 500.0,
+                    id = id,
+                    geodesic = true,
+                    zIndex = a.registration.toInt(),
+                    strokeWidth = 0.5.dp,
+                    strokeColor = color.copy(alpha = 0.35f),
+                    fillColor = color.copy(alpha = 0.65f),
+                    extra = id,
+                    onClick = onCellClick
+                )
             }
         }
     }
@@ -104,9 +126,17 @@ fun AntennaHorizonsPage(
             }
         }
     }
-    val camera = remember(alaska) { MapCameraPosition(position = if (alaska) GeoPoint(64.0, -150.0) else GeoPoint(39.0, -98.0), zoom = if (alaska) 5.0 else 4.0) }
+    val camera = remember(alaska) {
+        MapCameraPosition(
+            position = if (alaska) GeoPoint(64.0, -150.0) else GeoPoint(39.0, -98.0),
+            zoom = if (alaska) 5.0 else 4.0
+        )
+    }
     key(alaska) {
-        DemoMapPageScaffold(menuItems = DefaultMapViewItems(camera), onToggleSidebar = onToggleSidebar, onMapViewStateChanged = { mapState = it }) { padding ->
+        DemoMapPageScaffold(
+            menuItems = DefaultMapViewItems(camera),
+            onToggleSidebar = onToggleSidebar,
+            onMapViewStateChanged = { mapState = it }) { padding ->
             mapState?.let { state ->
                 MapViewContainer(state = state, modifier = modifier.padding(padding), onMapClick = { tap = null }) {
                     Circles(
@@ -115,28 +145,59 @@ fun AntennaHorizonsPage(
                         onAddProgress = { added, total -> adding = added to total },
                         onAddEnd = { adding = null },
                     )
-                    tap?.let { a -> InfoBubble(position = GeoPoint(a.lat, a.lon)) { Text("${carrierNames[a.carrier]}\nCell position · Display radius: 500 m") } }
+                    tap?.let { a ->
+                        InfoBubble(
+                            position = GeoPoint(
+                                a.lat,
+                                a.lon
+                            )
+                        ) { Text("${carrierNames[a.carrier]}\nCell position · Display radius: 500 m") }
+                    }
                 }
             }
-            Column(Modifier.padding(top = padding.calculateTopPadding() + 12.dp, start = 12.dp).widthIn(max = 350.dp).background(MaterialTheme.colorScheme.surface).padding(12.dp)) {
+            Column(
+                Modifier
+                    .padding(top = padding.calculateTopPadding() + 12.dp, start = 12.dp)
+                    .widthIn(max = 350.dp)
+                    .background(MaterialTheme.colorScheme.surface)
+                    .padding(12.dp)
+            ) {
                 Text("US cell positions (MCC 310–314)", style = MaterialTheme.typography.titleMedium)
-                Text(error ?: if (rows.isEmpty()) "Loading OpenCellID data…" else "${states.size} / ${rows.size} circles")
+                Text(
+                    error ?: if (rows.isEmpty()) "Loading OpenCellID data…" else "${states.size} / ${rows.size} circles"
+                )
                 adding?.let { (added, total) -> Text("Adding to the map… $added / $total") }
                 TextButton(onClick = { alaska = !alaska }) { Text(if (alaska) "US overview" else "Alaska") }
                 carrierNames.forEachIndexed { index, name ->
-                    Row { Checkbox(index in carriers, { checked -> carriers = if (checked) carriers + index else carriers - index }); Text("$name (${(rows as? AntennaTable)?.carrierCounts?.get(index) ?: 0})") }
+                    Row {
+                        Checkbox(
+                            index in carriers,
+                            { checked ->
+                                carriers = if (checked) carriers + index else carriers - index
+                            }); Text("$name (${(rows as? AntennaTable)?.carrierCounts?.get(index) ?: 0})")
+                    }
                 }
-                Text("Cell positions shown as 500 m radius circles; not signal coverage. Showing all cells for the selected carriers. MCC 310–314; not a complete tower inventory.", style = MaterialTheme.typography.bodySmall)
-                ClickableText(text = buildAnnotatedString {
-                    append("Cell tower data from ")
-                    pushStringAnnotation("URL", "https://opencellid.org"); append("OpenCellID"); pop()
-                    append(" · ")
-                    pushStringAnnotation("URL", "https://creativecommons.org/licenses/by-sa/4.0/"); append("CC BY-SA 4.0"); pop()
-                }, style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.primary), onClick = { offset ->
-                    // Link annotations keep both source and license independently tappable.
-                    val url = if (offset < 30) "https://opencellid.org" else "https://creativecommons.org/licenses/by-sa/4.0/"
-                    uriHandler.openUri(url)
-                })
+                Text(
+                    "Cell positions shown as 500 m radius circles; not signal coverage. Showing all cells for the selected carriers. MCC 310–314; not a complete tower inventory.",
+                    style = MaterialTheme.typography.bodySmall
+                )
+                ClickableText(
+                    text = buildAnnotatedString {
+                        append("Cell tower data from ")
+                        pushStringAnnotation("URL", "https://opencellid.org"); append("OpenCellID"); pop()
+                        append(" · ")
+                        pushStringAnnotation(
+                            "URL",
+                            "https://creativecommons.org/licenses/by-sa/4.0/"
+                        ); append("CC BY-SA 4.0"); pop()
+                    },
+                    style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.primary),
+                    onClick = { offset ->
+                        // Link annotations keep both source and license independently tappable.
+                        val url =
+                            if (offset < 30) "https://opencellid.org" else "https://creativecommons.org/licenses/by-sa/4.0/"
+                        uriHandler.openUri(url)
+                    })
             }
         }
     }

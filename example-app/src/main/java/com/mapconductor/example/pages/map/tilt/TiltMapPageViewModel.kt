@@ -112,7 +112,6 @@ class TiltMapPageViewModel :
 
     override var tilt: Double
         get(): Double = _tilt
-
         set(angle) {
             if (_disableSlider.value) return
             _tilt = angle

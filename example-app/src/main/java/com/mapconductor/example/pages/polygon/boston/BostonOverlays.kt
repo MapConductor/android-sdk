@@ -70,12 +70,15 @@ fun LoadingOverlay(
                     "Loading data… $loaded MB"
                 }
             }
+
             LoadPhase.Decode -> "Reading the $shapes…"
             LoadPhase.Build -> "Preparing the $shapes…"
             LoadPhase.Draw -> "Drawing the map…"
         }
     Box(
-        modifier = modifier.fillMaxSize().background(Color(0x590F172A)),
+        modifier = modifier
+            .fillMaxSize()
+            .background(Color(0x590F172A)),
         contentAlignment = Alignment.Center,
     ) {
         Column(

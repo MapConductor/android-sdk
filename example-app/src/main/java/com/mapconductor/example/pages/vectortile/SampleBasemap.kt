@@ -38,21 +38,29 @@ fun showProviderBasemap(
                 } else {
                     MapLibreDesign(id = "blank", styleJsonURL = "asset://blank-style.json")
                 }
+
         is GoogleMapViewStateInterface ->
             state.mapDesignType = if (visible) GoogleMapDesign.Normal else GoogleMapDesign.None
+
         is ArcGISMapViewStateInterface ->
             state.mapDesignType = if (visible) ArcGISDesign.OsmStandard else ArcGISDesign.None
+
         is MapboxViewStateInterface ->
             state.mapDesignType = if (visible) MapboxMapDesign.Standard else MapboxMapDesign.None
+
         is TomTomMapViewStateInterface ->
             state.mapDesignType = if (visible) TomTomMapDesign.Standard else TomTomMapDesign.None
+
         is MapTilerViewStateInterface ->
             state.mapDesignType = if (visible) MapTilerDesign.Streets else MapTilerDesign.None
+
         is LongdoViewStateInterface ->
             state.mapDesignType = if (visible) LongdoDesign.Normal else LongdoDesign.None
+
         is OpenMobileMapsViewStateInterface ->
             state.mapDesignType =
                 if (visible) OpenMobileMapsDesign.OpenStreetMap else OpenMobileMapsDesign.None
+
         else -> Unit
     }
 }

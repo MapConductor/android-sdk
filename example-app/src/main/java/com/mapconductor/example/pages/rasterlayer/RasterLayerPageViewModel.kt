@@ -60,9 +60,9 @@ class RasterLayerPageViewModel(
     override var opacity by mutableStateOf(0.75f)
 
     override var selectedLayer by
-        mutableStateOf(
-            availableLayers.first { it.id == initialLayer.id },
-        )
+    mutableStateOf(
+        availableLayers.first { it.id == initialLayer.id },
+    )
         private set
 
     override val rasterLayerState: RasterLayerState
@@ -89,7 +89,4 @@ class RasterLayerPageViewModel(
         this._mapViewState.value = state
     }
 
-    override fun onCleared() {
-        super.onCleared()
-    }
 }

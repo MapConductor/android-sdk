@@ -1,8 +1,14 @@
 {
-  "version": 8,
-  "name": "blank",
-  "sources": {},
-  "layers": [
-    { "id": "background", "type": "background", "paint": { "background-color": "#f2efe9" } }
-  ]
+    "version": 8,
+    "name": "blank",
+    "sources": {},
+    "layers": [
+        {
+            "id": "background",
+            "type": "background",
+            "paint": {
+                "background-color": "#f2efe9"
+            }
+        }
+    ]
 }

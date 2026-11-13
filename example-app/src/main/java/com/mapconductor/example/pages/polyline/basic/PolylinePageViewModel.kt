@@ -115,7 +115,4 @@ class PolylinePageViewModel :
         }
     }
 
-    override fun onCleared() {
-        super.onCleared()
-    }
 }

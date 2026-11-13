@@ -40,7 +40,7 @@ fun SimpleTextBubblePage(
                 position = GeoPoint.fromLatLong(37.7749, -122.4194),
                 icon = DefaultMarkerIcon(fillColor = Color.Blue, label = "SF"),
                 extra = "San Francisco - The Golden Gate City",
-                onClick = { it -> selectedMarker = it },
+                onClick = { selectedMarker = it },
             )
         }
 

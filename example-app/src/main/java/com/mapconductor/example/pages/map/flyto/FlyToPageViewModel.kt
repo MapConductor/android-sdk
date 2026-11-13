@@ -128,7 +128,8 @@ class FlyToPageViewModel(
                     id = "honolulu_to_sydney",
                     points = listOf(honoluluLocation, sydneyLocation),
                     strokeColor =
-                        Color( // lime
+                        Color(
+                            // lime
                             red = 0.7f,
                             green = 0f,
                             blue = 0f,
@@ -142,7 +143,8 @@ class FlyToPageViewModel(
                     id = "tokyo_to_london",
                     points = listOf(tokyoLocation, londonLocation),
                     strokeColor =
-                        Color( // Fuchsia
+                        Color(
+                            // Fuchsia
                             red = 1.0f,
                             green = 0f,
                             blue = 1.0f,
@@ -164,7 +166,8 @@ class FlyToPageViewModel(
                     id = "tokyo_to_honolulu",
                     points = listOf(tokyoLocation, honoluluLocation),
                     strokeColor =
-                        Color( // Neon orange
+                        Color(
+                            // Neon orange
                             red = 1.0f,
                             green = 0.35f,
                             blue = 0.12f,
@@ -178,7 +181,8 @@ class FlyToPageViewModel(
                     id = "london_to_newyork",
                     points = listOf(londonLocation, newYorkLocation),
                     strokeColor =
-                        Color( // maroon
+                        Color(
+                            // maroon
                             red = 0.75f,
                             green = 0f,
                             blue = 0f,

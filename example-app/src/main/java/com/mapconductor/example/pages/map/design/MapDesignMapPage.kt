@@ -100,7 +100,7 @@ fun MapDesignTypeSelector(
         mutableStateOf(mapDesignOptions.firstOrNull()?.label ?: "")
     }
 
-    val onClick: (MapDesignOption) -> Unit = fun (mapDesignOption: MapDesignOption) {
+    val onClick: (MapDesignOption) -> Unit = fun(mapDesignOption: MapDesignOption) {
         selectedLabel = mapDesignOption.label
         expanded = false
         when (state) {
@@ -108,35 +108,44 @@ fun MapDesignTypeSelector(
                 @Suppress("UNCHECKED_CAST")
                 state.mapDesignType = mapDesignOption.design as GoogleMapDesignType
             }
+
             is HereViewStateInterface -> {
                 @Suppress("UNCHECKED_CAST")
                 state.mapDesignType = mapDesignOption.design as HereMapDesignType
             }
+
             is ArcGISMapViewStateInterface -> {
                 @Suppress("UNCHECKED_CAST")
                 state.mapDesignType = mapDesignOption.design as ArcGISDesignTypeInterface
             }
+
             is MapboxViewStateInterface -> {
                 @Suppress("UNCHECKED_CAST")
                 state.mapDesignType = mapDesignOption.design as MapboxDesignType
             }
+
             is MapLibreViewStateInterface -> {
                 @Suppress("UNCHECKED_CAST")
                 state.mapDesignType = mapDesignOption.design as MapLibreDesign
             }
+
             is TomTomMapViewStateInterface -> {
                 @Suppress("UNCHECKED_CAST")
                 state.mapDesignType = mapDesignOption.design as TomTomMapDesignType
             }
+
             is MapTilerViewStateInterface -> {
                 state.mapDesignType = mapDesignOption.design as MapTilerMapDesignTypeInterface
             }
+
             is LongdoViewStateInterface -> {
                 state.mapDesignType = mapDesignOption.design as LongdoMapDesignTypeInterface
             }
+
             is MapplsViewStateInterface -> {
                 state.mapDesignType = mapDesignOption.design as MapplsMapDesignTypeInterface
             }
+
             else -> throw IllegalArgumentException("Not implemented yet")
         }
     }

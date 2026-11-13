@@ -137,7 +137,9 @@ fun VectorTilePage(
         onMapViewStateChanged = { mapViewState = it },
     ) { paddings ->
         Box(
-            modifier = modifier.fillMaxSize().padding(paddings),
+            modifier = modifier
+                .fillMaxSize()
+                .padding(paddings),
             contentAlignment = Alignment.Center,
         ) {
             VectorTileMapComponent(
@@ -220,7 +222,8 @@ fun VectorTilePage(
                                         .background(
                                             palette.getValue(category.key),
                                             RoundedCornerShape(6.dp),
-                                        ).border(1.dp, Color(0x33000000), RoundedCornerShape(6.dp))
+                                        )
+                                        .border(1.dp, Color(0x33000000), RoundedCornerShape(6.dp))
                                         .clickable { picking = category.key },
                             )
                         }

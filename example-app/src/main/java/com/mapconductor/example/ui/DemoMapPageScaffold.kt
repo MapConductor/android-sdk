@@ -294,11 +294,13 @@ fun DemoMapPageScaffold(
         Scaffold { paddingValues ->
             Box(
                 modifier =
-                    modifier.fillMaxSize().padding(
-                        start = paddingValues.calculateStartPadding(layoutDirection = LayoutDirection.Ltr),
-                        end = paddingValues.calculateStartPadding(layoutDirection = LayoutDirection.Ltr),
-                        bottom = paddingValues.calculateBottomPadding(),
-                    ),
+                    modifier
+                        .fillMaxSize()
+                        .padding(
+                            start = paddingValues.calculateStartPadding(layoutDirection = LayoutDirection.Ltr),
+                            end = paddingValues.calculateStartPadding(layoutDirection = LayoutDirection.Ltr),
+                            bottom = paddingValues.calculateBottomPadding(),
+                        ),
             ) {
                 content(paddingValues)
 

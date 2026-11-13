@@ -83,7 +83,8 @@ private fun SwatchRow(
                             width = if (selected == color) 2.dp else 1.dp,
                             color = if (selected == color) Color(0xFF2563EB) else Color(0x40111827),
                             shape = CircleShape,
-                        ).padding(3.dp)
+                        )
+                        .padding(3.dp)
                         .background(color, CircleShape)
                         .clickable { onSelect(color) },
             )

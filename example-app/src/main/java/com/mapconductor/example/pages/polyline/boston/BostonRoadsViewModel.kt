@@ -121,7 +121,8 @@ class BostonRoadsViewModel(
     }
 
     /** The options for this map's [com.mapconductor.compose.polyline.PolylineTiling]. */
-    fun tilingOptions(tiled: Boolean): PolylineTilingOptions = if (tiled) PolylineTilingOptions.Default else PolylineTilingOptions.Disabled
+    fun tilingOptions(tiled: Boolean): PolylineTilingOptions =
+        if (tiled) PolylineTilingOptions.Default else PolylineTilingOptions.Disabled
 
     fun setTiling(tiled: Boolean) {
         if (_tiling.value == tiled) return

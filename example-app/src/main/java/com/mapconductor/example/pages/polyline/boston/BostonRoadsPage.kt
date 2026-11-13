@@ -168,7 +168,13 @@ fun BostonRoadsPage(
                     if (road == null) {
                         "No road here"
                     } else {
-                        "${road.name ?: road.roadClass.label} · ${road.roadClass.label} · ${formatLength(lengthMetres(road))}"
+                        "${road.name ?: road.roadClass.label} · ${road.roadClass.label} · ${
+                            formatLength(
+                                lengthMetres(
+                                    road
+                                )
+                            )
+                        }"
                     },
                 )
             }

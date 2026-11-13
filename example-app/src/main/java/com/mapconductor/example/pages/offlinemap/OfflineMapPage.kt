@@ -130,6 +130,7 @@ fun OfflineMapPage(
         mask.points = maskRing(southWest, northEast)
         mask.holes = listOf(rectangle(southWest, northEast))
     }
+
     lateinit var swMarker: MarkerState
     lateinit var neMarker: MarkerState
 
@@ -242,7 +243,9 @@ fun OfflineMapPage(
         onMapViewStateChanged = { mapViewState = it },
     ) { paddings ->
         Box(
-            modifier = modifier.fillMaxSize().padding(paddings),
+            modifier = modifier
+                .fillMaxSize()
+                .padding(paddings),
             contentAlignment = Alignment.Center,
         ) {
             mapViewState?.let { state ->

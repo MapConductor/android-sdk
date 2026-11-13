@@ -92,7 +92,8 @@ fun UISettingsMapPage(
                     .padding(
                         bottom = paddingValues.calculateBottomPadding() + 16.dp,
                         start = 16.dp,
-                    ).sizeIn(maxWidth = 360.dp),
+                    )
+                    .sizeIn(maxWidth = 360.dp),
         ) {
             Column(modifier = Modifier.padding(12.dp)) {
                 val state = mapViewState
@@ -157,6 +158,7 @@ private fun report(
                         "rotate=${ttMap.isRotationEnabled} tilt=${ttMap.isTiltEnabled}"
                 }
             }
+
             is com.mapconductor.googlemaps.GoogleMapViewState -> {
                 val ui = (map as? com.google.android.gms.maps.GoogleMap)?.uiSettings
                 if (ui == null) {
@@ -166,6 +168,7 @@ private fun report(
                         "rotate=${ui.isRotateGesturesEnabled} tilt=${ui.isTiltGesturesEnabled}"
                 }
             }
+
             is com.mapconductor.maplibre.MapLibreViewState -> {
                 val ui = (map as? org.maplibre.android.maps.MapLibreMap)?.uiSettings
                 if (ui == null) {
@@ -175,6 +178,7 @@ private fun report(
                         "rotate=${ui.isRotateGesturesEnabled} tilt=${ui.isTiltGesturesEnabled}"
                 }
             }
+
             else -> "applied (no native reader for ${state::class.simpleName})"
         }
     Log.i("MCUISettings", "$phase | ${state::class.simpleName} | $actual")
