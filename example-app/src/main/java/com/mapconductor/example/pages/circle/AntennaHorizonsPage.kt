@@ -221,7 +221,8 @@ fun AntennaHorizonsPage(
                             error
                                 ?: if (rows.isEmpty()) "Loading OpenCellID data…" else "${states.size} / ${rows.size} circles",
                         )
-                        adding?.let { (added, total) -> Text("Adding to the map… $added / $total") }
+                        // total is 0 when nothing new is added: a filter that only hides cells, or the camera moving.
+                adding?.let { (added, total) -> Text(if (total == 0) "Drawing the map…" else "Adding to the map… $added / $total") }
                         TextButton(onClick = { alaska = !alaska }) { Text(if (alaska) "US overview" else "Alaska") }
                         Row(Modifier.padding(vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                             carrierNames.forEachIndexed { index, name ->
