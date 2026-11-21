@@ -1,5 +1,8 @@
 package com.mapconductor.example.pages.circle
 
+import kotlinx.coroutines.delay
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.foundation.background
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
@@ -213,6 +216,12 @@ fun AntennaHorizonsPage(
                             }
                         }
                     }
+                    adding?.let { (added, total) ->
+                        DrawingOverlay(
+                            if (total == 0) "Drawing the map…" else "Adding to the map… $added / $total",
+                            Modifier.padding(top = padding.calculateTopPadding()),
+                        )
+                    }
                 }
                 Card(Modifier.fillMaxWidth().padding(12.dp)) {
                     Column(Modifier.padding(12.dp)) {
@@ -303,5 +312,36 @@ private fun CarrierToggle(
             colorFilter = if (on) null else grayscale,
         )
         Text(name, style = MaterialTheme.typography.labelSmall, textAlign = TextAlign.Center)
+    }
+}
+
+/**
+ * Over the map while circles are added or their tiles drawn (between onAddStart
+ * and onAddEnd). Shown after 150 ms, as the web sample's overlay is, so that a
+ * short redraw does not flash; it does not take touches, so the map can still
+ * be moved while it draws.
+ */
+@Composable
+private fun DrawingOverlay(
+    text: String,
+    modifier: Modifier = Modifier,
+) {
+    var visible by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        delay(150)
+        visible = true
+    }
+    if (!visible) return
+    Box(modifier.fillMaxSize().background(Color(0x330F172A)), contentAlignment = Alignment.Center) {
+        Card {
+            Column(
+                Modifier.padding(horizontal = 20.dp, vertical = 16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                CircularProgressIndicator(modifier = Modifier.size(28.dp), strokeWidth = 3.dp)
+                Text(text, style = MaterialTheme.typography.bodyMedium)
+            }
+        }
     }
 }
