@@ -2,17 +2,19 @@ package com.mapconductor.example.pages.circle
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
+import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -188,84 +190,86 @@ fun AntennaHorizonsPage(
             onToggleSidebar = onToggleSidebar,
             onMapViewStateChanged = { mapState = it },
         ) { padding ->
-            mapState?.let { state ->
-                MapViewContainer(state = state, modifier = modifier.padding(padding), onMapClick = { tap = null }) {
-                    Circles(
-                        states,
-                        onAddStart = { total -> adding = 0 to total },
-                        onAddProgress = { added, total -> adding = added to total },
-                        onAddEnd = { adding = null },
-                    )
-                    tap?.let { a ->
-                        InfoBubble(
-                            position =
-                                GeoPoint(
-                                    a.lat,
-                                    a.lon,
-                                ),
-                        ) { Text("${carrierNames[a.carrier]}\nCell position · Display radius: 500 m") }
+            // The map takes what the carrier card under it leaves: over the map the card
+            // hid most of it on a phone.
+            Column(Modifier.fillMaxSize()) {
+                Box(Modifier.weight(1f).fillMaxWidth()) {
+                    mapState?.let { state ->
+                        MapViewContainer(state = state, modifier = modifier.padding(top = padding.calculateTopPadding()), onMapClick = { tap = null }) {
+                            Circles(
+                                states,
+                                onAddStart = { total -> adding = 0 to total },
+                                onAddProgress = { added, total -> adding = added to total },
+                                onAddEnd = { adding = null },
+                            )
+                            tap?.let { a ->
+                                InfoBubble(
+                                    position =
+                                        GeoPoint(
+                                            a.lat,
+                                            a.lon,
+                                        ),
+                                ) { Text("${carrierNames[a.carrier]}\nCell position · Display radius: 500 m") }
+                            }
+                        }
                     }
                 }
-            }
-            Column(
-                Modifier
-                    .padding(top = padding.calculateTopPadding() + 12.dp, start = 12.dp)
-                    .widthIn(max = 350.dp)
-                    .background(MaterialTheme.colorScheme.surface)
-                    .padding(12.dp),
-            ) {
-                Text("US cell positions (MCC 310–314)", style = MaterialTheme.typography.titleMedium)
-                Text(
-                    error
-                        ?: if (rows.isEmpty()) "Loading OpenCellID data…" else "${states.size} / ${rows.size} circles",
-                )
-                adding?.let { (added, total) -> Text("Adding to the map… $added / $total") }
-                TextButton(onClick = { alaska = !alaska }) { Text(if (alaska) "US overview" else "Alaska") }
-                Row(Modifier.padding(vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    carrierNames.forEachIndexed { index, name ->
-                        CarrierToggle(
-                            name = name,
-                            icon = carrierIcons[index],
-                            color = carrierColors[index],
-                            on = index in carriers,
-                            onToggle = { on -> carriers = if (on) carriers + index else carriers - index },
-                            modifier = Modifier.weight(1f),
+                Card(Modifier.fillMaxWidth().padding(12.dp)) {
+                    Column(Modifier.padding(12.dp)) {
+                        Text("US cell positions (MCC 310–314)", style = MaterialTheme.typography.titleMedium)
+                        Text(
+                            error
+                                ?: if (rows.isEmpty()) "Loading OpenCellID data…" else "${states.size} / ${rows.size} circles",
+                        )
+                        adding?.let { (added, total) -> Text("Adding to the map… $added / $total") }
+                        TextButton(onClick = { alaska = !alaska }) { Text(if (alaska) "US overview" else "Alaska") }
+                        Row(Modifier.padding(vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            carrierNames.forEachIndexed { index, name ->
+                                CarrierToggle(
+                                    name = name,
+                                    icon = carrierIcons[index],
+                                    color = carrierColors[index],
+                                    on = index in carriers,
+                                    onToggle = { on -> carriers = if (on) carriers + index else carriers - index },
+                                    modifier = Modifier.weight(1f),
+                                )
+                            }
+                        }
+                        Text(
+                            "Cell positions shown as 500 m radius circles; not signal coverage. Showing all cells for the selected carriers. MCC 310–314; not a complete tower inventory.",
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                        ClickableText(
+                            text =
+                                buildAnnotatedString {
+                                    append("Cell tower data from ")
+                                    pushStringAnnotation("URL", "https://opencellid.org")
+                                    append("OpenCellID")
+                                    pop()
+                                    append(" · ")
+                                    pushStringAnnotation(
+                                        "URL",
+                                        "https://creativecommons.org/licenses/by-sa/4.0/",
+                                    )
+                                    append("CC BY-SA 4.0")
+                                    pop()
+                                },
+                            style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.primary),
+                            onClick = { offset ->
+                                // Link annotations keep both source and license independently tappable.
+                                val url =
+                                    if (offset <
+                                        30
+                                    ) {
+                                        "https://opencellid.org"
+                                    } else {
+                                        "https://creativecommons.org/licenses/by-sa/4.0/"
+                                    }
+                                uriHandler.openUri(url)
+                            },
                         )
                     }
                 }
-                Text(
-                    "Cell positions shown as 500 m radius circles; not signal coverage. Showing all cells for the selected carriers. MCC 310–314; not a complete tower inventory.",
-                    style = MaterialTheme.typography.bodySmall,
-                )
-                ClickableText(
-                    text =
-                        buildAnnotatedString {
-                            append("Cell tower data from ")
-                            pushStringAnnotation("URL", "https://opencellid.org")
-                            append("OpenCellID")
-                            pop()
-                            append(" · ")
-                            pushStringAnnotation(
-                                "URL",
-                                "https://creativecommons.org/licenses/by-sa/4.0/",
-                            )
-                            append("CC BY-SA 4.0")
-                            pop()
-                        },
-                    style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.primary),
-                    onClick = { offset ->
-                        // Link annotations keep both source and license independently tappable.
-                        val url =
-                            if (offset <
-                                30
-                            ) {
-                                "https://opencellid.org"
-                            } else {
-                                "https://creativecommons.org/licenses/by-sa/4.0/"
-                            }
-                        uriHandler.openUri(url)
-                    },
-                )
             }
         }
     }
