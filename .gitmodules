@@ -64,3 +64,6 @@
 [submodule "android-icons-weather"]
 	path = android-icons-weather
 	url = git@github.com:MapConductor/android-icons-weather.git
+[submodule "android-vectortile"]
+	path = android-vectortile
+	url = git@github.com:MapConductor/android-vectortile.git
