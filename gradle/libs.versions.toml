@@ -4,7 +4,7 @@ openmobilemaps = "4.0.0"
 agp = "9.2.1"
 
 core = "1.7.0"
-kotlin = "2.4.10"
+kotlin = "2.4.20"
 
 coreKtx = "1.16.0"
 appcompat = "1.7.1"
